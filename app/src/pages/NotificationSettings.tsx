@@ -155,6 +155,11 @@ export default function NotificationSettings() {
     toast.info(t('notification_settings.disconnected'));
   };
 
+  const handleAllMonitorsToggle = (allMonitors: boolean) => {
+    if (!currentProfile) return;
+    updateProfileSettings(currentProfile.id, { allMonitors });
+  };
+
   const handleMonitorToggle = (monitorId: number, enabled: boolean) => {
     if (!currentProfile) return;
 
@@ -481,7 +486,29 @@ export default function NotificationSettings() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {monitors.map((monitor) => {
+              {/* All Monitors toggle */}
+              <div
+                className="flex items-center justify-between p-4 rounded-lg border bg-card"
+                data-testid="notification-all-monitors-card"
+              >
+                <div className="flex-1 space-y-1">
+                  <Label htmlFor="all-monitors" className="text-base font-semibold">
+                    {t('notification_settings.all_monitors')}
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t('notification_settings.all_monitors_desc')}
+                  </p>
+                </div>
+                <Switch
+                  id="all-monitors"
+                  checked={settings.allMonitors}
+                  onCheckedChange={handleAllMonitorsToggle}
+                  data-testid="notification-all-monitors-toggle"
+                />
+              </div>
+
+              {/* Individual monitor filters — only shown when allMonitors is off */}
+              {!settings.allMonitors && monitors.map((monitor) => {
                 const monitorData = monitor.Monitor;
                 const filter = settings.monitorFilters.find(
                   (f) => f.monitorId === parseInt(monitorData.Id, 10)

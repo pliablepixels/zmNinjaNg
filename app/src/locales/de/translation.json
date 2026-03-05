@@ -488,7 +488,9 @@
     "showing_count": "Zeige {{count}} Benachrichtigungen",
     "event_id": "Ereignis {{id}}",
     "monitor_id": "Monitor {{id}}",
-    "select_profile_first": "Wählen Sie zuerst ein Profil"
+    "select_profile_first": "Wählen Sie zuerst ein Profil",
+    "source_websocket": "Echtzeit",
+    "source_push": "Push"
   },
   "notification_settings": {
     "title": "Benachrichtigungseinstellungen",
@@ -521,6 +523,8 @@
     "connect_failed": "Verbindung fehlgeschlagen",
     "monitor_filters_title": "Monitor-Filter",
     "monitor_filters_desc": "Wählen Sie aus, für welche Monitore Sie Benachrichtigungen erhalten möchten",
+    "all_monitors": "Alle Monitore",
+    "all_monitors_desc": "Benachrichtigungen von allen Monitoren erhalten. Ausschalten, um einzelne Monitore auszuwählen.",
     "no_monitors": "Keine Monitore verfügbar",
     "monitor_id": "Monitor {{id}}",
     "check_interval": "Benachrichtigungsintervall",

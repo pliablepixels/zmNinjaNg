@@ -488,7 +488,9 @@
     "showing_count": "Mostrando {{count}} notificaciones",
     "event_id": "Evento {{id}}",
     "monitor_id": "Monitor {{id}}",
-    "select_profile_first": "Seleccione un perfil primero"
+    "select_profile_first": "Seleccione un perfil primero",
+    "source_websocket": "Tiempo real",
+    "source_push": "Push"
   },
   "notification_settings": {
     "title": "Configuración de Notificaciones",
@@ -521,6 +523,8 @@
     "connect_failed": "Conexión fallida",
     "monitor_filters_title": "Filtros de Monitor",
     "monitor_filters_desc": "Seleccionar de qué monitores recibir notificaciones",
+    "all_monitors": "Todos los Monitores",
+    "all_monitors_desc": "Recibir notificaciones de todos los monitores. Desactivar para seleccionar monitores individuales.",
     "no_monitors": "No hay monitores disponibles",
     "monitor_id": "Monitor {{id}}",
     "check_interval": "Intervalo de Notificación",

@@ -85,6 +85,34 @@ export function NotificationHandler() {
     }
   }, [currentProfile?.id, isConnected, currentProfileId, disconnect]);
 
+  // Clear native badge and delivered notifications when app comes to foreground (iOS/Android)
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    let listenerCleanup: (() => void) | undefined;
+
+    const setup = async () => {
+      try {
+        const { App: CapApp } = await import('@capacitor/app');
+        const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
+
+        const listener = await CapApp.addListener('appStateChange', async ({ isActive }) => {
+          if (isActive) {
+            await FirebaseMessaging.removeAllDeliveredNotifications();
+            log.notificationHandler('Cleared native badge on app resume', LogLevel.DEBUG);
+          }
+        });
+
+        listenerCleanup = () => { listener.remove(); };
+      } catch (e) {
+        log.notificationHandler('Failed to setup badge clearing on resume', LogLevel.ERROR, e);
+      }
+    };
+
+    setup();
+    return () => { listenerCleanup?.(); };
+  }, []);
+
   // Listen to navigation events from services (e.g., push notifications)
   useEffect(() => {
     const unsubscribe = navigationService.addListener((event) => {

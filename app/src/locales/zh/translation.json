@@ -488,7 +488,9 @@
     "showing_count": "显示 {{count}} 条通知",
     "event_id": "事件 {{id}}",
     "monitor_id": "监控 {{id}}",
-    "select_profile_first": "请先选择配置"
+    "select_profile_first": "请先选择配置",
+    "source_websocket": "实时",
+    "source_push": "推送"
   },
   "notification_settings": {
     "title": "通知设置",
@@ -521,6 +523,8 @@
     "connect_failed": "连接失败",
     "monitor_filters_title": "监控筛选",
     "monitor_filters_desc": "选择要接收通知的监控",
+    "all_monitors": "所有监控",
+    "all_monitors_desc": "接收所有监控的通知。关闭后可选择单个监控。",
     "no_monitors": "无可用监控",
     "monitor_id": "监控 {{id}}",
     "check_interval": "通知间隔",

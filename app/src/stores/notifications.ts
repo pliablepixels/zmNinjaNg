@@ -17,7 +17,8 @@ export interface NotificationSettings {
   host: string; // Event server host (e.g., "zm.example.com")
   port: number; // Event server port (default 9000)
   ssl: boolean; // Use wss:// instead of ws://
-  monitorFilters: MonitorNotificationConfig[]; // Per-monitor settings
+  allMonitors: boolean; // Receive notifications for all monitors (no filter sent to ES)
+  monitorFilters: MonitorNotificationConfig[]; // Per-monitor settings (used when allMonitors is false)
   showToasts: boolean; // Show toast notifications for events
   playSound: boolean; // Play sound on notification
   badgeCount: number; // Current unread count
@@ -29,9 +30,12 @@ export interface MonitorNotificationConfig {
   checkInterval: number; // Seconds between checks (60, 120, etc.)
 }
 
+export type NotificationSource = 'websocket' | 'push';
+
 export interface NotificationEvent extends ZMAlarmEvent {
   receivedAt: number; // Timestamp when received
   read: boolean; // Whether user has seen it
+  source: NotificationSource; // How the event was delivered
 }
 
 interface NotificationState {
@@ -61,7 +65,7 @@ interface NotificationState {
   reconnect: () => Promise<void>;
 
   // Actions - Events
-  addEvent: (profileId: string, event: ZMAlarmEvent) => void;
+  addEvent: (profileId: string, event: ZMAlarmEvent, source?: NotificationSource) => void;
   markEventRead: (profileId: string, eventId: number) => void;
   markAllRead: (profileId: string) => void;
   clearEvents: (profileId: string) => void;
@@ -88,6 +92,7 @@ const DEFAULT_SETTINGS: NotificationSettings = {
   host: '',
   port: DEFAULT_PORT,
   ssl: true,
+  allMonitors: true,
   monitorFilters: [],
   showToasts: true,
   playSound: false,
@@ -291,16 +296,18 @@ export const useNotificationStore = create<NotificationState>()(
        * Events can come from WebSocket (when connected) or FCM push notifications
        * Duplicate prevention: if an event with the same ID already exists, it will be replaced
        */
-      addEvent: (profileId: string, event: ZMAlarmEvent) => {
+      addEvent: (profileId: string, event: ZMAlarmEvent, source: NotificationSource = 'websocket') => {
         log.notifications('Adding notification event', LogLevel.INFO, { profileId,
           monitor: event.MonitorName,
-          eventId: event.EventId, });
+          eventId: event.EventId,
+          source, });
 
         set((state) => {
           const notificationEvent: NotificationEvent = {
             ...event,
             receivedAt: Date.now(),
             read: false,
+            source,
           };
 
           const currentEvents = state.profileEvents[profileId] || [];
@@ -382,6 +389,15 @@ export const useNotificationStore = create<NotificationState>()(
           };
         });
 
+        // Clear native badge and delivered notifications on mobile
+        import('@capacitor/core').then(({ Capacitor }) => {
+          if (Capacitor.isNativePlatform()) {
+            import('@capacitor-firebase/messaging').then(({ FirebaseMessaging }) => {
+              FirebaseMessaging.removeAllDeliveredNotifications();
+            }).catch(() => {});
+          }
+        }).catch(() => {});
+
         // Update badge on server if this is the connected profile
         if (get().currentProfileId === profileId) {
           get()._updateBadge();
@@ -408,6 +424,15 @@ export const useNotificationStore = create<NotificationState>()(
             },
           };
         });
+
+        // Clear native badge and delivered notifications on mobile
+        import('@capacitor/core').then(({ Capacitor }) => {
+          if (Capacitor.isNativePlatform()) {
+            import('@capacitor-firebase/messaging').then(({ FirebaseMessaging }) => {
+              FirebaseMessaging.removeAllDeliveredNotifications();
+            }).catch(() => {});
+          }
+        }).catch(() => {});
 
         // Update badge on server if this is the connected profile
         if (get().currentProfileId === profileId) {
@@ -509,8 +534,14 @@ export const useNotificationStore = create<NotificationState>()(
 
         const service = getNotificationService();
         const settings = get().getProfileSettings(currentProfileId);
-        const { monitorFilters } = settings;
 
+        // When allMonitors is on, don't send a filter — ES treats empty monlist as "all monitors"
+        if (settings.allMonitors) {
+          log.notifications('All monitors enabled, skipping filter sync', LogLevel.INFO, { profileId: currentProfileId });
+          return;
+        }
+
+        const { monitorFilters } = settings;
         const enabledFilters = monitorFilters.filter((f) => f.enabled);
         if (enabledFilters.length === 0) {
           log.notifications('No enabled monitor filters to sync', LogLevel.INFO, { profileId: currentProfileId });

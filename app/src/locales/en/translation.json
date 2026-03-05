@@ -486,7 +486,9 @@
     "showing_count": "Showing {{count}} notifications",
     "event_id": "Event {{id}}",
     "monitor_id": "Monitor {{id}}",
-    "select_profile_first": "Please select a profile first"
+    "select_profile_first": "Please select a profile first",
+    "source_websocket": "Real-time",
+    "source_push": "Push"
   },
   "notification_settings": {
     "title": "Notification Settings",
@@ -520,6 +522,8 @@
     "connect_failed": "Connection failed",
     "monitor_filters_title": "Monitor Filters",
     "monitor_filters_desc": "Select which monitors to receive notifications for",
+    "all_monitors": "All Monitors",
+    "all_monitors_desc": "Receive notifications from all monitors. Turn off to select individual monitors.",
     "no_monitors": "No monitors available",
     "monitor_id": "Monitor {{id}}",
     "check_interval": "Notification Interval",

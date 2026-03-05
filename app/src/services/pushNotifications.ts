@@ -312,7 +312,7 @@ export class MobilePushService {
           Cause: cause,
           Name: monitorName,
           ImageUrl: imageUrl,
-        });
+        }, 'push');
       }
     }
   }
@@ -353,7 +353,7 @@ export class MobilePushService {
           Cause: cause,
           Name: monitorName,
           ImageUrl: imageUrl,
-        });
+        }, 'push');
 
         notificationStore.markEventRead(profileId, parseInt(data.eid, 10));
 

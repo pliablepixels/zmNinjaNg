@@ -10,7 +10,7 @@ import { useCurrentProfile } from '../hooks/useCurrentProfile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { Bell, Trash2, CheckCheck, ExternalLink, AlertCircle } from 'lucide-react';
+import { Bell, Trash2, CheckCheck, ExternalLink, AlertCircle, Wifi, Smartphone } from 'lucide-react';
 import { getEventCauseIcon } from '../lib/event-icons';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -125,8 +125,21 @@ export default function NotificationHistory() {
                         </Badge>
                       )}
                     </div>
-                    <CardDescription className="mt-1 text-xs sm:text-sm">
+                    <CardDescription className="mt-1 text-xs sm:text-sm flex items-center gap-1.5">
                       {formatDistanceToNow(event.receivedAt, { addSuffix: true })}
+                      <span className="inline-flex items-center gap-0.5 text-muted-foreground">
+                        {event.source === 'push' ? (
+                          <>
+                            <Smartphone className="h-3 w-3" />
+                            <span className="hidden sm:inline">{t('notification_history.source_push')}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Wifi className="h-3 w-3" />
+                            <span className="hidden sm:inline">{t('notification_history.source_websocket')}</span>
+                          </>
+                        )}
+                      </span>
                     </CardDescription>
                   </div>
                   <Button

@@ -131,6 +131,20 @@ describe('Notification Store', () => {
     expect(store.getProfileSettings(profileId).badgeCount).toBe(2);
   });
 
+  it('defaults source to websocket', () => {
+    const store = useNotificationStore.getState();
+    store.addEvent(profileId, baseEvent);
+    const events = store.getEvents(profileId);
+    expect(events[0].source).toBe('websocket');
+  });
+
+  it('stores push source when specified', () => {
+    const store = useNotificationStore.getState();
+    store.addEvent(profileId, baseEvent, 'push');
+    const events = store.getEvents(profileId);
+    expect(events[0].source).toBe('push');
+  });
+
   it('replaces duplicate events by EventId', () => {
     const store = useNotificationStore.getState();
 
@@ -140,6 +154,17 @@ describe('Notification Store', () => {
     const events = store.getEvents(profileId);
     expect(events).toHaveLength(1);
     expect(events[0].MonitorName).toBe('Back Door');
+  });
+
+  it('updates source when duplicate event replaces existing', () => {
+    const store = useNotificationStore.getState();
+
+    store.addEvent(profileId, baseEvent, 'websocket');
+    store.addEvent(profileId, baseEvent, 'push');
+
+    const events = store.getEvents(profileId);
+    expect(events).toHaveLength(1);
+    expect(events[0].source).toBe('push');
   });
 
   it('marks events read and clears all', () => {
