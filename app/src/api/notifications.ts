@@ -57,7 +57,7 @@ export async function registerToken(params: {
   if (params.pushState) formData.append('Notification[PushState]', params.pushState);
   if (params.appVersion) formData.append('Notification[AppVersion]', params.appVersion);
 
-  const resp = await client.post<NotificationResponse>('/api/notifications.json', formData.toString(), {
+  const resp = await client.post<NotificationResponse>('/notifications.json', formData.toString(), {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
   });
   return resp.data.notification.Notification;
@@ -83,7 +83,7 @@ export async function updateNotification(
   if (params.interval !== undefined) formData.append('Notification[Interval]', String(params.interval));
   if (params.pushState !== undefined) formData.append('Notification[PushState]', params.pushState);
 
-  const resp = await client.put<NotificationResponse>(`/api/notifications/${id}.json`, formData.toString(), {
+  const resp = await client.put<NotificationResponse>(`/notifications/${id}.json`, formData.toString(), {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
   });
   return resp.data.notification.Notification;
@@ -96,7 +96,7 @@ export async function deleteNotification(id: number): Promise<void> {
   log.api('Deleting notification via ZM API', LogLevel.INFO, { id });
 
   const client = getApiClient();
-  await client.delete(`/api/notifications/${id}.json`);
+  await client.delete(`/notifications/${id}.json`);
 }
 
 /**
@@ -104,7 +104,7 @@ export async function deleteNotification(id: number): Promise<void> {
  */
 export async function listNotifications(): Promise<ZMNotification[]> {
   const client = getApiClient();
-  const resp = await client.get<NotificationsListResponse>('/api/notifications.json');
+  const resp = await client.get<NotificationsListResponse>('/notifications.json');
   return resp.data.notifications.map(n => n.Notification);
 }
 
@@ -115,7 +115,7 @@ export async function listNotifications(): Promise<ZMNotification[]> {
 export async function checkNotificationsApiSupport(): Promise<boolean> {
   try {
     const client = getApiClient();
-    await client.get('/api/notifications.json');
+    await client.get('/notifications.json');
     return true;
   } catch (e: unknown) {
     const error = e as { status?: number; response?: { status?: number } };
