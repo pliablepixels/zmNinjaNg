@@ -490,7 +490,8 @@
     "monitor_id": "Monitor {{id}}",
     "select_profile_first": "Wählen Sie zuerst ein Profil",
     "source_websocket": "Echtzeit",
-    "source_push": "Push"
+    "source_push": "Push",
+    "source_poll": "Abgefragt"
   },
   "notification_settings": {
     "title": "Benachrichtigungseinstellungen",
@@ -541,7 +542,7 @@
     "profile_credentials_required": "Profil-Anmeldeinformationen erforderlich",
     "hide_advanced": "Erweitert ausblenden",
     "show_advanced": "Erweitert anzeigen",
-    "unread_count": "Ungelesene Anzahl",
+    "unread_count": "{{count}} ungelesene Benachrichtigungen",
     "view_history": "Verlauf ansehen",
     "function": "Funktion",
     "disconnected": "Getrennt",
@@ -555,7 +556,13 @@
     "mode_direct_desc": "Push-Benachrichtigungen über ZoneMinder API (kein Event Server nötig)",
     "mode_direct_unavailable": "Erfordert ZoneMinder mit Notifications API Unterstützung",
     "mode_switched_direct": "Auf Direkt-ZM-Modus umgeschaltet",
-    "mode_switched_es": "Auf Event-Server-Modus umgeschaltet"
+    "mode_switched_es": "Auf Event-Server-Modus umgeschaltet",
+    "direct_options_title": "Direktmodus-Optionen",
+    "direct_options_desc": "Ereignisfilterung für direktes Polling konfigurieren",
+    "polling_interval": "Abfrageintervall",
+    "polling_interval_desc": "Wie oft nach neuen Ereignissen gesucht wird",
+    "only_detected": "Nur erkannte Ereignisse",
+    "only_detected_desc": "Nur für Ereignisse benachrichtigen, die von der Objekterkennung verarbeitet wurden (zm_detect)"
   },
   "notifications": {
     "status": {

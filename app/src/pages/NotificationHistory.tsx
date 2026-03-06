@@ -10,7 +10,7 @@ import { useCurrentProfile } from '../hooks/useCurrentProfile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { Bell, Trash2, CheckCheck, ExternalLink, AlertCircle, Wifi, Smartphone } from 'lucide-react';
+import { Bell, Trash2, CheckCheck, ExternalLink, AlertCircle, Wifi, Smartphone, RefreshCw } from 'lucide-react';
 import { getEventCauseIcon } from '../lib/event-icons';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -132,6 +132,11 @@ export default function NotificationHistory() {
                           <>
                             <Smartphone className="h-3 w-3" />
                             <span className="hidden sm:inline">{t('notification_history.source_push')}</span>
+                          </>
+                        ) : event.source === 'poll' ? (
+                          <>
+                            <RefreshCw className="h-3 w-3" />
+                            <span className="hidden sm:inline">{t('notification_history.source_poll')}</span>
                           </>
                         ) : (
                           <>

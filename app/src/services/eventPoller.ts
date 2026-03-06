@@ -11,8 +11,6 @@ import { getMonitors } from '../api/monitors';
 import { useNotificationStore } from '../stores/notifications';
 import { useProfileStore } from '../stores/profile';
 import { useAuthStore } from '../stores/auth';
-import { useSettingsStore } from '../stores/settings';
-import { getBandwidthSettings } from '../lib/zmng-constants';
 import { log, LogLevel } from '../lib/logger';
 
 class EventPollerService {
@@ -83,13 +81,11 @@ class EventPollerService {
   }
 
   private _getInterval(): number {
-    const settingsStore = useSettingsStore.getState();
     const profileId = this.profileId;
     if (!profileId) return 30000;
 
-    const profileSettings = settingsStore.getProfileSettings(profileId);
-    const bandwidth = getBandwidthSettings(profileSettings.bandwidthMode);
-    return bandwidth.eventPollerInterval;
+    const notificationSettings = useNotificationStore.getState().getProfileSettings(profileId);
+    return (notificationSettings.pollingInterval || 30) * 1000;
   }
 
   private _scheduleNext(): void {
@@ -101,11 +97,17 @@ class EventPollerService {
     if (!this.profileId) return;
 
     try {
-      const result = await getEvents({
+      const notificationSettings = useNotificationStore.getState().getProfileSettings(this.profileId);
+      const filters: Parameters<typeof getEvents>[0] = {
         limit: 5,
         sort: 'StartDateTime',
         direction: 'desc',
-      });
+      };
+      if (notificationSettings.onlyDetectedEvents) {
+        filters.notesFilter = 'detected:';
+      }
+
+      const result = await getEvents(filters);
 
       const events = result.events || [];
 

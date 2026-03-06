@@ -488,7 +488,8 @@
     "monitor_id": "Monitor {{id}}",
     "select_profile_first": "Please select a profile first",
     "source_websocket": "Real-time",
-    "source_push": "Push"
+    "source_push": "Push",
+    "source_poll": "Polled"
   },
   "notification_settings": {
     "title": "Notification Settings",
@@ -540,7 +541,7 @@
     "profile_credentials_required": "Profile credentials required",
     "hide_advanced": "Hide Advanced",
     "show_advanced": "Show Advanced",
-    "unread_count": "Unread Count",
+    "unread_count": "{{count}} unread notifications",
     "view_history": "View History",
     "function": "Function",
     "disconnected": "Disconnected",
@@ -553,7 +554,13 @@
     "mode_direct_desc": "Push notifications via ZoneMinder API (no Event Server needed)",
     "mode_direct_unavailable": "Requires ZoneMinder with Notifications API support",
     "mode_switched_direct": "Switched to Direct ZM mode",
-    "mode_switched_es": "Switched to Event Server mode"
+    "mode_switched_es": "Switched to Event Server mode",
+    "direct_options_title": "Direct Mode Options",
+    "direct_options_desc": "Configure event filtering for direct polling",
+    "polling_interval": "Polling interval",
+    "polling_interval_desc": "How often to check for new events",
+    "only_detected": "Only detected events",
+    "only_detected_desc": "Only notify for events processed by object detection (zm_detect)"
   },
   "notifications": {
     "status": {

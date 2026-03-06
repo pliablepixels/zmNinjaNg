@@ -490,7 +490,8 @@
     "monitor_id": "监控 {{id}}",
     "select_profile_first": "请先选择配置",
     "source_websocket": "实时",
-    "source_push": "推送"
+    "source_push": "推送",
+    "source_poll": "轮询"
   },
   "notification_settings": {
     "title": "通知设置",
@@ -541,7 +542,7 @@
     "profile_credentials_required": "需要配置凭据",
     "hide_advanced": "隐藏高级",
     "show_advanced": "显示高级",
-    "unread_count": "未读数量",
+    "unread_count": "{{count}} 条未读通知",
     "view_history": "查看历史",
     "function": "功能",
     "disconnected": "已断开",
@@ -555,7 +556,13 @@
     "mode_direct_desc": "通过 ZoneMinder API 接收推送通知（无需事件服务器）",
     "mode_direct_unavailable": "需要 ZoneMinder 支持通知 API",
     "mode_switched_direct": "已切换到直连 ZM 模式",
-    "mode_switched_es": "已切换到事件服务器模式"
+    "mode_switched_es": "已切换到事件服务器模式",
+    "direct_options_title": "直连模式选项",
+    "direct_options_desc": "配置直接轮询的事件过滤",
+    "polling_interval": "轮询间隔",
+    "polling_interval_desc": "检查新事件的频率",
+    "only_detected": "仅检测到的事件",
+    "only_detected_desc": "仅通知经过对象检测处理的事件 (zm_detect)"
   },
   "notifications": {
     "status": {

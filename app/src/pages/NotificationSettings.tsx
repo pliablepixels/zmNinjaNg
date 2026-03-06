@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
 import { Switch } from '../components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Badge } from '../components/ui/badge';
 import { Separator } from '../components/ui/separator';
 import {
@@ -35,6 +36,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Capacitor } from '@capacitor/core';
+import { Platform } from '../lib/platform';
 import { useTranslation } from 'react-i18next';
 import { log, LogLevel } from '../lib/logger';
 import { checkNotificationsApiSupport } from '../api/notifications';
@@ -187,8 +189,12 @@ export default function NotificationSettings() {
       disconnect();
       setNotificationMode(currentProfile.id, 'direct');
 
-      if (!Capacitor.isNativePlatform()) {
-        // Non-native (Tauri desktop or web browser): start event poller
+      if (!Capacitor.isNativePlatform() || Platform.isTauri) {
+        // Desktop (Tauri) or web browser: start event poller
+        log.notificationSettings('Starting event poller from mode switch', LogLevel.INFO, {
+          isTauri: Platform.isTauri,
+          capacitorPlatform: Capacitor.getPlatform(),
+        });
         const poller = getEventPoller();
         poller.start(currentProfile.id);
       }
@@ -423,6 +429,67 @@ export default function NotificationSettings() {
                     </p>
                   )}
                 </button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Direct Mode Options */}
+        {settings.enabled && settings.notificationMode === 'direct' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('notification_settings.direct_options_title')}</CardTitle>
+              <CardDescription>
+                {t('notification_settings.direct_options_desc')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>{t('notification_settings.polling_interval')}</Label>
+                  <p className="text-xs text-muted-foreground">
+                    {t('notification_settings.polling_interval_desc')}
+                  </p>
+                </div>
+                <Select
+                  value={String(settings.pollingInterval || 30)}
+                  onValueChange={(value) => {
+                    updateProfileSettings(currentProfile.id, { pollingInterval: parseInt(value, 10) });
+                    // Restart poller with new interval
+                    const poller = getEventPoller();
+                    if (poller.isRunning()) {
+                      poller.start(currentProfile.id);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-28" data-testid="polling-interval-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10s</SelectItem>
+                    <SelectItem value="15">15s</SelectItem>
+                    <SelectItem value="30">30s</SelectItem>
+                    <SelectItem value="60">60s</SelectItem>
+                    <SelectItem value="120">120s</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="only-detected">{t('notification_settings.only_detected')}</Label>
+                  <p className="text-xs text-muted-foreground">
+                    {t('notification_settings.only_detected_desc')}
+                  </p>
+                </div>
+                <Switch
+                  id="only-detected"
+                  checked={settings.onlyDetectedEvents || false}
+                  onCheckedChange={(checked) =>
+                    updateProfileSettings(currentProfile.id, { onlyDetectedEvents: checked })
+                  }
+                  data-testid="only-detected-toggle"
+                />
               </div>
             </CardContent>
           </Card>

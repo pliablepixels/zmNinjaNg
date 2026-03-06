@@ -23,6 +23,8 @@ export interface NotificationSettings {
   ssl: boolean; // Use wss:// instead of ws://
   allMonitors: boolean; // Receive notifications for all monitors (no filter sent to ES)
   monitorFilters: MonitorNotificationConfig[]; // Per-monitor settings (used when allMonitors is false)
+  onlyDetectedEvents: boolean; // Only notify for events with object detection results (direct mode)
+  pollingInterval: number; // Seconds between event polls in direct mode (desktop)
   showToasts: boolean; // Show toast notifications for events
   playSound: boolean; // Play sound on notification
   badgeCount: number; // Current unread count
@@ -105,6 +107,8 @@ const DEFAULT_SETTINGS: NotificationSettings = {
   ssl: true,
   allMonitors: true,
   monitorFilters: [],
+  onlyDetectedEvents: false,
+  pollingInterval: 30,
   showToasts: true,
   playSound: false,
   badgeCount: 0,

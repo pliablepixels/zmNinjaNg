@@ -19,6 +19,7 @@ import { log, LogLevel } from '../lib/logger';
 import { navigationService } from '../lib/navigation';
 import { useTranslation } from 'react-i18next';
 import { Capacitor } from '@capacitor/core';
+import { Platform } from '../lib/platform';
 import { getPushService } from '../services/pushNotifications';
 import { getEventPoller } from '../services/eventPoller';
 
@@ -51,12 +52,16 @@ export function NotificationHandler() {
   const settings = currentProfile ? getProfileSettings(currentProfile.id) : null;
   const events = currentProfile ? getEvents(currentProfile.id) : [];
 
-  // Reset auto-connect flag when profile changes or disabled
+  // Reset auto-connect flag when profile changes, disabled, or mode changes
   useEffect(() => {
     if (!settings?.enabled) {
       hasAttemptedAutoConnect.current = false;
     }
   }, [settings?.enabled]);
+
+  useEffect(() => {
+    hasAttemptedAutoConnect.current = false;
+  }, [settings?.notificationMode]);
 
   // Initialize push notifications on mobile
   // This runs whenever notifications are enabled to ensure we get the FCM token
@@ -148,17 +153,18 @@ export function NotificationHandler() {
     const mode = settings.notificationMode || 'es';
 
     if (mode === 'direct') {
-      if (!Capacitor.isNativePlatform()) {
-        // Non-native (Tauri desktop or web browser): start event poller
+      if (!Capacitor.isNativePlatform() || Platform.isTauri) {
+        // Desktop (Tauri) or web browser: start event poller
         hasAttemptedAutoConnect.current = true;
-        log.notifications('Starting event poller for direct mode (desktop)', LogLevel.INFO, {
+        log.notifications('Starting event poller for direct mode', LogLevel.INFO, {
           profileId: currentProfile.id,
+          isTauri: Platform.isTauri,
+          capacitorPlatform: Capacitor.getPlatform(),
         });
         const poller = getEventPoller();
         poller.start(currentProfile.id);
       }
-      // Native (mobile): push notifications handle everything via FCM
-      // (initialized separately in the push notifications effect above)
+      // Native mobile (iOS/Android): push notifications handle everything via FCM
       return;
     }
 
