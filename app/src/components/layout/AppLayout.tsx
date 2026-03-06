@@ -212,12 +212,14 @@ function SidebarContent({ onMobileClose, isCollapsed }: SidebarContentProps) {
                         className={cn(
                           "h-2 w-2 rounded-full ml-2 flex-shrink-0",
                           !settings?.enabled ? "bg-muted-foreground/50" :
+                          settings?.notificationMode === 'direct' ? "bg-green-500" :
                           connectionState === 'connected' ? "bg-green-500" :
                           connectionState === 'disconnected' || connectionState === 'error' ? "bg-red-500" :
                           "bg-orange-500 animate-pulse"
                         )}
                         title={
                           !settings?.enabled ? t('notifications.status.disabled') :
+                          settings?.notificationMode === 'direct' ? t('notifications.status.direct_active') :
                           connectionState === 'connected' ? t('notifications.status.connected') :
                           connectionState === 'disconnected' ? t('notifications.status.disconnected') :
                           t('notifications.status.connecting')
@@ -226,6 +228,7 @@ function SidebarContent({ onMobileClose, isCollapsed }: SidebarContentProps) {
                         aria-live="polite"
                         aria-label={
                           !settings?.enabled ? t('notifications.status.disabled') :
+                          settings?.notificationMode === 'direct' ? t('notifications.status.direct_active') :
                           connectionState === 'connected' ? t('notifications.status.connected') :
                           connectionState === 'disconnected' ? t('notifications.status.disconnected') :
                           t('notifications.status.connecting')

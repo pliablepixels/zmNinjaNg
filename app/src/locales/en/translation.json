@@ -560,7 +560,8 @@
       "disabled": "Disabled",
       "connected": "Connected",
       "disconnected": "Disconnected",
-      "connecting": "Connecting..."
+      "connecting": "Connecting...",
+      "direct_active": "Direct mode active"
     }
   },
   "profiles": {
