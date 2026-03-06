@@ -38,6 +38,8 @@ android/local.properties
 android/.idea/
 android/app/src/main/assets/public/
 android/keystore.properties
+android/app/capacitor.build.gradle
+android/capacitor.settings.gradle
 *.jks
 *.keystore
 
