@@ -243,8 +243,6 @@ export interface BandwidthSettings {
   imageQuality: number;
   /** Stream max FPS */
   streamMaxFps: number;
-  /** Event poller interval for direct notification mode on desktop (ms) */
-  eventPollerInterval: number;
 }
 
 /**
@@ -265,7 +263,6 @@ export const BANDWIDTH_SETTINGS: Record<BandwidthMode, BandwidthSettings> = {
     imageScale: 100, // 100%
     imageQuality: 100, // 100%
     streamMaxFps: 10, // 10 FPS
-    eventPollerInterval: 30000, // 30 sec
   },
   low: {
     monitorStatusInterval: 40000, // 40 sec
@@ -278,7 +275,6 @@ export const BANDWIDTH_SETTINGS: Record<BandwidthMode, BandwidthSettings> = {
     imageScale: 50, // 50%
     imageQuality: 50, // 50%
     streamMaxFps: 5, // 5 FPS
-    eventPollerInterval: 60000, // 60 sec
   },
 } as const;
 

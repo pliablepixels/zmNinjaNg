@@ -30,6 +30,14 @@ export const Platform = {
   },
 
   /**
+   * True if running on desktop (Tauri) or web browser — i.e., not mobile native.
+   * Handles the edge case where Capacitor misdetects Tauri's WKWebView as iOS.
+   */
+  get isDesktopOrWeb() {
+    return !this.isNative || this.isTauri;
+  },
+
+  /**
    * True if running in web browser (not native or Tauri).
    */
   get isWeb() {

@@ -153,13 +153,11 @@ export function NotificationHandler() {
     const mode = settings.notificationMode || 'es';
 
     if (mode === 'direct') {
-      if (!Capacitor.isNativePlatform() || Platform.isTauri) {
+      if (Platform.isDesktopOrWeb) {
         // Desktop (Tauri) or web browser: start event poller
         hasAttemptedAutoConnect.current = true;
         log.notifications('Starting event poller for direct mode', LogLevel.INFO, {
           profileId: currentProfile.id,
-          isTauri: Platform.isTauri,
-          capacitorPlatform: Capacitor.getPlatform(),
         });
         const poller = getEventPoller();
         poller.start(currentProfile.id);

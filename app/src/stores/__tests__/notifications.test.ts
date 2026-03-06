@@ -44,6 +44,10 @@ vi.mock('../../lib/version', () => ({
   getAppVersion: vi.fn(() => '1.0.0'),
 }));
 
+vi.mock('../../api/notifications', () => ({
+  updateNotification: vi.fn().mockResolvedValue({}),
+}));
+
 describe('Notification Store', () => {
   const profileId = 'profile-1';
   const baseEvent: ZMAlarmEvent = {
@@ -194,5 +198,51 @@ describe('Notification Store', () => {
     const events = store.getEvents(profileId);
     expect(events).toHaveLength(100);
     expect(events[0].EventId).toBe(150);
+  });
+
+  it('sets notification mode via updateProfileSettings', () => {
+    const store = useNotificationStore.getState();
+
+    store.updateProfileSettings(profileId, { notificationMode: 'direct' });
+    expect(store.getProfileSettings(profileId).notificationMode).toBe('direct');
+
+    store.updateProfileSettings(profileId, { notificationMode: 'es' });
+    expect(store.getProfileSettings(profileId).notificationMode).toBe('es');
+  });
+
+  it('sets and clears notification ID via updateProfileSettings', () => {
+    const store = useNotificationStore.getState();
+
+    store.updateProfileSettings(profileId, { notificationId: 42 });
+    expect(store.getProfileSettings(profileId).notificationId).toBe(42);
+
+    store.updateProfileSettings(profileId, { notificationId: null });
+    expect(store.getProfileSettings(profileId).notificationId).toBeNull();
+  });
+
+  it('stores poll source when specified', () => {
+    const store = useNotificationStore.getState();
+    store.addEvent(profileId, baseEvent, 'poll');
+    const events = store.getEvents(profileId);
+    expect(events[0].source).toBe('poll');
+  });
+
+  it('defaults onlyDetectedEvents and pollingInterval', () => {
+    const settings = useNotificationStore.getState().getProfileSettings(profileId);
+    expect(settings.onlyDetectedEvents).toBe(false);
+    expect(settings.pollingInterval).toBe(30);
+  });
+
+  it('updates direct mode settings', () => {
+    const store = useNotificationStore.getState();
+
+    store.updateProfileSettings(profileId, {
+      onlyDetectedEvents: true,
+      pollingInterval: 60,
+    });
+
+    const settings = store.getProfileSettings(profileId);
+    expect(settings.onlyDetectedEvents).toBe(true);
+    expect(settings.pollingInterval).toBe(60);
   });
 });

@@ -78,11 +78,6 @@ interface NotificationState {
   getUnreadCount: (profileId: string) => number;
   getEvents: (profileId: string) => NotificationEvent[];
 
-  // Actions - Notification Mode
-  setNotificationMode: (profileId: string, mode: NotificationMode) => void;
-  setNotificationId: (profileId: string, id: number) => void;
-  clearNotificationId: (profileId: string) => void;
-
   // Actions - Push (Mobile)
   registerPushToken: (token: string, platform: 'ios' | 'android') => Promise<void>;
   deregisterPushToken: (token: string, platform: 'ios' | 'android') => Promise<void>;
@@ -453,47 +448,6 @@ export const useNotificationStore = create<NotificationState>()(
         if (get().currentProfileId === profileId) {
           get()._updateBadge();
         }
-      },
-
-      // ========== Notification Mode Actions ==========
-
-      setNotificationMode: (profileId, mode) => {
-        log.notifications('Setting notification mode', LogLevel.INFO, { profileId, mode });
-        set((state) => ({
-          profileSettings: {
-            ...state.profileSettings,
-            [profileId]: {
-              ...(state.profileSettings[profileId] || DEFAULT_SETTINGS),
-              notificationMode: mode,
-            },
-          },
-        }));
-      },
-
-      setNotificationId: (profileId, id) => {
-        log.notifications('Setting notification ID', LogLevel.INFO, { profileId, id });
-        set((state) => ({
-          profileSettings: {
-            ...state.profileSettings,
-            [profileId]: {
-              ...(state.profileSettings[profileId] || DEFAULT_SETTINGS),
-              notificationId: id,
-            },
-          },
-        }));
-      },
-
-      clearNotificationId: (profileId) => {
-        log.notifications('Clearing notification ID', LogLevel.INFO, { profileId });
-        set((state) => ({
-          profileSettings: {
-            ...state.profileSettings,
-            [profileId]: {
-              ...(state.profileSettings[profileId] || DEFAULT_SETTINGS),
-              notificationId: null,
-            },
-          },
-        }));
       },
 
       // ========== Push Token Actions ==========

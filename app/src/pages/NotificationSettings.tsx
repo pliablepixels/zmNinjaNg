@@ -54,7 +54,6 @@ export default function NotificationSettings() {
     getProfileSettings,
     updateProfileSettings,
     setMonitorFilter,
-    setNotificationMode,
     connect,
     disconnect,
     connectionState,
@@ -187,14 +186,11 @@ export default function NotificationSettings() {
     if (currentMode === 'es' && mode === 'direct') {
       // Switching from ES to Direct: disconnect websocket, start poller on desktop
       disconnect();
-      setNotificationMode(currentProfile.id, 'direct');
+      updateProfileSettings(currentProfile.id, { notificationMode: 'direct' });
 
-      if (!Capacitor.isNativePlatform() || Platform.isTauri) {
+      if (Platform.isDesktopOrWeb) {
         // Desktop (Tauri) or web browser: start event poller
-        log.notificationSettings('Starting event poller from mode switch', LogLevel.INFO, {
-          isTauri: Platform.isTauri,
-          capacitorPlatform: Capacitor.getPlatform(),
-        });
+        log.notificationSettings('Starting event poller from mode switch', LogLevel.INFO);
         const poller = getEventPoller();
         poller.start(currentProfile.id);
       }
@@ -207,7 +203,7 @@ export default function NotificationSettings() {
         poller.stop();
       }
 
-      setNotificationMode(currentProfile.id, 'es');
+      updateProfileSettings(currentProfile.id, { notificationMode: 'es' });
 
       // Auto-connect websocket if host is configured
       if (settings?.host && currentProfile.username && currentProfile.password) {
@@ -407,8 +403,8 @@ export default function NotificationSettings() {
                 {/* Direct Mode */}
                 <button
                   type="button"
-                  onClick={() => directModeAvailable && handleModeChange('direct')}
-                  disabled={!directModeAvailable}
+                  onClick={() => handleModeChange('direct')}
+                  disabled={directModeAvailable !== true}
                   className={`p-4 rounded-lg border text-left transition-colors ${
                     settings.notificationMode === 'direct'
                       ? 'border-primary bg-primary/5'

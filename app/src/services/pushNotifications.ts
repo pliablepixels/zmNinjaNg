@@ -162,7 +162,7 @@ export class MobilePushService {
           if (notifId) {
             log.push('Deleting notification via ZM API (direct mode)', LogLevel.INFO, { notificationId: notifId });
             await deleteNotification(notifId);
-            notificationStore.clearNotificationId(profileId);
+            notificationStore.updateProfileSettings(profileId, { notificationId: null });
           }
         } else if (notificationStore.isConnected) {
           // ES mode: deregister via websocket
@@ -284,7 +284,7 @@ export class MobilePushService {
           appVersion: getAppVersion(),
         });
 
-        notificationStore.setNotificationId(profileId, result.Id);
+        notificationStore.updateProfileSettings(profileId, { notificationId: result.Id });
         log.push('Successfully registered FCM token via ZM API', LogLevel.INFO, { notificationId: result.Id });
       } catch (error) {
         log.push('Failed to register FCM token via ZM API', LogLevel.ERROR, error);

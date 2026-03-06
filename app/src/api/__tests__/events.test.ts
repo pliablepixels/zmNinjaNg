@@ -200,6 +200,23 @@ describe('Events API', () => {
     expect(results).toEqual({ '1': 3, '2': 5 });
   });
 
+  it('applies notesRegexp filter to events endpoint', async () => {
+    mockGet.mockResolvedValue({
+      data: {
+        events: [buildEventData(10)],
+        pagination: {
+          pageCount: 1, page: 1, current: 1, count: 1,
+          prevPage: false, nextPage: false, limit: 100,
+        },
+      },
+    });
+
+    await getEvents({ notesRegexp: 'detected:' });
+
+    const call = mockGet.mock.calls[0][0] as string;
+    expect(call).toContain('Notes%20REGEXP%3Adetected%3A');
+  });
+
   it('validates responses through api-validator', async () => {
     mockGet.mockResolvedValue({
       data: {

@@ -6,15 +6,20 @@
  * sonner toast display via NotificationHandler.
  */
 
-import { getEvents } from '../api/events';
+import { getEvents, getEventImageUrl } from '../api/events';
+import type { EventFilters } from '../api/events';
 import { getMonitors } from '../api/monitors';
 import { useNotificationStore } from '../stores/notifications';
 import { useProfileStore } from '../stores/profile';
 import { useAuthStore } from '../stores/auth';
 import { log, LogLevel } from '../lib/logger';
 
+function parseEventId(id: string | number): number {
+  return parseInt(String(id), 10);
+}
+
 class EventPollerService {
-  private intervalId: ReturnType<typeof setInterval> | null = null;
+  private timerId: ReturnType<typeof setTimeout> | null = null;
   private profileId: string | null = null;
   private seenEventIds = new Set<number>();
   private isFirstPoll = true;
@@ -22,9 +27,10 @@ class EventPollerService {
 
   /**
    * Start polling for new events.
+   * Loads monitor names first, then begins the poll cycle.
    */
-  start(profileId: string): void {
-    if (this.intervalId) {
+  async start(profileId: string): Promise<void> {
+    if (this.timerId) {
       this.stop();
     }
 
@@ -34,21 +40,18 @@ class EventPollerService {
 
     log.notifications('Starting event poller for direct mode', LogLevel.INFO, { profileId });
 
-    // Load monitor names for event enrichment
-    this._loadMonitorNames();
-
-    // Poll immediately, then on interval
-    this._poll();
-    this._scheduleNext();
+    // Load monitor names before first poll so events have real names
+    await this._loadMonitorNames();
+    this._pollAndSchedule();
   }
 
   /**
    * Stop polling.
    */
   stop(): void {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
+    if (this.timerId) {
+      clearTimeout(this.timerId);
+      this.timerId = null;
     }
     this.profileId = null;
     this.seenEventIds.clear();
@@ -62,7 +65,7 @@ class EventPollerService {
    * Check if the poller is running.
    */
   isRunning(): boolean {
-    return this.intervalId !== null;
+    return this.timerId !== null;
   }
 
   private async _loadMonitorNames(): Promise<void> {
@@ -80,42 +83,44 @@ class EventPollerService {
     }
   }
 
-  private _getInterval(): number {
-    const profileId = this.profileId;
-    if (!profileId) return 30000;
-
-    const notificationSettings = useNotificationStore.getState().getProfileSettings(profileId);
-    return (notificationSettings.pollingInterval || 30) * 1000;
+  private _getIntervalMs(): number {
+    if (!this.profileId) return 30000;
+    const settings = useNotificationStore.getState().getProfileSettings(this.profileId);
+    return (settings.pollingInterval || 30) * 1000;
   }
 
-  private _scheduleNext(): void {
-    const interval = this._getInterval();
-    this.intervalId = setInterval(() => this._poll(), interval);
+  private _pollAndSchedule(): void {
+    if (!this.profileId) return;
+
+    this._poll().finally(() => {
+      // Schedule next poll only if still running (not stopped during _poll)
+      if (this.profileId) {
+        this.timerId = setTimeout(() => this._pollAndSchedule(), this._getIntervalMs());
+      }
+    });
   }
 
   private async _poll(): Promise<void> {
     if (!this.profileId) return;
 
     try {
-      const notificationSettings = useNotificationStore.getState().getProfileSettings(this.profileId);
-      const filters: Parameters<typeof getEvents>[0] = {
+      const settings = useNotificationStore.getState().getProfileSettings(this.profileId);
+      const filters: EventFilters = {
         limit: 5,
         sort: 'StartDateTime',
         direction: 'desc',
       };
-      if (notificationSettings.onlyDetectedEvents) {
-        filters.notesFilter = 'detected:';
+      if (settings.onlyDetectedEvents) {
+        filters.notesRegexp = 'detected:';
       }
 
       const result = await getEvents(filters);
-
       const events = result.events || [];
 
       if (this.isFirstPoll) {
-        // On first poll, seed the seen set without triggering notifications
+        // Seed the seen set without triggering notifications
         for (const event of events) {
-          const eventId = parseInt(String(event.Event.Id), 10);
-          this.seenEventIds.add(eventId);
+          this.seenEventIds.add(parseEventId(event.Event.Id));
         }
         this.isFirstPoll = false;
         log.notifications('Event poller seeded with existing events', LogLevel.DEBUG, {
@@ -127,28 +132,24 @@ class EventPollerService {
       const notificationStore = useNotificationStore.getState();
       const { profiles, currentProfileId } = useProfileStore.getState();
       const currentProfile = profiles.find(p => p.id === currentProfileId);
-      const authStore = useAuthStore.getState();
+      const accessToken = useAuthStore.getState().accessToken;
 
       for (const event of events) {
-        const eventId = parseInt(String(event.Event.Id), 10);
-
+        const eventId = parseEventId(event.Event.Id);
         if (this.seenEventIds.has(eventId)) continue;
 
         this.seenEventIds.add(eventId);
 
-        let imageUrl: string | undefined;
-        if (currentProfile && authStore.accessToken) {
-          imageUrl = `${currentProfile.portalUrl}/index.php?view=image&eid=${eventId}&fid=snapshot&width=600&token=${authStore.accessToken}`;
-        }
-
-        const monitorId = parseInt(String(event.Event.MonitorId), 10);
+        const monitorId = parseEventId(event.Event.MonitorId);
         const monitorName = this.monitorNames.get(String(event.Event.MonitorId)) || `Monitor ${monitorId}`;
-        const cause = event.Event.Cause || 'Motion detected';
+        const cause = event.Event.Cause || 'Motion';
+
+        const imageUrl = currentProfile && accessToken
+          ? getEventImageUrl(currentProfile.portalUrl, String(eventId), 'snapshot', { token: accessToken, width: 600 })
+          : undefined;
 
         log.notifications('Event poller found new event', LogLevel.INFO, {
-          eventId,
-          monitorName,
-          cause,
+          eventId, monitorName, cause,
         });
 
         notificationStore.addEvent(this.profileId, {
@@ -163,8 +164,7 @@ class EventPollerService {
 
       // Prevent unbounded growth of seen set
       if (this.seenEventIds.size > 500) {
-        const recentIds = events.map(e => parseInt(String(e.Event.Id), 10));
-        this.seenEventIds = new Set(recentIds);
+        this.seenEventIds = new Set(events.map(e => parseEventId(e.Event.Id)));
       }
     } catch (error) {
       log.notifications('Event poller failed', LogLevel.ERROR, error);
@@ -180,11 +180,4 @@ export function getEventPoller(): EventPollerService {
     eventPoller = new EventPollerService();
   }
   return eventPoller;
-}
-
-export function resetEventPoller(): void {
-  if (eventPoller) {
-    eventPoller.stop();
-    eventPoller = null;
-  }
 }

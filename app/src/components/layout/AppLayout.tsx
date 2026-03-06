@@ -207,35 +207,30 @@ function SidebarContent({ onMobileClose, isCollapsed }: SidebarContentProps) {
                   <>
                     <span className="truncate">{item.label}</span>
                     
-                    {item.path === '/notifications' && (
-                      <div
-                        className={cn(
-                          "h-2 w-2 rounded-full ml-2 flex-shrink-0",
-                          !settings?.enabled ? "bg-muted-foreground/50" :
-                          settings?.notificationMode === 'direct' ? "bg-green-500" :
-                          connectionState === 'connected' ? "bg-green-500" :
-                          connectionState === 'disconnected' || connectionState === 'error' ? "bg-red-500" :
-                          "bg-orange-500 animate-pulse"
-                        )}
-                        title={
-                          !settings?.enabled ? t('notifications.status.disabled') :
-                          settings?.notificationMode === 'direct' ? t('notifications.status.direct_active') :
-                          connectionState === 'connected' ? t('notifications.status.connected') :
-                          connectionState === 'disconnected' ? t('notifications.status.disconnected') :
-                          t('notifications.status.connecting')
-                        }
-                        role="status"
-                        aria-live="polite"
-                        aria-label={
-                          !settings?.enabled ? t('notifications.status.disabled') :
-                          settings?.notificationMode === 'direct' ? t('notifications.status.direct_active') :
-                          connectionState === 'connected' ? t('notifications.status.connected') :
-                          connectionState === 'disconnected' ? t('notifications.status.disconnected') :
-                          t('notifications.status.connecting')
-                        }
-                        data-testid="notification-status-indicator"
-                      />
-                    )}
+                    {item.path === '/notifications' && (() => {
+                      const statusLabel =
+                        !settings?.enabled ? t('notifications.status.disabled') :
+                        settings?.notificationMode === 'direct' ? t('notifications.status.direct_active') :
+                        connectionState === 'connected' ? t('notifications.status.connected') :
+                        connectionState === 'disconnected' ? t('notifications.status.disconnected') :
+                        t('notifications.status.connecting');
+                      const dotColor =
+                        !settings?.enabled ? "bg-muted-foreground/50" :
+                        settings?.notificationMode === 'direct' ? "bg-green-500" :
+                        connectionState === 'connected' ? "bg-green-500" :
+                        connectionState === 'disconnected' || connectionState === 'error' ? "bg-red-500" :
+                        "bg-orange-500 animate-pulse";
+                      return (
+                        <div
+                          className={cn("h-2 w-2 rounded-full ml-2 flex-shrink-0", dotColor)}
+                          title={statusLabel}
+                          role="status"
+                          aria-live="polite"
+                          aria-label={statusLabel}
+                          data-testid="notification-status-indicator"
+                        />
+                      );
+                    })()}
 
                     {item.path === '/notifications' && unreadCount > 0 && (
                       <span className="ml-auto h-5 min-w-5 px-1.5 flex items-center justify-center text-xs font-bold rounded-full bg-destructive text-destructive-foreground flex-shrink-0">
