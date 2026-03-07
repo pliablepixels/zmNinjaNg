@@ -321,6 +321,17 @@ export default function AppLayout() {
   // Apply global insomnia setting
   useInsomnia({ enabled: settings.insomnia });
 
+  // Fix iOS WKWebView bug where 100dvh gets stale after rotation.
+  // window.innerHeight is always correct, so we use it as a CSS variable.
+  useEffect(() => {
+    const updateHeight = () => {
+      document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+    };
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
+    return () => window.removeEventListener('resize', updateHeight);
+  }, []);
+
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
     dragStartX.current = e.clientX;
@@ -371,7 +382,7 @@ export default function AppLayout() {
   const isCollapsed = sidebarWidth <= MIN_WIDTH + 20;
 
   return (
-    <div className="flex h-full bg-background overflow-hidden pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
+    <div className="flex bg-background overflow-hidden pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]" style={{ height: 'var(--app-height, 100dvh)' }}>
       {/* Desktop Sidebar - Draggable */}
       <aside
         className="hidden md:flex flex-col border-r bg-card/50 backdrop-blur-xl z-20 transition-all duration-300 relative group"
