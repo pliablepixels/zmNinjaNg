@@ -60,7 +60,7 @@ export function ThemeProvider({
     useEffect(() => {
         const root = window.document.documentElement
 
-        root.classList.remove("light", "dark")
+        root.classList.remove("light", "dark", "slate", "amber", "cream")
 
         if (theme === "system") {
             const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
@@ -72,7 +72,11 @@ export function ThemeProvider({
             return
         }
 
-        root.classList.add(theme)
+        if (theme === "slate" || theme === "amber") {
+            root.classList.add("dark", theme)
+        } else {
+            root.classList.add(theme)
+        }
     }, [theme])
 
     const handleSetTheme = useCallback((newTheme: Theme) => {

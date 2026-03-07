@@ -37,8 +37,17 @@ export function ModeToggle() {
                 <DropdownMenuItem onClick={() => setTheme("light")}>
                     {t('settings.light')}
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("cream")}>
+                    {t('settings.cream')}
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTheme("dark")}>
                     {t('settings.dark')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("slate")}>
+                    {t('settings.slate')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("amber")}>
+                    {t('settings.amber')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTheme("system")}>
                     {t('settings.system')}

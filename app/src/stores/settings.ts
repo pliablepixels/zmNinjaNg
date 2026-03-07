@@ -8,7 +8,7 @@ export type ViewMode = 'snapshot' | 'streaming';
 export type DisplayMode = 'normal' | 'compact';
 export type MonitorFeedFit = 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
 export type EventsViewMode = 'list' | 'montage';
-export type ThemePreference = 'dark' | 'light' | 'system';
+export type ThemePreference = 'amber' | 'cream' | 'dark' | 'light' | 'slate' | 'system';
 export type StreamingMethod = 'auto' | 'mjpeg';
 export type WebRTCProtocol = 'webrtc' | 'mse' | 'hls';
 

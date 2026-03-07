@@ -276,8 +276,8 @@ export const TimelineWidget = memo(function TimelineWidget() {
 
     // Memoize tooltip styles to prevent re-renders
     const tooltipContentStyle = useMemo(() => ({
-        backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
-        borderColor: theme === 'dark' ? '#374151' : '#e5e7eb',
+        backgroundColor: theme === 'cream' ? '#ece5d8' : theme === 'light' ? '#ffffff' : theme === 'slate' ? '#1e293b' : theme === 'amber' ? '#262320' : '#1f2937',
+        borderColor: theme === 'cream' ? '#d4c9b8' : theme === 'light' ? '#e5e7eb' : theme === 'slate' ? '#334155' : theme === 'amber' ? '#3d3731' : '#374151',
         borderRadius: '0.5rem',
         fontSize: '12px'
     }), [theme]);
