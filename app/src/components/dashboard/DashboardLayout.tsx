@@ -106,6 +106,15 @@ export function DashboardLayout() {
         updateLayouts(profileIdRef.current, { lg: nextLayout });
     }, [areLayoutsEqual, isEditing]);
 
+    // Merge local layout state with store layouts to ensure newly added widgets
+    // always have their correct dimensions. The local state may lag behind the store
+    // (useEffect is async), so new widgets could be missing from it.
+    const activeLayout = useMemo(() => {
+        if (layout.length === 0) return layouts;
+        const localMap = new Map(layout.map(l => [l.i, l]));
+        return layouts.map(l => localMap.get(l.i) || l);
+    }, [layout, layouts]);
+
     if (widgets.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center h-[60vh] text-center p-8">
@@ -136,8 +145,6 @@ export function DashboardLayout() {
     if (!mounted) {
         return null;
     }
-
-    const activeLayout = layout.length > 0 ? layout : layouts;
 
     return (
         <div className="p-4 min-h-screen w-full">
