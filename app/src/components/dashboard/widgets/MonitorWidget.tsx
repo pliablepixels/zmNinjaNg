@@ -303,7 +303,7 @@ export const MonitorWidget = memo(function MonitorWidget({ monitorIds, objectFit
 
     return (
         <div
-            className="w-full h-full grid gap-0.5 bg-black"
+            className="w-full h-full grid gap-0 bg-black"
             style={gridStyle}
         >
             {activeMonitorIds.map((id) => (
