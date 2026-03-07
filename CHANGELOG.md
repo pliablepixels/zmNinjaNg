@@ -1,5 +1,13 @@
 # Changelog
 
+## [zmNg-1.0.2](https://github.com/pliablepixels/zmNg/tree/zmNg-1.0.2) (2026-03-07)
+
+[Full Changelog](https://github.com/pliablepixels/zmNg/compare/zmNg-1.0.1...zmNg-1.0.2)
+
+**Fixed bugs:**
+
+- fix: notification history and badge sync improvements [\#37](https://github.com/pliablepixels/zmNg/issues/37)
+
 ## [zmNg-1.0.1](https://github.com/pliablepixels/zmNg/tree/zmNg-1.0.1) (2026-03-07)
 
 [Full Changelog](https://github.com/pliablepixels/zmNg/compare/zmNg-1.0.0...zmNg-1.0.1)
