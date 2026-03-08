@@ -73,7 +73,7 @@ if [ "$TAG_EXISTS" = true ]; then
             set_version "$BUMPED"
             VERSION="$BUMPED"
             TAG="zmNg-$VERSION"
-            git add "$PKG_JSON" app/src-tauri/tauri.conf.json app/src-tauri/Cargo.toml app/src-tauri/Cargo.lock
+            git add "$PKG_JSON" app/src-tauri/tauri.conf.json app/src-tauri/Cargo.toml app/src-tauri/Cargo.lock app/ios/App/App.xcodeproj/project.pbxproj app/android/app/build.gradle
             git commit -m "chore: bump version to $VERSION"
             git push origin "$CURRENT_BRANCH"
             echo "✅ Version bumped to $VERSION, committed and pushed"
