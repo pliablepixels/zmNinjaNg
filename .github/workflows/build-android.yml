@@ -47,21 +47,39 @@ jobs:
         working-directory: ./app
         run: npx cap sync android
 
-      - name: Build Android APK (debug, signed)
-        working-directory: ./app/android
-        run: ./gradlew assembleDebug
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > /tmp/zmninja-ng-upload.jks
 
-      - name: Build Android App Bundle (AAB, debug, signed)
+      - name: Build Android APK (release, signed)
         working-directory: ./app/android
-        run: ./gradlew bundleDebug
+        env:
+          ZMNINJA_KEYSTORE_PATH: /tmp/zmninja-ng-upload.jks
+          ZMNINJA_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ZMNINJA_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ZMNINJA_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew assembleRelease
+
+      - name: Build Android App Bundle (AAB, release, signed)
+        working-directory: ./app/android
+        env:
+          ZMNINJA_KEYSTORE_PATH: /tmp/zmninja-ng-upload.jks
+          ZMNINJA_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ZMNINJA_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ZMNINJA_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew bundleRelease
+
+      - name: Clean up keystore
+        if: always()
+        run: rm -f /tmp/zmninja-ng-upload.jks
 
       - name: Rename Android artifacts
         run: |
           VERSION="${{ github.event.inputs.version || github.ref_name }}"
           VERSION="${VERSION#zmNinjaNG-}"
           mkdir -p dist/android
-          cp app/android/app/build/outputs/apk/debug/*.apk dist/android/zmNinjaNG-${VERSION}-android-debug.apk
-          cp app/android/app/build/outputs/bundle/debug/*.aab dist/android/zmNinjaNG-${VERSION}-android-debug.aab
+          cp app/android/app/build/outputs/apk/release/*.apk dist/android/zmNinjaNG-${VERSION}-android.apk
+          cp app/android/app/build/outputs/bundle/release/*.aab dist/android/zmNinjaNG-${VERSION}-android.aab
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
