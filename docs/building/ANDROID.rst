@@ -178,41 +178,37 @@ If you don’t already have a keystore, create one:
 
 .. code:: bash
 
-   keytool -genkey -v -keystore my-release-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000
+   keytool -genkey -v -keystore zmninja-ng-upload.jks -keyalg RSA -keysize 2048 -validity 10000 -alias zmninja-ng-upload
 
-You’ll be prompted to enter: - Keystore password - Key password - Your
-name, organization, etc.
+You’ll be prompted to enter a keystore password and identity fields.
 
 **Keep your keystore file and passwords safe!** You’ll need them for all
-future app updates.
+future app updates. Store the keystore outside the repo (e.g.,
+``~/.signing-keys/``).
 
 2. Configure Signing
 ^^^^^^^^^^^^^^^^^^^^
 
-Create a ``key.properties`` file in the ``android/`` directory:
+The build reads signing configuration from environment variables. Add
+these to your ``~/.zshrc`` or ``~/.bashrc``:
 
 .. code:: bash
 
-   cd android
-   cat > key.properties << EOF
-   storePassword=YOUR_KEYSTORE_PASSWORD
-   keyPassword=YOUR_KEY_PASSWORD
-   keyAlias=my-key-alias
-   storeFile=../my-release-key.keystore
-   EOF
+   export ZMNINJA_KEYSTORE_PATH="$HOME/.signing-keys/zmninja-ng-upload.jks"
+   export ZMNINJA_KEYSTORE_PASSWORD="your_password"
+   export ZMNINJA_KEY_ALIAS="zmninja-ng-upload"
+   export ZMNINJA_KEY_PASSWORD="your_password"
 
-Move your keystore file to the ``android/`` directory:
-
-.. code:: bash
-
-   mv my-release-key.keystore android/
+Then reload your shell: ``source ~/.zshrc``
 
 3. Build Release APK
 ^^^^^^^^^^^^^^^^^^^^
 
 .. code:: bash
 
-   npm run android:release
+   cd app
+   npx cap sync android
+   cd android && ./gradlew assembleRelease
 
 Output location:
 ``android/app/build/outputs/apk/release/app-release.apk``
@@ -224,10 +220,40 @@ For publishing to Google Play Store, use the App Bundle format:
 
 .. code:: bash
 
-   npm run android:bundle
+   cd app/android && ./gradlew bundleRelease
 
 Output location:
 ``android/app/build/outputs/bundle/release/app-release.aab``
+
+5. Upload to Google Play Console
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1. Go to `Google Play Console <https://play.google.com/console>`__
+2. Select **zmNinjaNG**
+3. Go to **Testing > Internal testing** (or **Production**) and click
+   **Create new release**
+4. Upload the ``.aab`` file
+5. Add release notes and roll out
+
+CI/CD
+^^^^^
+
+The GitHub Actions workflow (``build-android.yml``) handles signed
+release builds automatically. It uses these repository secrets:
+
+- ``ANDROID_KEYSTORE_BASE64`` — base64-encoded keystore file
+- ``ANDROID_KEYSTORE_PASSWORD`` — keystore password
+- ``ANDROID_KEY_ALIAS`` — key alias
+- ``ANDROID_KEY_PASSWORD`` — key password
+
+To generate the base64 keystore value:
+
+.. code:: bash
+
+   base64 -i ~/.signing-keys/zmninja-ng-upload.jks | pbcopy
+
+Paste the clipboard contents as the ``ANDROID_KEYSTORE_BASE64`` secret
+in **GitHub > Settings > Secrets and variables > Actions**.
 
 Troubleshooting
 ---------------
