@@ -85,18 +85,37 @@ export default function ProfileForm() {
 
   // Discover API and CGI URLs from portal URL
   // If credentials are provided, also authenticates to fetch ZM_PATH_ZMS for accurate cgiUrl
+  // Retries once on network failure to handle iOS local network permission dialog race condition
   const discoverUrls = async (portal: string, credentials?: { username: string; password: string }, signal?: AbortSignal) => {
-    try {
+    const attempt = async () => {
       const result = await discoverZoneminder(portal, { ...credentials, signal });
-
-      // Initialize client
       const client = createApiClient(result.apiUrl);
       setApiClient(client);
-
       log.profileForm('Successfully connected', LogLevel.INFO, { apiUrl: result.apiUrl });
-
       return result;
+    };
+
+    try {
+      return await attempt();
     } catch (e) {
+      // On network-related failures, retry once after a delay.
+      // This handles the iOS local network permission dialog: the first request
+      // fails while the dialog is showing, but succeeds after the user grants access.
+      if (e instanceof DiscoveryError && (e.code === 'API_NOT_FOUND' || e.code === 'PORTAL_UNREACHABLE')) {
+        log.profileForm('First discovery attempt failed, retrying in case of iOS permission dialog', LogLevel.INFO);
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        if (signal?.aborted) {
+          throw new DiscoveryError('Discovery cancelled', 'CANCELLED');
+        }
+        try {
+          return await attempt();
+        } catch (retryError) {
+          if (retryError instanceof DiscoveryError) {
+            throw retryError;
+          }
+          throw new Error(t('setup.discovery_failed'));
+        }
+      }
       if (e instanceof DiscoveryError) {
         throw e;
       }
