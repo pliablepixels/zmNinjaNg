@@ -7,7 +7,7 @@
  * server when a profile is loaded.
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotificationStore } from '../stores/notifications';
 import { useCurrentProfile } from '../hooks/useCurrentProfile';
@@ -24,6 +24,12 @@ import { Platform } from '../lib/platform';
 import { getPushService } from '../services/pushNotifications';
 import { getEventPoller } from '../services/eventPoller';
 import { getNotificationService } from '../services/notifications';
+import {
+  onProfileSwitchRequest,
+  clearPendingProfileSwitch,
+  resolveProfileForNotification,
+  type PendingProfileSwitch,
+} from '../lib/notification-profile';
 
 /**
  * NotificationHandler component.
@@ -34,6 +40,7 @@ export function NotificationHandler() {
   const navigate = useNavigate();
   const { currentProfile } = useCurrentProfile();
   const getDecryptedPassword = useProfileStore((state) => state.getDecryptedPassword);
+  const switchProfile = useProfileStore((state) => state.switchProfile);
   const { t } = useTranslation();
 
   const {
@@ -50,6 +57,47 @@ export function NotificationHandler() {
   const lastEventId = useRef<number | null>(null);
   const hasAttemptedAutoConnect = useRef(false);
   const lastProfileId = useRef<string | null>(null);
+
+  // Profile switch confirmation state
+  const [pendingSwitch, setPendingSwitch] = useState<PendingProfileSwitch | null>(null);
+
+  // Handle profile switch confirmation from push notification taps
+  const handleConfirmSwitch = useCallback(async () => {
+    if (!pendingSwitch) return;
+
+    const { targetProfileId, eventId } = pendingSwitch;
+    setPendingSwitch(null);
+    clearPendingProfileSwitch();
+
+    log.notificationHandler('User confirmed profile switch from notification', LogLevel.INFO, {
+      targetProfileId,
+      eventId,
+    });
+
+    try {
+      await switchProfile(targetProfileId);
+      navigationService.navigateToEvent(eventId);
+    } catch (error) {
+      log.notificationHandler('Profile switch failed', LogLevel.ERROR, error);
+      toast.error(t('notifications.profile_switch_failed'));
+    }
+  }, [pendingSwitch, switchProfile, t]);
+
+  const handleCancelSwitch = useCallback(() => {
+    log.notificationHandler('User declined profile switch from notification', LogLevel.INFO, {
+      targetProfileId: pendingSwitch?.targetProfileId,
+    });
+    setPendingSwitch(null);
+    clearPendingProfileSwitch();
+  }, [pendingSwitch]);
+
+  // Listen for profile switch requests from the push notification service
+  useEffect(() => {
+    const unsubscribe = onProfileSwitchRequest((pending) => {
+      setPendingSwitch(pending);
+    });
+    return unsubscribe;
+  }, []);
 
   // Get settings and events for current profile
   const settings = currentProfile ? getProfileSettings(currentProfile.id) : null;
@@ -125,7 +173,6 @@ export function NotificationHandler() {
         if (notifications.length > 0) {
           const store = useNotificationStore.getState();
           const { profiles } = useProfileStore.getState();
-          const profile = profiles.find(p => p.id === currentProfileId);
           const authStore = useAuthStore.getState();
 
           for (const notif of notifications) {
@@ -133,15 +180,21 @@ export function NotificationHandler() {
             const mid = data?.mid || data?.MonitorId;
             const eid = data?.eid || data?.EventId;
 
+            // Resolve which profile this notification belongs to
+            const resolved = resolveProfileForNotification(data?.profile, currentProfileId);
+            const eventProfileId: string = resolved.targetProfileId || currentProfileId;
+            const profile = profiles.find(p => p.id === eventProfileId);
+
+            // Only construct image URL for current profile's notifications
             let imageUrl: string | undefined;
-            if (eid && profile && authStore.accessToken) {
+            if (eid && eventProfileId === currentProfileId && profile && authStore.accessToken) {
               imageUrl = `${profile.portalUrl}/index.php?view=image&eid=${eid}&fid=snapshot&width=600&token=${authStore.accessToken}`;
             }
 
             const monitorName = data?.monitorName || data?.MonitorName || notif.title?.replace(/\s*Alarm.*$/, '') || 'Unknown';
             const cause = data?.cause || data?.Cause || notif.body || 'Motion detected';
 
-            store.addEvent(currentProfileId, {
+            store.addEvent(eventProfileId, {
               MonitorId: mid ? parseInt(String(mid), 10) : 0,
               MonitorName: monitorName,
               EventId: eid ? parseInt(String(eid), 10) : Date.now(),
@@ -183,7 +236,6 @@ export function NotificationHandler() {
                 const { notifications } = await FirebaseMessaging.getDeliveredNotifications();
                 if (notifications.length > 0) {
                   const { profiles } = useProfileStore.getState();
-                  const profile = profiles.find(p => p.id === profileId);
                   const authStore = useAuthStore.getState();
 
                   for (const notif of notifications) {
@@ -191,15 +243,21 @@ export function NotificationHandler() {
                     const mid = data?.mid || data?.MonitorId;
                     const eid = data?.eid || data?.EventId;
 
+                    // Resolve which profile this notification belongs to
+                    const resolved = resolveProfileForNotification(data?.profile, profileId);
+                    const eventProfileId: string = resolved.targetProfileId || profileId;
+                    const profile = profiles.find(p => p.id === eventProfileId);
+
+                    // Only construct image URL for current profile's notifications
                     let imageUrl: string | undefined;
-                    if (eid && profile && authStore.accessToken) {
+                    if (eid && eventProfileId === profileId && profile && authStore.accessToken) {
                       imageUrl = `${profile.portalUrl}/index.php?view=image&eid=${eid}&fid=snapshot&width=600&token=${authStore.accessToken}`;
                     }
 
                     const monitorName = data?.monitorName || data?.MonitorName || notif.title?.replace(/\s*Alarm.*$/, '') || 'Unknown';
                     const cause = data?.cause || data?.Cause || notif.body || 'Motion detected';
 
-                    store.addEvent(profileId, {
+                    store.addEvent(eventProfileId, {
                       MonitorId: mid ? parseInt(String(mid), 10) : 0,
                       MonitorName: monitorName,
                       EventId: eid ? parseInt(String(eid), 10) : Date.now(),
@@ -512,8 +570,64 @@ export function NotificationHandler() {
     }
   }, [events, settings?.showToasts, settings?.playSound, currentProfile?.id, t, navigate]);
 
-  // This component doesn't render anything
-  return null;
+  // Render profile switch confirmation dialog when a cross-profile notification is tapped
+  return (
+    <ProfileSwitchDialog
+      pending={pendingSwitch}
+      onConfirm={handleConfirmSwitch}
+      onCancel={handleCancelSwitch}
+    />
+  );
+}
+
+/**
+ * Profile switch confirmation dialog.
+ * Shown when the user taps a notification from a different profile.
+ */
+function ProfileSwitchDialog({
+  pending,
+  onConfirm,
+  onCancel,
+}: {
+  pending: PendingProfileSwitch | null;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const { t } = useTranslation();
+
+  if (!pending) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+      data-testid="profile-switch-dialog"
+    >
+      <div className="w-full max-w-sm mx-4 rounded-lg border bg-background p-6 shadow-lg">
+        <h2 className="text-lg font-semibold">
+          {t('notifications.switch_profile_title')}
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {t('notifications.switch_profile_desc', { profile: pending.targetProfileName })}
+        </p>
+        <div className="mt-4 flex justify-end gap-2">
+          <button
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+            onClick={onCancel}
+            data-testid="profile-switch-cancel"
+          >
+            {t('common.cancel')}
+          </button>
+          <button
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+            onClick={onConfirm}
+            data-testid="profile-switch-confirm"
+          >
+            {t('notifications.switch_profile_confirm')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 /**

@@ -582,7 +582,11 @@
       "disconnected": "已断开",
       "connecting": "连接中...",
       "direct_active": "直连模式已激活"
-    }
+    },
+    "switch_profile_title": "切换配置文件？",
+    "switch_profile_desc": "此通知来自\"{{profile}}\"。切换到此配置文件以查看事件？",
+    "switch_profile_confirm": "切换",
+    "profile_switch_failed": "切换配置文件失败"
   },
   "profiles": {
     "title": "配置",

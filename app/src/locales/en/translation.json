@@ -580,7 +580,11 @@
       "disconnected": "Disconnected",
       "connecting": "Connecting...",
       "direct_active": "Direct mode active"
-    }
+    },
+    "switch_profile_title": "Switch Profile?",
+    "switch_profile_desc": "This notification is from \"{{profile}}\". Switch to this profile to view the event?",
+    "switch_profile_confirm": "Switch",
+    "profile_switch_failed": "Failed to switch profile"
   },
   "profiles": {
     "title": "Profiles",

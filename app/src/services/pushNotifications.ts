@@ -18,6 +18,7 @@ import { registerToken, deleteNotification } from '../api/notifications';
 import { getAppVersion } from '../lib/version';
 import { ZMNotificationService } from './notifications';
 import type { ZMEventServerConfig } from '../types/notifications';
+import { resolveProfileForNotification, requestProfileSwitch } from '../lib/notification-profile';
 
 /**
  * Data payload sent by zmeventnotification server via FCM.
@@ -60,6 +61,11 @@ export class MobilePushService {
 
       if (permissionResult.receive === 'granted') {
         log.push('Push notification permission granted', LogLevel.INFO);
+
+        // Create Android notification channel (no-op on iOS/web)
+        if (Capacitor.getPlatform() === 'android') {
+          await this._createNotificationChannel();
+        }
 
         // Setup listeners BEFORE requesting token to ensure we catch token refreshes
         if (!this.isInitialized) {
@@ -293,6 +299,25 @@ export class MobilePushService {
 
   // ========== PRIVATE METHODS ==========
 
+  /**
+   * Create the Android notification channel used by FCM push messages.
+   * This is idempotent — calling it when the channel already exists is a no-op.
+   */
+  private async _createNotificationChannel(): Promise<void> {
+    try {
+      await FirebaseMessaging.createChannel({
+        id: 'zmninja-ng',
+        name: 'zmNinja Notifications',
+        description: 'ZoneMinder event alerts',
+        importance: 4, // IMPORTANCE_HIGH — heads-up notifications
+        vibration: true,
+      });
+      log.push('Android notification channel created', LogLevel.INFO, { channelId: 'zmninja-ng' });
+    } catch (error) {
+      log.push('Failed to create notification channel', LogLevel.ERROR, error);
+    }
+  }
+
   private _setupListeners(): void {
     // Called when FCM token is refreshed
     FirebaseMessaging.addListener('tokenReceived', ({ token }) => {
@@ -420,26 +445,32 @@ export class MobilePushService {
       return;
     }
 
-    const profileId = notificationStore.currentProfileId;
-    if (!profileId) return;
+    const currentProfileId = notificationStore.currentProfileId;
+    if (!currentProfileId) return;
 
-    const { profiles, currentProfileId } = useProfileStore.getState();
-    const currentProfile = profiles.find(p => p.id === currentProfileId);
+    // Resolve which profile this notification belongs to
+    const { targetProfileId } = resolveProfileForNotification(data?.profile, currentProfileId);
+    if (!targetProfileId) return;
+
+    const { profiles } = useProfileStore.getState();
+    const targetProfile = profiles.find(p => p.id === targetProfileId);
     const authStore = useAuthStore.getState();
 
     // Extract event data from either ES format (mid/eid) or ZM direct format (EventId/MonitorId)
     const mid = data?.mid || data?.MonitorId;
     const eid = data?.eid || data?.EventId;
 
+    // Only construct image URL if the notification is for the current profile
+    // (we have a valid auth token for the current profile only)
     let imageUrl: string | undefined;
-    if (eid && currentProfile && authStore.accessToken) {
-      imageUrl = `${currentProfile.portalUrl}/index.php?view=image&eid=${eid}&fid=snapshot&width=600&token=${authStore.accessToken}`;
+    if (eid && targetProfileId === currentProfileId && targetProfile && authStore.accessToken) {
+      imageUrl = `${targetProfile.portalUrl}/index.php?view=image&eid=${eid}&fid=snapshot&width=600&token=${authStore.accessToken}`;
     }
 
     const monitorName = data?.monitorName || data?.MonitorName || notification.title?.replace(/\s*Alarm.*$/, '') || 'Unknown';
     const cause = data?.cause || data?.Cause || notification.body || 'Motion detected';
 
-    notificationStore.addEvent(profileId, {
+    notificationStore.addEvent(targetProfileId, {
       MonitorId: mid ? parseInt(String(mid), 10) : 0,
       MonitorName: monitorName,
       EventId: eid ? parseInt(String(eid), 10) : Date.now(),
@@ -450,7 +481,12 @@ export class MobilePushService {
   }
 
   /**
-   * Handle notification tap action
+   * Handle notification tap action.
+   *
+   * Resolves the correct profile from the notification payload.
+   * If the notification is for the current profile, navigates directly.
+   * If it's for a different profile, queues a confirmation dialog
+   * so the user can choose whether to switch profiles.
    */
   private _handleNotificationAction(notification: Notification): void {
     const data = notification.data as PushNotificationData | undefined;
@@ -458,26 +494,36 @@ export class MobilePushService {
     const mid = data?.mid || data?.MonitorId;
     const eid = data?.eid || data?.EventId;
 
-    log.push('Processing notification tap', LogLevel.INFO, { mid, eid });
+    log.push('Processing notification tap', LogLevel.INFO, { mid, eid, profile: data?.profile });
 
     const notificationStore = useNotificationStore.getState();
-    const profileId = notificationStore.currentProfileId;
+    const currentProfileId = notificationStore.currentProfileId;
 
-    if (profileId) {
-      const { profiles, currentProfileId } = useProfileStore.getState();
-      const currentProfile = profiles.find(p => p.id === currentProfileId);
+    // Resolve which profile this notification belongs to
+    const { targetProfileId, isCrossProfile } = resolveProfileForNotification(
+      data?.profile,
+      currentProfileId
+    );
+
+    const profileIdForEvent = targetProfileId || currentProfileId;
+
+    if (profileIdForEvent) {
+      const { profiles } = useProfileStore.getState();
+      const targetProfile = profiles.find(p => p.id === profileIdForEvent);
       const authStore = useAuthStore.getState();
 
+      // Only construct image URL if the notification is for the current profile
       let imageUrl: string | undefined;
-      if (eid && currentProfile && authStore.accessToken) {
-        imageUrl = `${currentProfile.portalUrl}/index.php?view=image&eid=${eid}&fid=snapshot&width=600&token=${authStore.accessToken}`;
+      if (eid && profileIdForEvent === currentProfileId && targetProfile && authStore.accessToken) {
+        imageUrl = `${targetProfile.portalUrl}/index.php?view=image&eid=${eid}&fid=snapshot&width=600&token=${authStore.accessToken}`;
       }
 
       const monitorName = data?.monitorName || data?.MonitorName || notification.title?.replace(/\s*Alarm.*$/, '') || 'Unknown';
       const cause = data?.cause || data?.Cause || notification.body || 'Motion detected';
       const eventId = eid ? parseInt(String(eid), 10) : Date.now();
 
-      notificationStore.addEvent(profileId, {
+      // Always store event under the correct profile's history
+      notificationStore.addEvent(profileIdForEvent, {
         MonitorId: mid ? parseInt(String(mid), 10) : 0,
         MonitorName: monitorName,
         EventId: eventId,
@@ -486,15 +532,34 @@ export class MobilePushService {
         ImageUrl: imageUrl,
       }, 'push');
 
-      notificationStore.markEventRead(profileId, eventId);
+      notificationStore.markEventRead(profileIdForEvent, eventId);
 
-      log.push('Added notification to history from tap action and marked as read', LogLevel.INFO, {
+      log.push('Added notification to history from tap action', LogLevel.INFO, {
         eventId: eid,
-        profileId,
+        targetProfileId: profileIdForEvent,
+        isCrossProfile,
       });
     }
 
-    if (eid) {
+    if (!eid) return;
+
+    if (isCrossProfile && targetProfileId) {
+      // Different profile — request user confirmation before switching
+      const { profiles } = useProfileStore.getState();
+      const targetProfile = profiles.find(p => p.id === targetProfileId);
+
+      log.push('Cross-profile notification tap, requesting switch confirmation', LogLevel.INFO, {
+        targetProfile: targetProfile?.name,
+        eventId: eid,
+      });
+
+      requestProfileSwitch({
+        targetProfileId,
+        targetProfileName: targetProfile?.name || data?.profile || 'Unknown',
+        eventId: String(eid),
+      });
+    } else {
+      // Same profile — navigate directly
       navigationService.navigateToEvent(String(eid));
       log.push('Navigating to event detail', LogLevel.INFO, { eventId: eid });
     }

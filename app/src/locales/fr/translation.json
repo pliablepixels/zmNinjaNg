@@ -582,7 +582,11 @@
       "disconnected": "Déconnecté",
       "connecting": "Connexion...",
       "direct_active": "Mode direct actif"
-    }
+    },
+    "switch_profile_title": "Changer de profil ?",
+    "switch_profile_desc": "Cette notification provient de \"{{profile}}\". Passer a ce profil pour voir l'evenement ?",
+    "switch_profile_confirm": "Changer",
+    "profile_switch_failed": "Echec du changement de profil"
   },
   "profiles": {
     "title": "Profils",

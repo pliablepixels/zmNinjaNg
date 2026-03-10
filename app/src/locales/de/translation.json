@@ -582,7 +582,11 @@
       "disconnected": "Getrennt",
       "connecting": "Verbinde...",
       "direct_active": "Direktmodus aktiv"
-    }
+    },
+    "switch_profile_title": "Profil wechseln?",
+    "switch_profile_desc": "Diese Benachrichtigung stammt von \"{{profile}}\". Zu diesem Profil wechseln, um das Ereignis anzuzeigen?",
+    "switch_profile_confirm": "Wechseln",
+    "profile_switch_failed": "Profilwechsel fehlgeschlagen"
   },
   "profiles": {
     "title": "Profile",
