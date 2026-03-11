@@ -118,50 +118,81 @@ requests
 SSL Trust (``lib/ssl-trust.ts``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Controls whether the app accepts self-signed/untrusted HTTPS certificates.
-The setting is profile-scoped (``allowSelfSignedCerts`` in ``ProfileSettings``)
-and disabled by default.
+Controls whether the app accepts self-signed/untrusted HTTPS certificates
+using TOFU (Trust On First Use) certificate pinning. The setting is
+profile-scoped (``allowSelfSignedCerts`` + ``trustedCertFingerprint`` in
+``ProfileSettings``) and disabled by default.
 
-**Features:** - Per-profile toggle (off by default) - Platform-dispatched:
-Capacitor plugin on mobile, module flag on Tauri, no-op on web -
-Applied during profile bootstrap before any API calls
+**TOFU Flow:**
+
+1. User enables self-signed certs and connects to a server
+2. App fetches the server's TLS certificate via ``getServerCertFingerprint()``
+3. A dialog (``CertTrustDialog``) shows the cert's SHA-256 fingerprint
+4. If the user accepts, the fingerprint is stored in
+   ``ProfileSettings.trustedCertFingerprint``
+5. All subsequent connections validate the server cert against the stored
+   fingerprint — mismatches are rejected
 
 **Platform Implementations:**
 
 - **Mobile (iOS/Android)**: Uses a custom Capacitor plugin (``SSLTrust``)
-  registered in ``src/plugins/ssl-trust/``. On Android, installs a trust-all
-  ``X509TrustManager`` and overrides ``BridgeWebViewClient.onReceivedSslError``.
-  On iOS, registers a ``URLProtocol`` subclass to intercept ``URLSession.shared``
-  and installs a ``WKNavigationDelegate`` proxy on the WebView.
+  registered in ``src/plugins/ssl-trust/``. On Android,
+  ``onReceivedSslError`` extracts the cert via ``SslCertificate.saveState()``,
+  computes SHA-256, and calls ``proceed()`` only on fingerprint match — never
+  without validation. The WebView handler is only installed when a fingerprint
+  is set (via ``setTrustedFingerprint()``). HTTP requests use a
+  ``TrustManager`` that validates fingerprints. On iOS, both ``URLProtocol``
+  and ``WKNavigationDelegate`` validate cert fingerprints via CommonCrypto
+  SHA-256.
 - **Desktop (Tauri)**: Sets a module-level flag read by ``http.ts`` to pass
   ``danger`` options to ``@tauri-apps/plugin-http``. Requires the
   ``dangerous-settings`` Cargo feature on ``tauri-plugin-http``.
 - **Web**: No-op (browsers enforce certificate validation).
 
+**Plugin Methods:**
+
+- ``enable()`` / ``disable()`` — activate/deactivate the TrustManager
+  (HTTP requests). Does not install the WebView handler.
+- ``setTrustedFingerprint({ fingerprint })`` — pass the pinned fingerprint.
+  Installs the WebView SSL handler only when fingerprint is non-null.
+- ``getServerCertFingerprint({ url })`` — fetches the server's leaf
+  certificate and returns its SHA-256 fingerprint, subject, issuer, and
+  expiry.
+
 **Implementation:**
 
 .. code:: typescript
 
-   import { applySSLTrustSetting } from '../lib/ssl-trust';
+   import { applySSLTrustSetting, getServerCertFingerprint } from '../lib/ssl-trust';
 
-   // Enable SSL trust (called during profile bootstrap)
+   // Enable with fingerprint (normal operation)
+   await applySSLTrustSetting(true, storedFingerprint);
+
+   // Fetch cert for TOFU dialog
+   const certInfo = await getServerCertFingerprint('https://zm.example.com');
+   // certInfo.fingerprint = "AB:CD:12:..."
+
+   // Enable trust-all for HTTP only (no WebView handler, used during cert fetch)
    await applySSLTrustSetting(true);
 
-   // Disable SSL trust
-   await applySSLTrustSetting(false);
-
-   // Check Tauri flag (used internally by http.ts)
-   import { isTauriSslTrustEnabled } from '../lib/ssl-trust';
-   if (isTauriSslTrustEnabled()) {
-     // pass danger options
-   }
-
 **Bootstrap Order:** ``bootstrapSSLTrust()`` in ``stores/profile-bootstrap.ts``
-runs before ``bootstrapAuth()`` so SSL trust is active before any API calls
-when switching profiles.
+runs before ``bootstrapAuth()``. If ``allowSelfSignedCerts`` is true but
+``trustedCertFingerprint`` is null (upgrade migration), it fetches the cert
+and signals the UI via ``lib/cert-trust-event.ts`` to show the trust dialog
+in ``AppLayout``.
+
+**Key Files:**
+
+- ``lib/ssl-trust.ts`` — JS interface
+- ``lib/cert-trust-event.ts`` — event bridge for bootstrap-to-UI TOFU dialog
+- ``plugins/ssl-trust/`` — Capacitor plugin definitions
+- ``components/CertTrustDialog.tsx`` — trust dialog component
+- ``android/.../SSLTrustPlugin.java`` — Android native implementation
+- ``ios/.../SSLTrustPlugin.swift`` — iOS native implementation
 
 **Used By:** ``stores/profile-bootstrap.ts``, ``pages/ProfileForm.tsx``,
-``components/settings/ConnectionSettings.tsx``
+``components/settings/ConnectionSettings.tsx``,
+``components/layout/AppLayout.tsx`` (migration dialog)
 
 --------------
 

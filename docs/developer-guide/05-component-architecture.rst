@@ -769,18 +769,25 @@ Android).
 Connection Settings (``components/settings/ConnectionSettings.tsx``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Settings card with a Switch toggle for enabling self-signed certificate
-support. Follows the same pattern as ``DebugSettings``.
+Settings card for self-signed certificate support using TOFU (Trust On
+First Use) certificate pinning.
 
-- Reads/writes ``allowSelfSignedCerts`` from profile-scoped settings
-- Calls ``applySSLTrustSetting()`` from ``lib/ssl-trust.ts`` on toggle
+- Reads/writes ``allowSelfSignedCerts`` and ``trustedCertFingerprint``
+  from profile-scoped settings
+- On enable (native): fetches the server cert, shows ``CertTrustDialog``
+  with SHA-256 fingerprint, stores fingerprint on trust
+- On disable: clears the stored fingerprint
+- Shows the pinned fingerprint when enabled (with a "Re-verify" button
+  to check for certificate changes)
 - Shows a warning when enabled
 - Shows a desktop-specific note on non-native platforms
 - ``data-testid="settings-self-signed-certs-switch"``
+- ``data-testid="cert-reverify-button"``
 
 The same toggle also appears in ``ProfileForm.tsx`` (below the password
-field) so users can enable it when adding a new profile before the first
-connection attempt.
+field). During profile setup, the TOFU cert-fetch runs after URL discovery
+succeeds (using the confirmed portal URL), and the fingerprint is saved
+alongside the profile settings.
 
 Feature Deep Dive: Notifications
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
