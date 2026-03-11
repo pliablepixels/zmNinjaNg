@@ -346,6 +346,21 @@
     "allow_self_signed_certs_warning": "This reduces connection security. Only use with servers you trust on secure networks.",
     "self_signed_certs_desktop_note": "On desktop, add your certificate to the system trust store."
   },
+  "ssl": {
+    "trust_dialog_title": "Untrusted Certificate",
+    "trust_dialog_changed_title": "Certificate Changed",
+    "trust_dialog_description": "The server presented a certificate that is not trusted by your device. Review the details below before deciding to trust it.",
+    "trust_dialog_changed_description": "The server's certificate has changed since you last trusted it. This could indicate a certificate renewal or a security issue.",
+    "cert_subject": "Subject",
+    "cert_issuer": "Issued By",
+    "cert_expiry": "Expires",
+    "cert_fingerprint": "SHA-256 Fingerprint",
+    "trust_button": "Trust This Certificate",
+    "reject_button": "Don't Connect",
+    "reverify_button": "Re-verify",
+    "trusted_fingerprint": "Trusted Certificate",
+    "no_fingerprint": "No certificate pinned"
+  },
   "logs": {
     "title": "Logs",
     "subtitle": "System logs",

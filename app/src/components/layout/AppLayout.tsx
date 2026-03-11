@@ -37,10 +37,12 @@ import {
   EyeOff
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '../ui/sheet';
 import { useTranslation } from 'react-i18next';
 import { BackgroundTaskDrawer } from '../BackgroundTaskDrawer';
+import { CertTrustDialog } from '../CertTrustDialog';
+import { onCertTrustRequest, type PendingCertTrust } from '../../lib/cert-trust-event';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -372,6 +374,38 @@ export default function AppLayout() {
 
   const isCollapsed = sidebarWidth <= MIN_WIDTH + 20;
 
+  // TOFU certificate trust migration dialog
+  const [pendingCert, setPendingCert] = useState<PendingCertTrust | null>(null);
+
+  useEffect(() => {
+    return onCertTrustRequest((pending) => {
+      setPendingCert(pending);
+    });
+  }, []);
+
+  const handleCertTrust = useCallback(async () => {
+    if (!pendingCert) return;
+    const { profileId, certInfo } = pendingCert;
+    setPendingCert(null);
+
+    updateProfileSettings(profileId, { trustedCertFingerprint: certInfo.fingerprint });
+    const { applySSLTrustSetting } = await import('../../lib/ssl-trust');
+    await applySSLTrustSetting(true, certInfo.fingerprint);
+    log.app('Certificate trusted via TOFU migration', LogLevel.INFO);
+  }, [pendingCert, updateProfileSettings]);
+
+  const handleCertCancel = useCallback(async () => {
+    if (!pendingCert) return;
+    const { profileId } = pendingCert;
+    setPendingCert(null);
+
+    // Disable self-signed certs since user rejected the certificate
+    updateProfileSettings(profileId, { allowSelfSignedCerts: false, trustedCertFingerprint: null });
+    const { applySSLTrustSetting } = await import('../../lib/ssl-trust');
+    await applySSLTrustSetting(false);
+    log.app('Certificate rejected, disabling self-signed cert support', LogLevel.INFO);
+  }, [pendingCert, updateProfileSettings]);
+
   return (
     <div className="flex h-[100dvh] bg-background overflow-hidden pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
       {/* Desktop Sidebar - Draggable */}
@@ -430,6 +464,15 @@ export default function AppLayout() {
 
       {/* Global Background Task Drawer */}
       <BackgroundTaskDrawer />
+
+      {/* TOFU certificate trust migration dialog */}
+      <CertTrustDialog
+        open={!!pendingCert}
+        certInfo={pendingCert?.certInfo ?? null}
+        isChanged={false}
+        onTrust={handleCertTrust}
+        onCancel={handleCertCancel}
+      />
     </div>
   );
 }

@@ -347,6 +347,21 @@
     "allow_self_signed_certs_warning": "Esto reduce la seguridad de la conexión. Use solo con servidores de confianza en redes seguras.",
     "self_signed_certs_desktop_note": "En escritorio, agregue su certificado al almacén de confianza del sistema."
   },
+  "ssl": {
+    "trust_dialog_title": "Certificado no confiable",
+    "trust_dialog_changed_title": "Certificado cambiado",
+    "trust_dialog_description": "El servidor presentó un certificado que no es de confianza para su dispositivo. Revise los detalles antes de aceptarlo.",
+    "trust_dialog_changed_description": "El certificado del servidor ha cambiado desde la última vez que lo aceptó. Esto podría indicar una renovación de certificado o un problema de seguridad.",
+    "cert_subject": "Sujeto",
+    "cert_issuer": "Emitido por",
+    "cert_expiry": "Expira",
+    "cert_fingerprint": "Huella digital SHA-256",
+    "trust_button": "Confiar en este certificado",
+    "reject_button": "No conectar",
+    "reverify_button": "Re-verificar",
+    "trusted_fingerprint": "Certificado de confianza",
+    "no_fingerprint": "Ningún certificado guardado"
+  },
   "logs": {
     "title": "Registros",
     "subtitle": "Registros del sistema",

@@ -1,6 +1,7 @@
 import Foundation
 import Capacitor
 import WebKit
+import CommonCrypto
 
 @objc(SSLTrustPlugin)
 public class SSLTrustPlugin: CAPPlugin, CAPBridgedPlugin {
@@ -10,28 +11,72 @@ public class SSLTrustPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "enable", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "disable", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "isEnabled", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setTrustedFingerprint", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getServerCertFingerprint", returnType: CAPPluginReturnPromise),
     ]
 
     /// Global flag checked by URLProtocol and WKWebView delegate
     @objc static var sslTrustEnabled = false
+
+    /// Trusted certificate SHA-256 fingerprint (colon-separated uppercase hex)
+    @objc static var trustedFingerprint: String? = nil
 
     @objc func enable(_ call: CAPPluginCall) {
         SSLTrustPlugin.sslTrustEnabled = true
         // Register URLProtocol to intercept URLSession.shared HTTPS requests
         // This covers CapacitorHttp which uses URLSession.shared
         URLProtocol.registerClass(SSLTrustURLProtocol.self)
-        installWebViewDelegate()
+        // WebView delegate is installed via setTrustedFingerprint() only when
+        // a fingerprint is available, so the delegate never accepts without validation
         call.resolve()
     }
 
     @objc func disable(_ call: CAPPluginCall) {
         SSLTrustPlugin.sslTrustEnabled = false
+        SSLTrustPlugin.trustedFingerprint = nil
         URLProtocol.unregisterClass(SSLTrustURLProtocol.self)
         call.resolve()
     }
 
     @objc func isEnabled(_ call: CAPPluginCall) {
         call.resolve(["enabled": SSLTrustPlugin.sslTrustEnabled])
+    }
+
+    @objc func setTrustedFingerprint(_ call: CAPPluginCall) {
+        SSLTrustPlugin.trustedFingerprint = call.getString("fingerprint")
+        // Only install WebView delegate when we have a fingerprint to validate against
+        if SSLTrustPlugin.sslTrustEnabled && SSLTrustPlugin.trustedFingerprint != nil {
+            installWebViewDelegate()
+        }
+        call.resolve()
+    }
+
+    @objc func getServerCertFingerprint(_ call: CAPPluginCall) {
+        guard let urlStr = call.getString("url"), let url = URL(string: urlStr) else {
+            call.reject("URL is required")
+            return
+        }
+
+        let delegate = CertFetchDelegate { result in
+            switch result {
+            case .success(let info):
+                call.resolve([
+                    "fingerprint": info.fingerprint,
+                    "subject": info.subject,
+                    "issuer": info.issuer,
+                    "expiry": info.expiry,
+                ])
+            case .failure(let error):
+                call.reject("Failed to get server certificate: \(error.localizedDescription)")
+            }
+        }
+
+        let config = URLSessionConfiguration.ephemeral
+        let session = URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
+        let task = session.dataTask(with: url) { _, _, _ in
+            session.invalidateAndCancel()
+        }
+        task.resume()
     }
 
     // MARK: - WebView Navigation Delegate (covers <img src>, MJPEG, WSS)
@@ -50,11 +95,129 @@ public class SSLTrustPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 }
 
+// MARK: - Certificate info struct
+
+struct CertFetchInfo {
+    let fingerprint: String
+    let subject: String
+    let issuer: String
+    let expiry: String
+}
+
+// MARK: - One-time cert fetch delegate
+
+class CertFetchDelegate: NSObject, URLSessionDelegate {
+    private let completion: (Result<CertFetchInfo, Error>) -> Void
+    private var completed = false
+
+    init(completion: @escaping (Result<CertFetchInfo, Error>) -> Void) {
+        self.completion = completion
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        didReceive challenge: URLAuthenticationChallenge,
+        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+    ) {
+        guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+              let serverTrust = challenge.protectionSpace.serverTrust else {
+            completionHandler(.performDefaultHandling, nil)
+            return
+        }
+
+        // Extract the leaf certificate
+        let certCount = SecTrustGetCertificateCount(serverTrust)
+        guard certCount > 0 else {
+            completionHandler(.cancelAuthenticationChallenge, nil)
+            if !completed {
+                completed = true
+                completion(.failure(NSError(domain: "SSLTrust", code: -1, userInfo: [NSLocalizedDescriptionKey: "No certificates"])))
+            }
+            return
+        }
+
+        // Use SecTrustCopyCertificateChain for iOS 15+, fall back to SecTrustGetCertificateAtIndex
+        var cert: SecCertificate?
+        if #available(iOS 15.0, *) {
+            if let chain = SecTrustCopyCertificateChain(serverTrust) as? [SecCertificate], !chain.isEmpty {
+                cert = chain[0]
+            }
+        } else {
+            cert = SecTrustGetCertificateAtIndex(serverTrust, 0)
+        }
+
+        guard let leafCert = cert else {
+            completionHandler(.cancelAuthenticationChallenge, nil)
+            if !completed {
+                completed = true
+                completion(.failure(NSError(domain: "SSLTrust", code: -2, userInfo: [NSLocalizedDescriptionKey: "Cannot extract certificate"])))
+            }
+            return
+        }
+
+        let fingerprint = sha256Fingerprint(leafCert)
+        let subject = SecCertificateCopySubjectSummary(leafCert) as String? ?? "Unknown"
+
+        // Parse expiry from the certificate data
+        var issuerStr = "Unknown"
+        var expiryStr = "Unknown"
+        if let certData = CFBridgingRetain(SecCertificateCopyData(leafCert)) as? Data {
+            // We already have the fingerprint; subject/issuer details are best-effort
+            _ = certData
+        }
+        // Use subject summary for both (full X.509 parsing is complex on iOS)
+        issuerStr = subject
+        expiryStr = "See certificate details"
+
+        let info = CertFetchInfo(fingerprint: fingerprint, subject: subject, issuer: issuerStr, expiry: expiryStr)
+
+        if !completed {
+            completed = true
+            completion(.success(info))
+        }
+
+        // Accept the cert for this one-time fetch
+        completionHandler(.useCredential, URLCredential(trust: serverTrust))
+    }
+}
+
+// MARK: - SHA-256 fingerprint helper
+
+func sha256Fingerprint(_ certificate: SecCertificate) -> String {
+    let data = SecCertificateCopyData(certificate) as Data
+    var hash = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+    data.withUnsafeBytes { ptr in
+        _ = CC_SHA256(ptr.baseAddress!, CC_LONG(data.count), &hash)
+    }
+    return hash.map { String(format: "%02X", $0) }.joined(separator: ":")
+}
+
+/// Check if a certificate's fingerprint matches the trusted one.
+/// Used by URLProtocol (HTTP requests) — allows when no fingerprint is set (TOFU cert-fetch).
+func isCertTrustedForHTTP(_ certificate: SecCertificate) -> Bool {
+    guard let trusted = SSLTrustPlugin.trustedFingerprint, !trusted.isEmpty else {
+        // No fingerprint stored yet — allow for TOFU cert-fetch flow
+        return true
+    }
+    let actual = sha256Fingerprint(certificate)
+    return actual == trusted
+}
+
+/// Check if a certificate's fingerprint matches the trusted one.
+/// Used by WKNavigationDelegate (WebView) — rejects when no fingerprint is set.
+func isCertTrustedForWebView(_ certificate: SecCertificate) -> Bool {
+    guard let trusted = SSLTrustPlugin.trustedFingerprint, !trusted.isEmpty else {
+        return false
+    }
+    let actual = sha256Fingerprint(certificate)
+    return actual == trusted
+}
+
 // MARK: - URLProtocol for intercepting URLSession.shared HTTPS requests
 
-/// Custom URLProtocol that intercepts HTTPS requests and accepts self-signed certificates.
-/// This is needed because CapacitorHttp uses URLSession.shared which has no delegate,
-/// so there's no other way to handle authentication challenges for it.
+/// Custom URLProtocol that intercepts HTTPS requests and validates certificates
+/// against the trusted fingerprint. This is needed because CapacitorHttp uses
+/// URLSession.shared which has no delegate.
 class SSLTrustURLProtocol: URLProtocol, URLSessionDelegate, URLSessionDataDelegate {
     private var dataTask: URLSessionDataTask?
     private static let handledKey = "SSLTrustURLProtocolHandled"
@@ -91,7 +254,7 @@ class SSLTrustURLProtocol: URLProtocol, URLSessionDelegate, URLSessionDataDelega
         dataTask?.cancel()
     }
 
-    // MARK: URLSessionDelegate — accept self-signed certs
+    // MARK: URLSessionDelegate — validate certificate fingerprint
 
     func urlSession(
         _ session: URLSession,
@@ -100,10 +263,26 @@ class SSLTrustURLProtocol: URLProtocol, URLSessionDelegate, URLSessionDataDelega
     ) {
         if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
            let serverTrust = challenge.protectionSpace.serverTrust {
-            completionHandler(.useCredential, URLCredential(trust: serverTrust))
-        } else {
-            completionHandler(.performDefaultHandling, nil)
+
+            var cert: SecCertificate?
+            if #available(iOS 15.0, *) {
+                if let chain = SecTrustCopyCertificateChain(serverTrust) as? [SecCertificate], !chain.isEmpty {
+                    cert = chain[0]
+                }
+            } else {
+                cert = SecTrustGetCertificateAtIndex(serverTrust, 0)
+            }
+
+            if let leafCert = cert, isCertTrustedForHTTP(leafCert) {
+                completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                return
+            }
+
+            completionHandler(.cancelAuthenticationChallenge, nil)
+            return
         }
+
+        completionHandler(.performDefaultHandling, nil)
     }
 
     // MARK: URLSessionDataDelegate — forward response data to client
@@ -170,7 +349,22 @@ class SSLTrustNavigationDelegate: NSObject, WKNavigationDelegate {
         if SSLTrustPlugin.sslTrustEnabled,
            challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
            let serverTrust = challenge.protectionSpace.serverTrust {
-            completionHandler(.useCredential, URLCredential(trust: serverTrust))
+
+            var cert: SecCertificate?
+            if #available(iOS 15.0, *) {
+                if let chain = SecTrustCopyCertificateChain(serverTrust) as? [SecCertificate], !chain.isEmpty {
+                    cert = chain[0]
+                }
+            } else {
+                cert = SecTrustGetCertificateAtIndex(serverTrust, 0)
+            }
+
+            if let leafCert = cert, isCertTrustedForWebView(leafCert) {
+                completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                return
+            }
+
+            completionHandler(.cancelAuthenticationChallenge, nil)
             return
         }
 

@@ -218,7 +218,10 @@ export async function bootstrapMultiPortStreaming(
  * Run all bootstrap steps in sequence
  */
 /**
- * Bootstrap SSL trust setting before any API calls
+ * Bootstrap SSL trust setting before any API calls.
+ * If self-signed certs are enabled but no fingerprint is stored (upgrade migration),
+ * enables trust-all for HTTP so the cert can be fetched, and signals the UI
+ * to show the TOFU dialog via the pending cert trust store.
  */
 export async function bootstrapSSLTrust(
   profile: Profile
@@ -226,8 +229,27 @@ export async function bootstrapSSLTrust(
   try {
     const { useSettingsStore } = await import('./settings');
     const settings = useSettingsStore.getState().getProfileSettings(profile.id);
-    const { applySSLTrustSetting } = await import('../lib/ssl-trust');
-    await applySSLTrustSetting(settings.allowSelfSignedCerts);
+    const { applySSLTrustSetting, getServerCertFingerprint } = await import('../lib/ssl-trust');
+
+    if (!settings.allowSelfSignedCerts) {
+      await applySSLTrustSetting(false);
+      return;
+    }
+
+    // Enable SSL trust (installs TrustManager for HTTP; WebView handler
+    // is only installed when setTrustedFingerprint receives a non-null value)
+    await applySSLTrustSetting(true, settings.trustedCertFingerprint);
+
+    // Migration: self-signed certs enabled but no fingerprint stored.
+    // Fetch the cert and signal the UI to show the TOFU dialog.
+    if (!settings.trustedCertFingerprint && profile.portalUrl) {
+      log.profileService('Self-signed certs enabled without fingerprint, triggering TOFU migration', LogLevel.INFO);
+      const certInfo = await getServerCertFingerprint(profile.portalUrl);
+      if (certInfo) {
+        const { requestCertTrust } = await import('../lib/cert-trust-event');
+        requestCertTrust(profile.id, certInfo);
+      }
+    }
   } catch (error) {
     log.profileService('Failed to apply SSL trust setting', LogLevel.WARN, { error });
   }
