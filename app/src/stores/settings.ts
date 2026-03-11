@@ -64,6 +64,8 @@ export interface ProfileSettings {
   selectedGroupId: string | null;
   // Allow self-signed HTTPS certificates for this profile's server
   allowSelfSignedCerts: boolean;
+  // SHA-256 fingerprint of the trusted TLS certificate (TOFU pinning)
+  trustedCertFingerprint: string | null;
 }
 
 interface SettingsState {
@@ -149,6 +151,8 @@ export const DEFAULT_SETTINGS: ProfileSettings = {
   selectedGroupId: null,
   // Self-signed certs disabled by default (secure default)
   allowSelfSignedCerts: false,
+  // No pinned certificate by default
+  trustedCertFingerprint: null,
 };
 
 export const useSettingsStore = create<SettingsState>()(

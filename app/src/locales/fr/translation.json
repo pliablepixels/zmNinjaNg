@@ -347,6 +347,21 @@
     "allow_self_signed_certs_warning": "Cela réduit la sécurité de la connexion. Utilisez uniquement avec des serveurs de confiance sur des réseaux sécurisés.",
     "self_signed_certs_desktop_note": "Sur bureau, ajoutez votre certificat au magasin de confiance du système."
   },
+  "ssl": {
+    "trust_dialog_title": "Certificat non fiable",
+    "trust_dialog_changed_title": "Certificat modifié",
+    "trust_dialog_description": "Le serveur a présenté un certificat non fiable pour votre appareil. Vérifiez les détails avant de l'accepter.",
+    "trust_dialog_changed_description": "Le certificat du serveur a changé depuis votre dernière approbation. Cela pourrait indiquer un renouvellement de certificat ou un problème de sécurité.",
+    "cert_subject": "Sujet",
+    "cert_issuer": "Émis par",
+    "cert_expiry": "Expire",
+    "cert_fingerprint": "Empreinte SHA-256",
+    "trust_button": "Faire confiance à ce certificat",
+    "reject_button": "Ne pas connecter",
+    "reverify_button": "Re-vérifier",
+    "trusted_fingerprint": "Certificat de confiance",
+    "no_fingerprint": "Aucun certificat enregistré"
+  },
   "logs": {
     "title": "Journaux",
     "subtitle": "Journaux système",

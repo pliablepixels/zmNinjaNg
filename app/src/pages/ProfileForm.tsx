@@ -6,7 +6,7 @@
  * Shows welcome messaging when this is the user's first profile.
  */
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -23,6 +23,9 @@ import { fetchGo2RTCPath } from '../api/auth';
 import { QRScanner } from '../components/QRScanner';
 import { parseQRProfile } from '../lib/qr-profile';
 import { toast } from 'sonner';
+import { CertTrustDialog } from '../components/CertTrustDialog';
+import { Platform } from '../lib/platform';
+import type { CertInfo } from '../lib/ssl-trust';
 
 export default function ProfileForm() {
   const navigate = useNavigate();
@@ -52,6 +55,34 @@ export default function ProfileForm() {
 
   // Self-signed certificate support
   const [allowSelfSignedCerts, setAllowSelfSignedCerts] = useState(false);
+  const [trustedFingerprint, setTrustedFingerprint] = useState<string | null>(null);
+
+  // TOFU cert trust dialog state
+  const [certDialogOpen, setCertDialogOpen] = useState(false);
+  const [certInfo, setCertInfo] = useState<CertInfo | null>(null);
+  const certResolveRef = useRef<((trusted: boolean) => void) | null>(null);
+
+  // Show the TOFU dialog and wait for user to trust or reject
+  const requestCertTrust = useCallback((info: CertInfo): Promise<boolean> => {
+    return new Promise((resolve) => {
+      setCertInfo(info);
+      setCertDialogOpen(true);
+      certResolveRef.current = resolve;
+    });
+  }, []);
+
+  const handleCertTrust = useCallback(() => {
+    setCertDialogOpen(false);
+    if (certInfo) setTrustedFingerprint(certInfo.fingerprint);
+    certResolveRef.current?.(true);
+    certResolveRef.current = null;
+  }, [certInfo]);
+
+  const handleCertCancel = useCallback(() => {
+    setCertDialogOpen(false);
+    certResolveRef.current?.(false);
+    certResolveRef.current = null;
+  }, []);
 
   // QR Scanner state
   const [showQRScanner, setShowQRScanner] = useState(false);
@@ -150,8 +181,24 @@ export default function ProfileForm() {
     try {
       // Apply SSL trust before any network calls if enabled
       if (allowSelfSignedCerts) {
-        const { applySSLTrustSetting } = await import('../lib/ssl-trust');
+        const { applySSLTrustSetting, getServerCertFingerprint } = await import('../lib/ssl-trust');
+        // Temporarily enable trust-all to fetch the cert
         await applySSLTrustSetting(true);
+
+        // On native: TOFU flow — fetch cert and ask user to trust it
+        if (Platform.isNative) {
+          const info = await getServerCertFingerprint(portalUrl);
+          if (info) {
+            const trusted = await requestCertTrust(info);
+            if (!trusted) {
+              await applySSLTrustSetting(false);
+              setTesting(false);
+              return;
+            }
+            // Apply fingerprint-based trust
+            await applySSLTrustSetting(true, info.fingerprint);
+          }
+        }
       }
 
       const normalizedUsername = username.trim();
@@ -271,10 +318,13 @@ export default function ProfileForm() {
       });
       log.profileForm('Profile created', LogLevel.INFO, { profileName: finalProfileName, profileId: newProfileId });
 
-      // Save self-signed cert setting to the new profile
+      // Save self-signed cert setting and trusted fingerprint to the new profile
       if (allowSelfSignedCerts) {
         const { useSettingsStore } = await import('../stores/settings');
-        useSettingsStore.getState().updateProfileSettings(newProfileId, { allowSelfSignedCerts: true });
+        useSettingsStore.getState().updateProfileSettings(newProfileId, {
+          allowSelfSignedCerts: true,
+          trustedCertFingerprint: trustedFingerprint,
+        });
       }
 
       // Switch to the newly created profile (unless it's the first profile, which is auto-set as current)
@@ -546,6 +596,15 @@ export default function ProfileForm() {
         open={showQRScanner}
         onOpenChange={setShowQRScanner}
         onScan={handleQRScan}
+      />
+
+      {/* TOFU Certificate Trust Dialog */}
+      <CertTrustDialog
+        open={certDialogOpen}
+        certInfo={certInfo}
+        isChanged={false}
+        onTrust={handleCertTrust}
+        onCancel={handleCertCancel}
       />
     </div>
   );

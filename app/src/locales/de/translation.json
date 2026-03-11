@@ -347,6 +347,21 @@
     "allow_self_signed_certs_warning": "Dies verringert die Verbindungssicherheit. Nur mit vertrauenswürdigen Servern in sicheren Netzwerken verwenden.",
     "self_signed_certs_desktop_note": "Auf dem Desktop fügen Sie Ihr Zertifikat zum System-Vertrauensspeicher hinzu."
   },
+  "ssl": {
+    "trust_dialog_title": "Nicht vertrauenswürdiges Zertifikat",
+    "trust_dialog_changed_title": "Zertifikat geändert",
+    "trust_dialog_description": "Der Server hat ein Zertifikat vorgelegt, dem Ihr Gerät nicht vertraut. Prüfen Sie die Details, bevor Sie es akzeptieren.",
+    "trust_dialog_changed_description": "Das Serverzertifikat hat sich seit Ihrer letzten Vertrauensstellung geändert. Dies könnte auf eine Zertifikatserneuerung oder ein Sicherheitsproblem hindeuten.",
+    "cert_subject": "Betreff",
+    "cert_issuer": "Ausgestellt von",
+    "cert_expiry": "Läuft ab",
+    "cert_fingerprint": "SHA-256-Fingerabdruck",
+    "trust_button": "Diesem Zertifikat vertrauen",
+    "reject_button": "Nicht verbinden",
+    "reverify_button": "Erneut prüfen",
+    "trusted_fingerprint": "Vertrauenswürdiges Zertifikat",
+    "no_fingerprint": "Kein Zertifikat gespeichert"
+  },
   "logs": {
     "title": "Protokolle",
     "subtitle": "Systemprotokolle",

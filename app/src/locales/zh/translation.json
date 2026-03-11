@@ -347,6 +347,21 @@
     "allow_self_signed_certs_warning": "这会降低连接安全性。仅在安全网络中与您信任的服务器一起使用。",
     "self_signed_certs_desktop_note": "在桌面端，请将您的证书添加到系统信任存储。"
   },
+  "ssl": {
+    "trust_dialog_title": "不受信任的证书",
+    "trust_dialog_changed_title": "证书已更改",
+    "trust_dialog_description": "服务器提供的证书不受您设备信任。请在接受之前查看以下详情。",
+    "trust_dialog_changed_description": "服务器的证书自上次信任以来已更改。这可能是证书续期或安全问题。",
+    "cert_subject": "主题",
+    "cert_issuer": "颁发者",
+    "cert_expiry": "过期时间",
+    "cert_fingerprint": "SHA-256 指纹",
+    "trust_button": "信任此证书",
+    "reject_button": "不连接",
+    "reverify_button": "重新验证",
+    "trusted_fingerprint": "已信任的证书",
+    "no_fingerprint": "未保存证书"
+  },
   "logs": {
     "title": "日志",
     "subtitle": "系统日志",

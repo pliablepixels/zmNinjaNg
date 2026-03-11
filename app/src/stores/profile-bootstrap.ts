@@ -227,7 +227,7 @@ export async function bootstrapSSLTrust(
     const { useSettingsStore } = await import('./settings');
     const settings = useSettingsStore.getState().getProfileSettings(profile.id);
     const { applySSLTrustSetting } = await import('../lib/ssl-trust');
-    await applySSLTrustSetting(settings.allowSelfSignedCerts);
+    await applySSLTrustSetting(settings.allowSelfSignedCerts, settings.trustedCertFingerprint);
   } catch (error) {
     log.profileService('Failed to apply SSL trust setting', LogLevel.WARN, { error });
   }

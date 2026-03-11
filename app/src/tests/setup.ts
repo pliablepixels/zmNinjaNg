@@ -158,6 +158,13 @@ vi.mock('../src/plugins/ssl-trust', () => ({
     enable: vi.fn().mockResolvedValue(undefined),
     disable: vi.fn().mockResolvedValue(undefined),
     isEnabled: vi.fn().mockResolvedValue({ enabled: false }),
+    setTrustedFingerprint: vi.fn().mockResolvedValue(undefined),
+    getServerCertFingerprint: vi.fn().mockResolvedValue({
+      fingerprint: 'AA:BB:CC:DD:EE:FF',
+      subject: 'CN=localhost',
+      issuer: 'CN=localhost',
+      expiry: '2027-01-01',
+    }),
   },
 }));
 
