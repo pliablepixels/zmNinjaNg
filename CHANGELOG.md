@@ -1,5 +1,22 @@
 # Changelog
 
+## [zmNinjaNG-1.0.7](https://github.com/pliablepixels/zmNinjaNG/tree/zmNinjaNG-1.0.7) (2026-03-12)
+
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNG/compare/zmNinjaNG-1.0.6...zmNinjaNG-1.0.7)
+
+**Implemented enhancements:**
+
+- feat: profile-aware notification tap with switch confirmation [\#48](https://github.com/pliablepixels/zmNinjaNG/issues/48)
+- feat: send profile name during push token registration [\#47](https://github.com/pliablepixels/zmNinjaNG/issues/47)
+
+**Fixed bugs:**
+
+- fix: replace WebView SSL trust-all with certificate pinning \(TOFU\) [\#49](https://github.com/pliablepixels/zmNinjaNG/issues/49)
+
+**Closed issues:**
+
+- Could not find ZoneMinder API over HTTPS [\#45](https://github.com/pliablepixels/zmNinjaNG/issues/45)
+
 ## [zmNinjaNG-1.0.6](https://github.com/pliablepixels/zmNinjaNG/tree/zmNinjaNG-1.0.6) (2026-03-09)
 
 [Full Changelog](https://github.com/pliablepixels/zmNinjaNG/compare/zmNinjaNG-1.0.4...zmNinjaNG-1.0.6)
