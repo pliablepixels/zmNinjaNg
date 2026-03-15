@@ -49,7 +49,7 @@ export function NotificationBadge() {
         key={ringKey}
         className={
           isRinging
-            ? "h-3.5 w-3.5 text-muted-foreground animate-[ring_0.5s_ease-in-out_2]"
+            ? "h-3.5 w-3.5 text-muted-foreground animate-[ring_0.6s_ease-in-out_3]"
             : "h-3.5 w-3.5 text-muted-foreground"
         }
       />

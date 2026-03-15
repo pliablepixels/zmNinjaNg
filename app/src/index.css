@@ -19,13 +19,15 @@
 }
 
 @keyframes ring {
-  0% { transform: rotate(0deg); }
-  15% { transform: rotate(15deg); }
-  30% { transform: rotate(-12deg); }
-  45% { transform: rotate(8deg); }
-  60% { transform: rotate(-5deg); }
-  75% { transform: rotate(2deg); }
-  100% { transform: rotate(0deg); }
+  0% { transform: rotate(0deg) scale(1); }
+  10% { transform: rotate(25deg) scale(1.15); }
+  20% { transform: rotate(-20deg) scale(1.15); }
+  30% { transform: rotate(18deg) scale(1.1); }
+  40% { transform: rotate(-14deg) scale(1.1); }
+  50% { transform: rotate(10deg) scale(1.05); }
+  60% { transform: rotate(-6deg) scale(1.05); }
+  75% { transform: rotate(3deg) scale(1); }
+  100% { transform: rotate(0deg) scale(1); }
 }
 
 @keyframes monitor-slide-in {
