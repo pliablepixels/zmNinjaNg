@@ -6,7 +6,7 @@
  * It also handles the sidebar resizing logic and mobile drawer state.
  */
 
-import { Link, Outlet, useLocation, Navigate } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { useCurrentProfile } from '../../hooks/useCurrentProfile';
 import { useProfileStore } from '../../stores/profile';
 import { useNotificationStore } from '../../stores/notifications';
@@ -54,6 +54,55 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
+
+/**
+ * Notification bell icon with badge. Animates (rings) when unread count increases.
+ */
+function NotificationBell() {
+  const navigate = useNavigate();
+  const currentProfile = useProfileStore(
+    useShallow((state) => {
+      const { profiles, currentProfileId } = state;
+      return profiles.find((p) => p.id === currentProfileId) || null;
+    })
+  );
+  const getUnreadCount = useNotificationStore((state) => state.getUnreadCount);
+  const unreadCount = currentProfile ? getUnreadCount(currentProfile.id) : 0;
+
+  const [isRinging, setIsRinging] = useState(false);
+  const prevCountRef = useRef(unreadCount);
+
+  // Trigger ring animation when unread count increases
+  useEffect(() => {
+    if (unreadCount > prevCountRef.current) {
+      setIsRinging(true);
+      const timeout = setTimeout(() => setIsRinging(false), 1000);
+      return () => clearTimeout(timeout);
+    }
+    prevCountRef.current = unreadCount;
+  }, [unreadCount]);
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="relative h-8 w-8"
+      onClick={() => navigate('/notifications')}
+      aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+      data-testid="notification-bell"
+    >
+      <Bell className={cn(
+        "h-4 w-4 transition-transform",
+        isRinging && "animate-[ring_0.5s_ease-in-out_2]"
+      )} />
+      {unreadCount > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 flex items-center justify-center text-[9px] font-bold rounded-full bg-destructive text-destructive-foreground">
+          {unreadCount > 99 ? '99+' : unreadCount}
+        </span>
+      )}
+    </Button>
+  );
+}
 
 interface SidebarContentProps {
   onMobileClose?: () => void;
@@ -122,9 +171,8 @@ function SidebarContent({ onMobileClose, isCollapsed }: SidebarContentProps) {
       return profiles.find((p) => p.id === currentProfileId) || null;
     })
   );
-  const { getUnreadCount, connectionState, getProfileSettings } = useNotificationStore(
+  const { connectionState, getProfileSettings } = useNotificationStore(
     useShallow((state) => ({
-      getUnreadCount: state.getUnreadCount,
       connectionState: state.connectionState,
       getProfileSettings: state.getProfileSettings,
     }))
@@ -137,7 +185,6 @@ function SidebarContent({ onMobileClose, isCollapsed }: SidebarContentProps) {
   );
 
   // Get notification data for current profile
-  const unreadCount = currentProfile ? getUnreadCount(currentProfile.id) : 0;
   const settings = currentProfile ? getProfileSettings(currentProfile.id) : null;
   const profileSettings = currentProfile ? getSettings(currentProfile.id) : null;
 
@@ -364,11 +411,6 @@ function SidebarContent({ onMobileClose, isCollapsed }: SidebarContentProps) {
                       );
                     })()}
 
-                    {item.path === '/notifications' && unreadCount > 0 && (
-                      <span className="ml-auto h-5 min-w-5 px-1.5 flex items-center justify-center text-xs font-bold rounded-full bg-destructive text-destructive-foreground flex-shrink-0">
-                        {unreadCount > 99 ? '99+' : unreadCount}
-                      </span>
-                    )}
                   </>
                 )}
               </Link>
@@ -571,12 +613,14 @@ export default function AppLayout() {
           <span className="font-bold">{t('app.name')}</span>
           <LanguageSwitcher />
         </div>
-        <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" data-testid="mobile-menu-button">
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SheetTrigger>
+        <div className="flex items-center gap-1">
+          <NotificationBell />
+          <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" data-testid="mobile-menu-button">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
           <SheetContent side="left" className="p-0 w-64 sm:w-72 flex flex-col pt-[env(safe-area-inset-top)]">
             <SheetTitle className="sr-only">{t('app.navigation_menu')}</SheetTitle>
             <SheetDescription className="sr-only">{t('app.navigation_menu_desc')}</SheetDescription>
@@ -584,11 +628,17 @@ export default function AppLayout() {
               <SidebarContent onMobileClose={() => setIsMobileOpen(false)} />
             </div>
           </SheetContent>
-        </Sheet>
+          </Sheet>
+        </div>
       </div>
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto overflow-x-hidden relative w-full pt-[calc(3rem+env(safe-area-inset-top))] md:pt-0 pb-[env(safe-area-inset-bottom)]">
+        {/* Desktop notification bell — top right */}
+        <div className="hidden md:block fixed top-2 right-3 z-20">
+          <NotificationBell />
+        </div>
+
         {/* Background gradient blob for visual interest */}
         <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-primary/5 to-transparent -z-10 pointer-events-none" />
 
