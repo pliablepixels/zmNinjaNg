@@ -56,12 +56,12 @@ import {
 } from '../ui/dropdown-menu';
 
 /**
- * Notification bell icon with badge. Animates (rings) when unread count increases.
+ * Floating notification bell — only visible when there are unread notifications.
+ * Fixed at bottom-right. Rings when new notifications arrive.
  */
-function NotificationBell() {
+function FloatingNotificationBell() {
   const navigate = useNavigate();
   const currentProfileId = useProfileStore((state) => state.currentProfileId);
-  // Subscribe to profileEvents so we re-render when events are added or marked read
   const unreadCount = useNotificationStore((state) => {
     if (!currentProfileId) return 0;
     const events = state.profileEvents[currentProfileId] || [];
@@ -71,7 +71,6 @@ function NotificationBell() {
   const [isRinging, setIsRinging] = useState(false);
   const prevCountRef = useRef(unreadCount);
 
-  // Trigger ring animation when unread count increases
   useEffect(() => {
     if (unreadCount > prevCountRef.current) {
       setIsRinging(true);
@@ -81,24 +80,24 @@ function NotificationBell() {
     prevCountRef.current = unreadCount;
   }, [unreadCount]);
 
+  if (unreadCount === 0) return null;
+
   return (
     <Button
-      variant="ghost"
+      variant="default"
       size="icon"
-      className="relative h-8 w-8"
+      className="fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full shadow-lg opacity-80 hover:opacity-100 pb-[env(safe-area-inset-bottom)]"
       onClick={() => navigate('/notifications/history')}
-      aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+      aria-label={`${unreadCount} unread notifications`}
       data-testid="notification-bell"
     >
       <Bell className={cn(
-        "h-4 w-4 transition-transform",
+        "h-5 w-5 transition-transform",
         isRinging && "animate-[ring_0.5s_ease-in-out_2]"
       )} />
-      {unreadCount > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 flex items-center justify-center text-[9px] font-bold rounded-full bg-destructive text-destructive-foreground">
-          {unreadCount > 99 ? '99+' : unreadCount}
-        </span>
-      )}
+      <span className="absolute -top-1 -right-1 h-5 min-w-5 px-1 flex items-center justify-center text-[10px] font-bold rounded-full bg-destructive text-destructive-foreground">
+        {unreadCount > 99 ? '99+' : unreadCount}
+      </span>
     </Button>
   );
 }
@@ -613,7 +612,6 @@ export default function AppLayout() {
           <LanguageSwitcher />
         </div>
         <div className="flex items-center gap-1">
-          <NotificationBell />
           <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" data-testid="mobile-menu-button">
@@ -633,13 +631,6 @@ export default function AppLayout() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto overflow-x-hidden relative w-full pt-[calc(3rem+env(safe-area-inset-top))] md:pt-0 pb-[env(safe-area-inset-bottom)]">
-        {/* Desktop notification bell — sticky top-right, zero height so it doesn't push content */}
-        <div className="hidden md:flex sticky top-0 z-20 h-0 justify-end pr-3 pt-2 pointer-events-none">
-          <div className="pointer-events-auto">
-            <NotificationBell />
-          </div>
-        </div>
-
         {/* Background gradient blob for visual interest */}
         <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-primary/5 to-transparent -z-10 pointer-events-none" />
 
@@ -648,6 +639,9 @@ export default function AppLayout() {
 
       {/* Global Background Task Drawer */}
       <BackgroundTaskDrawer />
+
+      {/* Floating notification bell — only visible when there are unread notifications */}
+      <FloatingNotificationBell />
 
       {/* TOFU certificate trust migration dialog */}
       <CertTrustDialog

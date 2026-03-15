@@ -23,6 +23,7 @@ import { Separator } from '../components/ui/separator';
 import {
   Bell,
   BellOff,
+  History,
   Wifi,
   WifiOff,
   Server,
@@ -32,6 +33,7 @@ import {
   AlertCircle,
   Loader2,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Capacitor } from '@capacitor/core';
 import { Platform } from '../lib/platform';
@@ -43,6 +45,7 @@ import type { NotificationMode } from '../types/notifications';
 
 export default function NotificationSettings() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { currentProfile } = useCurrentProfile();
   const getDecryptedPassword = useProfileStore((state) => state.getDecryptedPassword);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -312,6 +315,14 @@ export default function NotificationSettings() {
             {t('notification_settings.subtitle')}
           </p>
         </div>
+        <Button
+          variant="outline"
+          onClick={() => navigate('/notifications/history')}
+          data-testid="notification-history-button"
+        >
+          <History className="h-4 w-4 mr-2" />
+          {t('notification_settings.view_history')}
+        </Button>
       </div>
 
       <div className="grid gap-6">
