@@ -60,14 +60,13 @@ import {
  */
 function NotificationBell() {
   const navigate = useNavigate();
-  const currentProfile = useProfileStore(
-    useShallow((state) => {
-      const { profiles, currentProfileId } = state;
-      return profiles.find((p) => p.id === currentProfileId) || null;
-    })
-  );
-  const getUnreadCount = useNotificationStore((state) => state.getUnreadCount);
-  const unreadCount = currentProfile ? getUnreadCount(currentProfile.id) : 0;
+  const currentProfileId = useProfileStore((state) => state.currentProfileId);
+  // Subscribe to profileEvents so we re-render when events are added or marked read
+  const unreadCount = useNotificationStore((state) => {
+    if (!currentProfileId) return 0;
+    const events = state.profileEvents[currentProfileId] || [];
+    return events.filter((e) => !e.read).length;
+  });
 
   const [isRinging, setIsRinging] = useState(false);
   const prevCountRef = useRef(unreadCount);
