@@ -568,6 +568,55 @@ Text input with show/hide password toggle.
      );
    }
 
+CollapsibleCard
+~~~~~~~~~~~~~~~
+
+**Location**: ``src/components/ui/collapsible-card.tsx``
+
+A Card with a clickable header that collapses/expands the content.
+Uses Radix Collapsible. Optionally persists open/closed state to
+localStorage via ``storageKey``.
+
+**Usage:**
+
+.. code:: tsx
+
+   <CollapsibleCard
+     storageKey="settings-video"
+     header={
+       <>
+         <CardTitle>Video Settings</CardTitle>
+         <CardDescription>Configure video options</CardDescription>
+       </>
+     }
+   >
+     {/* Card body content */}
+   </CollapsibleCard>
+
+Used by all Settings page sections.
+
+NotificationBadge
+~~~~~~~~~~~~~~~~~
+
+**Location**: ``src/components/NotificationBadge.tsx``
+
+Inline bell icon with unread count badge. Only renders when there are
+unread notifications. Rings (CSS animation) when new notifications
+arrive. Uses a module-level variable to track the last known count
+across component mount/unmount cycles, so page navigation doesn't
+re-trigger the animation.
+
+**Usage:** Place next to page titles:
+
+.. code:: tsx
+
+   <div className="flex items-center gap-2">
+     <h1>Events</h1>
+     <NotificationBadge />
+   </div>
+
+Added to all page headers (Dashboard, Events, Monitors, etc.).
+
 Component Composition
 ---------------------
 

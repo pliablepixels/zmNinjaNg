@@ -900,6 +900,56 @@ Progress bar component.
 
 --------------
 
+Shared Hooks (hooks/)
+---------------------
+
+useEventFilters (``hooks/useEventFilters.ts``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Manages event filter state with auto-save persistence. Filter
+selections are saved to the settings store immediately via wrapped
+setters — no "Apply" button needed for persistence.
+
+**Key concepts:**
+
+- Local state (``selectedMonitorIds``, ``selectedTagIds``, etc.)
+  drives the UI and the ``filters`` object for API queries
+- Wrapped setters (e.g. ``setSelectedTagIds``) update local state
+  AND call ``saveFilterField()`` to write to the settings store
+- Restore effect reads from settings on mount/profile change using
+  raw ``_set*`` functions (bypasses save wrappers to avoid loops)
+- ``ALL_TAGS_FILTER_ID`` sentinel (``'__all_tags__'``) means
+  "show events with any tag" — mutually exclusive with individual
+  tag selections
+- ``onlyDetectedObjects`` flag adds ``notesRegexp: 'detected:'``
+  to the API filter (server-side Notes REGEXP filter)
+- The "Filter" button syncs state to URL params for deep linking
+
+**Used By:** Events page, EventsFilterPopover
+
+Event Notes Display
+~~~~~~~~~~~~~~~~~~~
+
+ZoneMinder stores object detection results in the ``Notes`` field
+(e.g. ``detected:car| Motion: All``), not in ``Cause``. The Notes
+field is displayed in EventCard, EventMontageView, EventDetail, and
+the dashboard EventsWidget. Everything after ``|`` is stripped in
+the display (redundant with Cause) but preserved in the ``title``
+attribute for hover.
+
+Sidebar Navigation Reorder
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Users can reorder sidebar menu items via an edit mode (pencil icon
+in the sidebar). Order is saved per profile in
+``ProfileSettings.sidebarNavOrder`` (array of route paths). The
+``SidebarContent`` component in ``AppLayout.tsx`` sorts
+``navItems`` by saved order using a ``useMemo``. Reorder uses
+pointer events for drag-and-drop with live swap on midpoint
+crossing.
+
+--------------
+
 Reusable Domain Components
 --------------------------
 
