@@ -29,12 +29,16 @@ import {
   Bell,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   FileText,
   Globe,
   LayoutDashboard,
   Server,
   Eye,
-  EyeOff
+  EyeOff,
+  Pencil,
+  Check,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
@@ -166,7 +170,6 @@ function SidebarContent({ onMobileClose, isCollapsed }: SidebarContentProps) {
   const savedOrder = profileSettings?.sidebarNavOrder;
   const navItems = useMemo(() => {
     if (!savedOrder || savedOrder.length === 0) return defaultNavItems;
-    // Sort by saved order; items not in the saved list go at the end
     const orderMap = new Map(savedOrder.map((path, idx) => [path, idx]));
     return [...defaultNavItems].sort((a, b) => {
       const ai = orderMap.get(a.path) ?? 999;
@@ -175,6 +178,19 @@ function SidebarContent({ onMobileClose, isCollapsed }: SidebarContentProps) {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [savedOrder, t]);
+
+  const [isReordering, setIsReordering] = useState(false);
+
+  const moveNavItem = useCallback((index: number, direction: -1 | 1) => {
+    if (!currentProfile) return;
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= navItems.length) return;
+    const reordered = [...navItems];
+    [reordered[index], reordered[newIndex]] = [reordered[newIndex], reordered[index]];
+    updateProfileSettings(currentProfile.id, {
+      sidebarNavOrder: reordered.map((item) => item.path),
+    });
+  }, [currentProfile, navItems, updateProfileSettings]);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -197,10 +213,58 @@ function SidebarContent({ onMobileClose, isCollapsed }: SidebarContentProps) {
       </div>
 
       <div className="flex-1 px-3 py-2 overflow-y-auto">
+        {/* Reorder toggle — only when expanded */}
+        {!isCollapsed && (
+          <div className="flex justify-end mb-1 px-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={() => setIsReordering((prev) => !prev)}
+              title={isReordering ? t('dashboard.done') : t('settings.nav_order')}
+              data-testid="nav-reorder-toggle"
+            >
+              {isReordering ? <Check className="h-3.5 w-3.5" /> : <Pencil className="h-3 w-3" />}
+            </Button>
+          </div>
+        )}
         <nav className="space-y-1">
-          {navItems.map((item) => {
+          {navItems.map((item, index) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
+
+            if (isReordering && !isCollapsed) {
+              return (
+                <div
+                  key={item.path}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground"
+                  data-testid={`nav-reorder-${item.path.replace('/', '')}`}
+                >
+                  <Icon className="h-4 w-4 flex-shrink-0" />
+                  <span className="truncate flex-1">{item.label}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn("h-6 w-6", index === 0 && "opacity-30 pointer-events-none")}
+                    onClick={() => moveNavItem(index, -1)}
+                    disabled={index === 0}
+                    data-testid={`nav-up-${item.path.replace('/', '')}`}
+                  >
+                    <ChevronUp className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn("h-6 w-6", index === navItems.length - 1 && "opacity-30 pointer-events-none")}
+                    onClick={() => moveNavItem(index, 1)}
+                    disabled={index === navItems.length - 1}
+                    data-testid={`nav-down-${item.path.replace('/', '')}`}
+                  >
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              );
+            }
 
             return (
               <Link
@@ -221,7 +285,7 @@ function SidebarContent({ onMobileClose, isCollapsed }: SidebarContentProps) {
                 {!isCollapsed && (
                   <>
                     <span className="truncate">{item.label}</span>
-                    
+
                     {item.path === '/notifications' && (() => {
                       const statusLabel =
                         !settings?.enabled ? t('notifications.status.disabled') :
