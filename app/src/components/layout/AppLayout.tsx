@@ -69,12 +69,14 @@ function FloatingNotificationBell() {
   });
 
   const [isRinging, setIsRinging] = useState(false);
-  const prevCountRef = useRef(unreadCount);
+  // Initialize to 0 so the bell rings on first appearance (0→N transition)
+  const prevCountRef = useRef(0);
 
   useEffect(() => {
     if (unreadCount > prevCountRef.current) {
       setIsRinging(true);
       const timeout = setTimeout(() => setIsRinging(false), 1000);
+      prevCountRef.current = unreadCount;
       return () => clearTimeout(timeout);
     }
     prevCountRef.current = unreadCount;
