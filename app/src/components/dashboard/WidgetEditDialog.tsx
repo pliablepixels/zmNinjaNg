@@ -5,6 +5,7 @@
  * Features:
  * - Edit widget title
  * - Change monitor selection for monitor widgets
+ * - Object detection and tag filters for events widgets
  * - Update widget settings
  * - Form validation
  */
@@ -27,10 +28,15 @@ import { getMonitors } from '../../api/monitors';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Checkbox } from '../ui/checkbox';
+import { Switch } from '../ui/switch';
 import { ScrollArea } from '../ui/scroll-area';
 import { useTranslation } from 'react-i18next';
 import { filterEnabledMonitors } from '../../lib/filters';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { useEventTags } from '../../hooks/useEventTags';
+import { ALL_TAGS_FILTER_ID } from '../../hooks/useEventFilters';
+import { cn } from '../../lib/utils';
+import { X } from 'lucide-react';
 
 interface WidgetEditDialogProps {
     open: boolean;
@@ -46,6 +52,8 @@ export function WidgetEditDialog({ open, onOpenChange, widget, profileId }: Widg
         widget.settings.monitorIds || (widget.settings.monitorId ? [widget.settings.monitorId] : [])
     );
     const [feedFit, setFeedFit] = useState<MonitorFeedFit>((widget.settings.feedFit as MonitorFeedFit) || 'contain');
+    const [onlyDetectedObjects, setOnlyDetectedObjects] = useState(widget.settings.onlyDetectedObjects || false);
+    const [selectedTagIds, setSelectedTagIds] = useState<string[]>(widget.settings.tagIds || []);
     const updateWidget = useDashboardStore((state) => state.updateWidget);
 
     const { data: monitors } = useQuery({
@@ -53,10 +61,14 @@ export function WidgetEditDialog({ open, onOpenChange, widget, profileId }: Widg
         queryFn: getMonitors,
     });
 
+    const { availableTags, tagsSupported } = useEventTags();
+
     // Filter out deleted monitors
     const enabledMonitors = useMemo(() => {
         return monitors?.monitors ? filterEnabledMonitors(monitors.monitors) : [];
     }, [monitors?.monitors]);
+
+    const isAllTagsSelected = selectedTagIds.includes(ALL_TAGS_FILTER_ID);
 
     // Reset form when widget changes
     useEffect(() => {
@@ -65,6 +77,8 @@ export function WidgetEditDialog({ open, onOpenChange, widget, profileId }: Widg
             widget.settings.monitorIds || (widget.settings.monitorId ? [widget.settings.monitorId] : [])
         );
         setFeedFit((widget.settings.feedFit as MonitorFeedFit) || 'contain');
+        setOnlyDetectedObjects(widget.settings.onlyDetectedObjects || false);
+        setSelectedTagIds(widget.settings.tagIds || []);
     }, [widget]);
 
     /**
@@ -79,6 +93,23 @@ export function WidgetEditDialog({ open, onOpenChange, widget, profileId }: Widg
     };
 
     /**
+     * Toggle tag selection
+     */
+    const toggleTag = (tagId: string) => {
+        if (tagId === ALL_TAGS_FILTER_ID) {
+            setSelectedTagIds(isAllTagsSelected ? [] : [ALL_TAGS_FILTER_ID]);
+            return;
+        }
+        // Selecting individual tag deselects "All"
+        setSelectedTagIds((prev) => {
+            const withoutAll = prev.filter((id) => id !== ALL_TAGS_FILTER_ID);
+            return withoutAll.includes(tagId)
+                ? withoutAll.filter((id) => id !== tagId)
+                : [...withoutAll, tagId];
+        });
+    };
+
+    /**
      * Handle saving widget updates
      */
     const handleSave = () => {
@@ -89,6 +120,8 @@ export function WidgetEditDialog({ open, onOpenChange, widget, profileId }: Widg
             updatedSettings.feedFit = feedFit;
         } else if (widget.type === 'events') {
             updatedSettings.monitorIds = selectedMonitors;
+            updatedSettings.onlyDetectedObjects = onlyDetectedObjects;
+            updatedSettings.tagIds = selectedTagIds;
         }
 
         updateWidget(profileId, widget.id, {
@@ -155,6 +188,8 @@ export function WidgetEditDialog({ open, onOpenChange, widget, profileId }: Widg
                             )}
                         </div>
                     )}
+
+                    {/* Feed Fit (monitor widgets only) */}
                     {widget.type === 'monitor' && (
                         <div className="space-y-2">
                             <Label>{t('dashboard.feed_fit')}</Label>
@@ -181,6 +216,78 @@ export function WidgetEditDialog({ open, onOpenChange, widget, profileId }: Widg
                                 </SelectContent>
                             </Select>
                         </div>
+                    )}
+
+                    {/* Events widget filters */}
+                    {widget.type === 'events' && (
+                        <>
+                            {/* Only Detected Objects toggle */}
+                            <div className="flex items-center justify-between p-3 rounded-md border bg-card">
+                                <Label htmlFor="widget-only-detected" className="cursor-pointer text-sm">
+                                    {t('events.filter.onlyDetectedObjects')}
+                                </Label>
+                                <Switch
+                                    id="widget-only-detected"
+                                    checked={onlyDetectedObjects}
+                                    onCheckedChange={setOnlyDetectedObjects}
+                                    data-testid="widget-edit-detected-toggle"
+                                />
+                            </div>
+
+                            {/* Tag filter */}
+                            {tagsSupported && availableTags.length > 0 && (
+                                <div className="space-y-2">
+                                    <Label>{t('events.filter.tags')}</Label>
+                                    <ScrollArea className="h-32 border rounded-md" data-testid="widget-edit-tag-list">
+                                        <div className="p-2 space-y-1">
+                                            {/* "All Tagged" option */}
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleTag(ALL_TAGS_FILTER_ID)}
+                                                className={cn(
+                                                    'w-full text-left px-2 py-1.5 rounded text-sm transition-colors flex items-center justify-between font-medium',
+                                                    isAllTagsSelected
+                                                        ? 'bg-primary/10 text-primary'
+                                                        : 'hover:bg-muted'
+                                                )}
+                                                data-testid="widget-edit-tag-all"
+                                            >
+                                                <span>{t('events.filter.allTags')}</span>
+                                                {isAllTagsSelected && (
+                                                    <X className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
+                                                )}
+                                            </button>
+                                            {/* Individual tags */}
+                                            {availableTags.map((tag) => {
+                                                const isSelected = selectedTagIds.includes(tag.Id);
+                                                return (
+                                                    <button
+                                                        key={tag.Id}
+                                                        type="button"
+                                                        onClick={() => toggleTag(tag.Id)}
+                                                        className={cn(
+                                                            'w-full text-left px-2 py-1.5 rounded text-sm transition-colors flex items-center justify-between',
+                                                            isSelected
+                                                                ? 'bg-primary/10 text-primary'
+                                                                : isAllTagsSelected
+                                                                    ? 'opacity-50 cursor-not-allowed'
+                                                                    : 'hover:bg-muted'
+                                                        )}
+                                                        disabled={isAllTagsSelected}
+                                                        data-testid={`widget-edit-tag-${tag.Id}`}
+                                                    >
+                                                        <span className="truncate">{tag.Name}</span>
+                                                        {isSelected && (
+                                                            <X className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </ScrollArea>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
 

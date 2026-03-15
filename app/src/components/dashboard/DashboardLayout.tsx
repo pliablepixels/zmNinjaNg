@@ -181,6 +181,8 @@ export function DashboardLayout() {
                                         monitorIds={widget.settings.monitorIds ?? (widget.settings.monitorId ? [widget.settings.monitorId] : undefined)}
                                         limit={widget.settings.eventCount}
                                         refreshInterval={widget.settings.refreshInterval}
+                                        onlyDetectedObjects={widget.settings.onlyDetectedObjects}
+                                        tagIds={widget.settings.tagIds}
                                     />
                                 )}
                                 {widget.type === 'timeline' && (
