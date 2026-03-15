@@ -22,7 +22,6 @@ See [README](README.md)
 
 ## Important Notes
 
-- **Self-signed certificates are not supported**. Use Let's Encrypt or other trusted certificates. Alternatively, use HTTP with WireGuard (this is what I use)
 - **Push notifications**: Now works for iOS and Android
 - **Event Server**: zmNinjaNG needs the new [EventServer 7+](https://zmeventnotificationv7.readthedocs.io/en/latest/). It may work with the old one. 
 
