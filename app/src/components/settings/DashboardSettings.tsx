@@ -1,6 +1,7 @@
 import { LayoutDashboard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { CardDescription, CardTitle } from '../ui/card';
+import { CollapsibleCard } from '../ui/collapsible-card';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -21,17 +22,20 @@ export function DashboardSettings() {
     };
 
     return (
-        <Card>
-            <CardHeader>
-                <div className="flex items-center gap-2">
-                    <LayoutDashboard className="h-5 w-5 text-primary" />
-                    <CardTitle>{t('settings.dashboard_settings')}</CardTitle>
-                </div>
-                <CardDescription>
-                    {t('settings.dashboard_settings_desc')}
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+        <CollapsibleCard
+            header={
+                <>
+                    <div className="flex items-center gap-2">
+                        <LayoutDashboard className="h-5 w-5 text-primary" />
+                        <CardTitle>{t('settings.dashboard_settings')}</CardTitle>
+                    </div>
+                    <CardDescription>
+                        {t('settings.dashboard_settings_desc')}
+                    </CardDescription>
+                </>
+            }
+        >
+            <div className="space-y-6">
                 <div className="space-y-3 p-4 rounded-lg border bg-card">
                     <div>
                         <Label htmlFor="dashboard-refresh" className="text-base font-semibold">
@@ -78,7 +82,7 @@ export function DashboardSettings() {
                         </div>
                     </div>
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </CollapsibleCard>
     );
 }

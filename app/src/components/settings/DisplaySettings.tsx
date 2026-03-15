@@ -1,6 +1,7 @@
 import { Maximize2, Minimize2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { CardDescription, CardTitle } from '../ui/card';
+import { CollapsibleCard } from '../ui/collapsible-card';
 import { Label } from '../ui/label';
 import { Switch } from '../ui/switch';
 import { useSettingsStore } from '../../stores/settings';
@@ -20,17 +21,20 @@ export function DisplaySettings() {
     };
 
     return (
-        <Card>
-            <CardHeader>
-                <div className="flex items-center gap-2">
-                    <Minimize2 className="h-5 w-5 text-primary" />
-                    <CardTitle>{t('settings.display_mode')}</CardTitle>
-                </div>
-                <CardDescription>
-                    {t('settings.display_mode_desc')}
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+        <CollapsibleCard
+            header={
+                <>
+                    <div className="flex items-center gap-2">
+                        <Minimize2 className="h-5 w-5 text-primary" />
+                        <CardTitle>{t('settings.display_mode')}</CardTitle>
+                    </div>
+                    <CardDescription>
+                        {t('settings.display_mode_desc')}
+                    </CardDescription>
+                </>
+            }
+        >
+            <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-lg border bg-card">
                     <div className="flex-1 space-y-1">
                         <div className="flex items-center gap-2">
@@ -61,7 +65,7 @@ export function DisplaySettings() {
                         </div>
                     </div>
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </CollapsibleCard>
     );
 }

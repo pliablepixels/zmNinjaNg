@@ -1,6 +1,7 @@
 import { Image, Settings as SettingsIcon, Video as VideoIcon, Zap, Gauge, Leaf } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { CardDescription, CardTitle } from '../ui/card';
+import { CollapsibleCard } from '../ui/collapsible-card';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -60,17 +61,20 @@ export function VideoSettings() {
     };
 
     return (
-        <Card>
-            <CardHeader>
-                <div className="flex items-center gap-2">
-                    <SettingsIcon className="h-5 w-5 text-primary" />
-                    <CardTitle>{t('settings.video_display_settings')}</CardTitle>
-                </div>
-                <CardDescription>
-                    {t('settings.video_display_desc')}
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+        <CollapsibleCard
+            header={
+                <>
+                    <div className="flex items-center gap-2">
+                        <SettingsIcon className="h-5 w-5 text-primary" />
+                        <CardTitle>{t('settings.video_display_settings')}</CardTitle>
+                    </div>
+                    <CardDescription>
+                        {t('settings.video_display_desc')}
+                    </CardDescription>
+                </>
+            }
+        >
+            <div className="space-y-6">
                 {/* Bandwidth Mode Toggle */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-lg border bg-card">
                     <div className="flex-1 space-y-1">
@@ -319,7 +323,7 @@ export function VideoSettings() {
                         </div>
                     </div>
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </CollapsibleCard>
     );
 }
