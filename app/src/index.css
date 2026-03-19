@@ -217,8 +217,8 @@
   line-height: 1.3;
 }
 .compact-mode h1 { font-size: 1rem; line-height: 1.2; }
-.compact-mode h2 { font-size: 0.9375rem; line-height: 1.2; }
-.compact-mode h3 { font-size: 0.875rem; line-height: 1.2; }
+.compact-mode h2 { font-size: 0.9375rem; line-height: 1.2; margin-bottom: 0.25rem; }
+.compact-mode h3 { font-size: 0.875rem; line-height: 1.2; margin-bottom: 0.25rem; }
 .compact-mode h4,
 .compact-mode h5,
 .compact-mode h6 { font-size: 0.8125rem; line-height: 1.25; }
@@ -528,4 +528,11 @@
   letter-spacing: normal;
   font-size: 0.6875rem;
   font-weight: 600;
+}
+
+/* --- Description text under labels: smaller --- */
+.compact-mode p[class*="text-muted-foreground"] {
+  font-size: 0.6875rem;
+  line-height: 1.3;
+  margin-top: 0.125rem;
 }
