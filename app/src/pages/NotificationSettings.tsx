@@ -308,7 +308,7 @@ export default function NotificationSettings() {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-8" data-testid="notification-settings">
+    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-5" data-testid="notification-settings">
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
@@ -329,7 +329,7 @@ export default function NotificationSettings() {
         </Button>
       </div>
 
-      <div className="grid gap-6">
+      <div className="grid gap-4">
         {/* Enable/Disable */}
         <Card>
           <CardHeader className="pb-3">
@@ -350,7 +350,7 @@ export default function NotificationSettings() {
               {t('notification_settings.status_desc')}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
               <div className="flex-1 space-y-1">
                 <Label htmlFor="enable-notifications" className="text-base font-semibold">
@@ -388,13 +388,13 @@ export default function NotificationSettings() {
                 {t('notification_settings.mode_desc')}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* ES Mode */}
                 <button
                   type="button"
                   onClick={() => handleModeChange('es')}
-                  className={`p-4 rounded-lg border text-left transition-colors ${
+                  className={`p-3 rounded-lg border text-left transition-colors ${
                     (settings.notificationMode || 'es') === 'es'
                       ? 'border-primary bg-primary/5'
                       : 'border-border hover:border-muted-foreground/50'
@@ -412,7 +412,7 @@ export default function NotificationSettings() {
                   type="button"
                   onClick={() => handleModeChange('direct')}
                   disabled={directModeAvailable !== true}
-                  className={`p-4 rounded-lg border text-left transition-colors ${
+                  className={`p-3 rounded-lg border text-left transition-colors ${
                     settings.notificationMode === 'direct'
                       ? 'border-primary bg-primary/5'
                       : directModeAvailable
@@ -446,7 +446,7 @@ export default function NotificationSettings() {
                 {t('notification_settings.direct_options_desc')}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>{t('notification_settings.polling_interval')}</Label>
@@ -510,7 +510,7 @@ export default function NotificationSettings() {
                 {t('notification_settings.server_config_desc')}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4">
               {/* Host */}
               <div className="space-y-2">
                 <Label htmlFor="host" className="text-base font-semibold">
@@ -677,7 +677,7 @@ export default function NotificationSettings() {
                 {t('notification_settings.monitor_filters_desc')}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               {/* All Monitors toggle */}
               <div
                 className="flex items-center justify-between p-4 rounded-lg border bg-card"
