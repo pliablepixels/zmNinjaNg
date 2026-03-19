@@ -33,8 +33,8 @@ export function QuickDateRangeButtons({
   onRangeSelect,
   variant = 'outline',
   size = 'sm',
-  className = 'text-xs h-8',
-  gridClassName = 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2',
+  className = 'text-xs h-7 px-3',
+  gridClassName = 'flex flex-wrap gap-1.5',
 }: QuickDateRangeButtonsProps) {
   const { t } = useTranslation();
 
