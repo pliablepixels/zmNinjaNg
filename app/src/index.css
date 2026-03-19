@@ -338,6 +338,12 @@
   .compact-mode .sm\:h-10 { height: 2rem; }
 }
 
+/* --- Inputs: tighter padding in compact --- */
+.compact-mode input,
+.compact-mode textarea {
+  padding: 0.25rem 0.5rem;
+}
+
 /* --- Icons: one step down --- */
 .compact-mode .h-5.w-5 { height: 1rem; width: 1rem; }
 .compact-mode .h-12.w-12 { height: 2rem; width: 2rem; }
@@ -366,6 +372,24 @@
 .compact-mode [role="combobox"] {
   font-size: 0.75rem;
   height: 1.75rem;
+  padding: 0.25rem 0.5rem;
+}
+.compact-mode [role="option"] {
+  padding: 0.25rem 0.5rem 0.25rem 1.75rem;
+  font-size: 0.75rem;
+}
+
+/* --- Switches: smaller track and thumb --- */
+.compact-mode [role="switch"] {
+  height: 1.25rem;
+  width: 2.25rem;
+}
+.compact-mode [role="switch"] > [data-state] {
+  height: 1rem;
+  width: 1rem;
+}
+.compact-mode [role="switch"] > [data-state="checked"] {
+  transform: translateX(1rem);
 }
 
 /* --- Grid overrides for settings/card grids --- */
