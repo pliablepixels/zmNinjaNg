@@ -27,12 +27,14 @@ import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { NotificationBadge } from '../components/NotificationBadge';
+import { useAuthStore } from '../stores/auth';
 
 export default function NotificationHistory() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { currentProfile } = useCurrentProfile();
   const { getEvents, getUnreadCount, markEventRead, markAllRead, clearEvents } = useNotificationStore();
+  const accessToken = useAuthStore((state) => state.accessToken);
   const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
 
   // Get events and unread count for current profile
@@ -173,7 +175,7 @@ export default function NotificationHistory() {
                   {event.ImageUrl && (
                     <div className="flex-shrink-0">
                       <img
-                        src={event.ImageUrl}
+                        src={accessToken ? `${event.ImageUrl}&token=${accessToken}` : event.ImageUrl}
                         alt={`Event ${event.EventId}`}
                         className="h-32 w-auto rounded-lg border object-cover cursor-pointer hover:opacity-80 transition-opacity"
                         onClick={() => handleViewEvent(event.EventId)}

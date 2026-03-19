@@ -161,9 +161,13 @@ export function NotificationHandler() {
     }
   }, [currentProfile?.id, isConnected, currentProfileId, disconnect]);
 
-  // Process delivered notifications and sync badge when profile connects (handles cold start + warm resume)
+  // Process delivered notifications on cold start / profile load.
+  // Uses currentProfile (persisted, available immediately) instead of
+  // currentProfileId (runtime-only, null on cold start).
   useEffect(() => {
-    if (!Capacitor.isNativePlatform() || !currentProfileId) return;
+    if (!Capacitor.isNativePlatform() || !currentProfile) return;
+
+    const profileId = currentProfile.id;
 
     const processDelivered = async () => {
       try {
@@ -173,7 +177,6 @@ export function NotificationHandler() {
         if (notifications.length > 0) {
           const store = useNotificationStore.getState();
           const { profiles } = useProfileStore.getState();
-          const authStore = useAuthStore.getState();
 
           for (const notif of notifications) {
             const data = notif.data as Record<string, string> | undefined;
@@ -181,14 +184,14 @@ export function NotificationHandler() {
             const eid = data?.eid || data?.EventId;
 
             // Resolve which profile this notification belongs to
-            const resolved = resolveProfileForNotification(data?.profile, currentProfileId);
-            const eventProfileId: string = resolved.targetProfileId || currentProfileId;
+            const resolved = resolveProfileForNotification(data?.profile, profileId);
+            const eventProfileId: string = resolved.targetProfileId || profileId;
             const profile = profiles.find(p => p.id === eventProfileId);
 
             // Only construct image URL for current profile's notifications
             let imageUrl: string | undefined;
-            if (eid && eventProfileId === currentProfileId && profile && authStore.accessToken) {
-              imageUrl = `${profile.portalUrl}/index.php?view=image&eid=${eid}&fid=snapshot&width=600&token=${authStore.accessToken}`;
+            if (eid && eventProfileId === profileId && profile) {
+              imageUrl = `${profile.portalUrl}/index.php?view=image&eid=${eid}&fid=snapshot&width=600`;
             }
 
             const monitorName = data?.monitorName || data?.MonitorName || notif.title?.replace(/\s*Alarm.*$/, '') || 'Unknown';
@@ -213,7 +216,7 @@ export function NotificationHandler() {
     };
 
     processDelivered();
-  }, [currentProfileId]);
+  }, [currentProfile]);
 
   // Clear native badge and sync badge count when app comes to foreground (iOS/Android)
   useEffect(() => {
@@ -228,56 +231,58 @@ export function NotificationHandler() {
 
         const listener = await CapApp.addListener('appStateChange', async ({ isActive }) => {
           if (isActive) {
+            const store = useNotificationStore.getState();
+            const profileId = store.currentProfileId;
+
+            // Only process and clear delivered notifications if we have an active profile.
+            // On cold start, currentProfileId may still be null — the processDelivered
+            // effect (which depends on currentProfileId) will handle those instead.
+            if (!profileId) return;
+
             // Read delivered notifications that arrived while backgrounded
             try {
-              const store = useNotificationStore.getState();
-              const profileId = store.currentProfileId;
-              if (profileId) {
-                const { notifications } = await FirebaseMessaging.getDeliveredNotifications();
-                if (notifications.length > 0) {
-                  const { profiles } = useProfileStore.getState();
-                  const authStore = useAuthStore.getState();
+              const { notifications } = await FirebaseMessaging.getDeliveredNotifications();
+              if (notifications.length > 0) {
+                const { profiles } = useProfileStore.getState();
 
-                  for (const notif of notifications) {
-                    const data = notif.data as Record<string, string> | undefined;
-                    const mid = data?.mid || data?.MonitorId;
-                    const eid = data?.eid || data?.EventId;
+                for (const notif of notifications) {
+                  const data = notif.data as Record<string, string> | undefined;
+                  const mid = data?.mid || data?.MonitorId;
+                  const eid = data?.eid || data?.EventId;
 
-                    // Resolve which profile this notification belongs to
-                    const resolved = resolveProfileForNotification(data?.profile, profileId);
-                    const eventProfileId: string = resolved.targetProfileId || profileId;
-                    const profile = profiles.find(p => p.id === eventProfileId);
+                  // Resolve which profile this notification belongs to
+                  const resolved = resolveProfileForNotification(data?.profile, profileId);
+                  const eventProfileId: string = resolved.targetProfileId || profileId;
+                  const profile = profiles.find(p => p.id === eventProfileId);
 
-                    // Only construct image URL for current profile's notifications
-                    let imageUrl: string | undefined;
-                    if (eid && eventProfileId === profileId && profile && authStore.accessToken) {
-                      imageUrl = `${profile.portalUrl}/index.php?view=image&eid=${eid}&fid=snapshot&width=600&token=${authStore.accessToken}`;
-                    }
-
-                    const monitorName = data?.monitorName || data?.MonitorName || notif.title?.replace(/\s*Alarm.*$/, '') || 'Unknown';
-                    const cause = data?.cause || data?.Cause || notif.body || 'Motion detected';
-
-                    store.addEvent(eventProfileId, {
-                      MonitorId: mid ? parseInt(String(mid), 10) : 0,
-                      MonitorName: monitorName,
-                      EventId: eid ? parseInt(String(eid), 10) : Date.now(),
-                      Cause: cause,
-                      Name: monitorName,
-                      ImageUrl: imageUrl,
-                    }, 'push');
+                  // Only construct image URL for current profile's notifications
+                  let imageUrl: string | undefined;
+                  if (eid && eventProfileId === profileId && profile) {
+                    imageUrl = `${profile.portalUrl}/index.php?view=image&eid=${eid}&fid=snapshot&width=600`;
                   }
-                  log.notificationHandler('Added delivered notifications to history on resume', LogLevel.INFO, { count: notifications.length });
+
+                  const monitorName = data?.monitorName || data?.MonitorName || notif.title?.replace(/\s*Alarm.*$/, '') || 'Unknown';
+                  const cause = data?.cause || data?.Cause || notif.body || 'Motion detected';
+
+                  store.addEvent(eventProfileId, {
+                    MonitorId: mid ? parseInt(String(mid), 10) : 0,
+                    MonitorName: monitorName,
+                    EventId: eid ? parseInt(String(eid), 10) : Date.now(),
+                    Cause: cause,
+                    Name: monitorName,
+                    ImageUrl: imageUrl,
+                  }, 'push');
                 }
+                log.notificationHandler('Added delivered notifications to history on resume', LogLevel.INFO, { count: notifications.length });
               }
             } catch (err) {
               log.notificationHandler('Failed to read delivered notifications on resume', LogLevel.ERROR, err);
             }
 
             await FirebaseMessaging.removeAllDeliveredNotifications();
-            log.notificationHandler('Cleared native badge on app resume', LogLevel.DEBUG);
+            log.notificationHandler('Cleared delivered notifications on app resume', LogLevel.DEBUG);
 
             // Sync badge count with server
-            const store = useNotificationStore.getState();
             store._updateBadge();
           }
         });
@@ -507,7 +512,7 @@ export function NotificationHandler() {
           {latestEvent.ImageUrl ? (
             <div className="flex-shrink-0">
               <img
-                src={latestEvent.ImageUrl}
+                src={latestEvent.ImageUrl ? `${latestEvent.ImageUrl}&token=${useAuthStore.getState().accessToken}` : ''}
                 alt={latestEvent.MonitorName}
                 className="h-16 w-16 rounded object-cover border"
                 onError={(e) => {

@@ -622,6 +622,18 @@ export const useNotificationStore = create<NotificationState>()(
         const settings = get().getProfileSettings(currentProfileId);
         const badgeCount = count ?? settings.badgeCount;
 
+        // Set the iOS/Android app icon badge locally
+        try {
+          const { Capacitor } = await import('@capacitor/core');
+          if (Capacitor.isNativePlatform()) {
+            const { Badge } = await import('@capawesome/capacitor-badge');
+            await Badge.set({ count: badgeCount });
+            log.notifications('Set native app badge', LogLevel.DEBUG, { badgeCount });
+          }
+        } catch {
+          // Badge plugin not available — non-fatal
+        }
+
         try {
           if (settings.notificationMode === 'direct') {
             // Direct mode: update badge count via ZM REST API

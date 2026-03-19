@@ -33,8 +33,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
-        // Clear app icon badge when user opens the app
-        application.applicationIconBadgeNumber = 0
+        // Badge count is managed by the JS notification store.
+        // Do NOT clear here — it is decremented as the user views notifications.
     }
 
     func applicationWillTerminate(_ application: UIApplication) {

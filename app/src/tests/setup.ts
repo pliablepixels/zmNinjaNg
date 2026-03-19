@@ -168,6 +168,15 @@ vi.mock('../src/plugins/ssl-trust', () => ({
   },
 }));
 
+// Mock @capawesome/capacitor-badge for app icon badge
+vi.mock('@capawesome/capacitor-badge', () => ({
+  Badge: {
+    set: vi.fn().mockResolvedValue(undefined),
+    get: vi.fn().mockResolvedValue({ count: 0 }),
+    clear: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
 // Mock capacitor-barcode-scanner for native QR scanning tests
 vi.mock('capacitor-barcode-scanner', () => ({
   BarcodeScanner: {
