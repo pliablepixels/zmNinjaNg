@@ -329,7 +329,7 @@ function SidebarContent({ onMobileClose, isCollapsed }: SidebarContentProps) {
                 onClick={() => onMobileClose?.()}
                 className={cn(
                   "flex items-center rounded-lg font-medium transition-all duration-200 group relative",
-                  isCompact ? "gap-2 px-2 py-1 text-xs" : "gap-3 px-3 py-2.5 text-sm",
+                  isCompact ? "gap-2 px-2 py-2 text-sm" : "gap-3 px-3 py-2.5 text-sm",
                   isActive
                     ? "bg-primary text-primary-foreground shadow-md"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
