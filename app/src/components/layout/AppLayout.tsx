@@ -401,20 +401,20 @@ function SidebarContent({ onMobileClose, isCollapsed }: SidebarContentProps) {
         </nav>
       </div>
 
-      <div className={cn("border-t bg-card/50 backdrop-blur-sm transition-all duration-300", isCollapsed ? "p-2 space-y-3" : isCompact ? "px-2 py-1.5 space-y-0.5" : "p-4 space-y-3")}>
+      <div className={cn("border-t bg-card/50 backdrop-blur-sm transition-all duration-300", isCollapsed ? "p-2 space-y-3" : isCompact ? "px-2 py-1.5 space-y-0.5" : "px-3 py-2 space-y-1.5")}>
         {!isCollapsed ? (
           <>
-            <div className={isCompact ? "space-y-0.5" : "space-y-2"}>
+            <div className={isCompact ? "space-y-0.5" : "space-y-1"}>
               <span className="text-xs font-medium text-muted-foreground px-1">{t('sidebar.profile')}</span>
               <ProfileSwitcher />
             </div>
-            <div className={cn("flex items-center justify-between", isCompact ? "" : "pt-2")}>
+            <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">{t('settings.theme')}</span>
-              <div className={isCompact ? "[&_button]:h-7 [&_button]:w-7 [&_button]:min-h-0" : ""}>
+              <div className={isCompact ? "[&_button]:h-7 [&_button]:w-7 [&_button]:min-h-0" : "[&_button]:h-8 [&_button]:w-8 [&_button]:min-h-0"}>
                 <ModeToggle />
               </div>
             </div>
-            <div className={cn("flex items-center justify-between", isCompact ? "" : "pt-2")}>
+            <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">{t('monitor_detail.insomnia_label')}</span>
               <Button
                 onClick={handleInsomniaToggle}
