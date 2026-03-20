@@ -43,11 +43,6 @@ export function DebugSettings() {
                         <p className="text-sm text-muted-foreground">
                             {t('settings.disable_log_redaction_desc')}
                         </p>
-                        {settings.disableLogRedaction && (
-                            <p className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
-                                {t('settings.disable_log_redaction_warning')}
-                            </p>
-                        )}
                     </div>
                     <Switch
                         id="log-redaction"

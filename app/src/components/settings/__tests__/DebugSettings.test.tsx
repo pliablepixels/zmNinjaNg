@@ -77,16 +77,4 @@ describe('DebugSettings', () => {
     });
   });
 
-  it('should show warning when log redaction is disabled', () => {
-    // Override mock for this test
-    mockUseCurrentProfile.mockReturnValue({
-      currentProfile: { id: 'profile-1', name: 'Test Profile' },
-      settings: { disableLogRedaction: true },
-      hasProfile: true,
-    });
-
-    render(<DebugSettings />);
-
-    expect(screen.getByText('settings.disable_log_redaction_warning')).toBeInTheDocument();
-  });
 });

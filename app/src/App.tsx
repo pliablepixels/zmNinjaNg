@@ -282,7 +282,6 @@ function App() {
   const isBootstrapping = useProfileStore((state) => state.isBootstrapping);
   const bootstrapStep = useProfileStore((state) => state.bootstrapStep);
   const cancelBootstrap = useProfileStore((state) => state.cancelBootstrap);
-  const profiles = useProfileStore((state) => state.profiles);
 
   const handleCancelBootstrap = () => {
     log.app('Bootstrap cancelled by user', LogLevel.INFO);
@@ -327,9 +326,7 @@ function App() {
                     {t('common.cancel')}
                   </Button>
                   <div className="text-xs text-muted-foreground">
-                    {profiles.length > 1
-                      ? t('app_init.cancel_hint_multiple')
-                      : t('app_init.cancel_hint_single')}
+                    {t('app_init.cancel_hint_single')}
                   </div>
                 </div>
               </div>
