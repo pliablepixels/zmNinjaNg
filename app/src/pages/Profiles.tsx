@@ -385,7 +385,6 @@ export default function Profiles() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleSwitchProfile(profile.id)}
-                          disabled={switchingProfileId === profile.id}
                           data-testid={`profile-switch-button-${profile.id}`}
                         >
                           {switchingProfileId === profile.id ? (
@@ -402,7 +401,6 @@ export default function Profiles() {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleOpenEditDialog(profile)}
-                        disabled={!!switchingProfileId}
                         aria-label={t('common.edit')}
                         data-testid={`profile-edit-button-${profile.id}`}
                       >
@@ -414,7 +412,6 @@ export default function Profiles() {
                           size="icon"
                           onClick={() => handleOpenDeleteDialog(profile)}
                           className="text-destructive hover:text-destructive"
-                          disabled={!!switchingProfileId}
                           aria-label={t('common.delete')}
                           data-testid={`profile-delete-button-${profile.id}`}
                         >
