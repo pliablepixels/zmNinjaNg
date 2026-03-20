@@ -68,22 +68,18 @@ function AppRoutes() {
   const profiles = useProfileStore((state) => state.profiles);
   const isInitialized = useProfileStore((state) => state.isInitialized);
   const { currentProfile, settings } = useCurrentProfile();
-  const { displayMode, logLevel, lastRoute } = settings;
+  const { logLevel, lastRoute } = settings;
 
   // Enable automatic token refresh
   useTokenRefresh();
 
-  // Apply compact mode class to root element
+  // Always apply compact mode
   useEffect(() => {
     const root = document.getElementById('root');
     if (root) {
-      if (displayMode === 'compact') {
-        root.classList.add('compact-mode');
-      } else {
-        root.classList.remove('compact-mode');
-      }
+      root.classList.add('compact-mode');
     }
-  }, [displayMode]);
+  }, []);
 
   useEffect(() => {
     logger.setLevel(logLevel);

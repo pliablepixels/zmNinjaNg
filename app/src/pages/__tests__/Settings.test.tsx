@@ -117,12 +117,9 @@ describe('Settings Page', () => {
     expect(updateProfileSettings).toHaveBeenCalledWith('profile-1', { defaultEventLimit: 400 });
   });
 
-  it('updates display mode and log redaction toggle', async () => {
+  it('updates log redaction toggle', async () => {
     const user = userEvent.setup();
     render(<Settings />);
-
-    await user.click(screen.getByTestId('settings-display-mode-switch'));
-    expect(updateProfileSettings).toHaveBeenCalledWith('profile-1', { displayMode: 'compact' });
 
     await user.click(screen.getByTestId('settings-log-redaction-switch'));
     expect(updateProfileSettings).toHaveBeenCalledWith('profile-1', { disableLogRedaction: true });

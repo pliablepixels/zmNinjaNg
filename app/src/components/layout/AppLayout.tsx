@@ -117,7 +117,7 @@ function LanguageSwitcher({ collapsed = false }: { collapsed?: boolean }) {
  */
 function SidebarContent({ onMobileClose, isCollapsed }: SidebarContentProps) {
   const location = useLocation();
-  const isCompact = document.documentElement.classList.contains('compact-mode');
+  const isCompact = true;
   const currentProfile = useProfileStore(
     useShallow((state) => {
       const { profiles, currentProfileId } = state;
@@ -477,7 +477,7 @@ export default function AppLayout() {
   useInsomnia({ enabled: settings.insomnia });
 
 
-  const expandedWidth = settings.displayMode === 'compact' ? 180 : 256;
+  const expandedWidth = 180;
   const collapsedWidth = 60;
   const sidebarWidth = isCollapsed ? collapsedWidth : expandedWidth;
 
