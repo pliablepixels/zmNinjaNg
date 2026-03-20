@@ -2,6 +2,7 @@
   "common": {
     "go_back": "返回",
     "refresh": "刷新",
+    "reset": "重置",
     "view_list": "列表视图",
     "view_montage": "蒙太奇视图",
     "close": "关闭",

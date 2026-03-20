@@ -1,6 +1,7 @@
 {
   "common": {
     "refresh": "Refresh",
+    "reset": "Reset",
     "view_list": "List view",
     "view_montage": "Montage view",
     "close": "Close",

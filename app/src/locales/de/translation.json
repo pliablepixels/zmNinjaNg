@@ -2,6 +2,7 @@
   "common": {
     "go_back": "Zurück",
     "refresh": "Aktualisieren",
+    "reset": "Zurücksetzen",
     "view_list": "Listenansicht",
     "view_montage": "Montageansicht",
     "close": "Schließen",

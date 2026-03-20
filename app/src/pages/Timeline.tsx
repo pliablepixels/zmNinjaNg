@@ -76,7 +76,7 @@ export default function Timeline() {
     return selectedMonitorIds.join(',');
   }, [selectedMonitorIds]);
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['timeline-events', startDate, endDate, monitorFilter, onlyDetectedObjects],
     queryFn: () =>
       getEvents({
@@ -261,9 +261,9 @@ export default function Timeline() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={() => refetch()} variant="outline" size="sm" className="h-8 sm:h-9" data-testid="timeline-refresh-button">
+          <Button onClick={() => { clearFilters(); defaultDates.current = { start: format(subDays(new Date(), 1), "yyyy-MM-dd'T'HH:mm"), end: format(new Date(), "yyyy-MM-dd'T'HH:mm") }; }} variant="outline" size="sm" className="h-8 sm:h-9" data-testid="timeline-reset-button">
             <RefreshCw className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">{t('common.refresh')}</span>
+            <span className="hidden sm:inline">{t('common.reset')}</span>
           </Button>
         </div>
       </div>
