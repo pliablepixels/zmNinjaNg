@@ -180,9 +180,9 @@ function EventCardComponent({ event, monitorName, thumbnailUrl, objectFit = 'con
 
           {/* Detection notes (strip everything after | which is redundant motion info) */}
           {event.Notes && (
-            <p className="text-[10px] sm:text-xs text-muted-foreground truncate mt-1" title={event.Notes}>
+            <div className="text-[10px] sm:text-xs text-muted-foreground truncate mt-1" title={event.Notes}>
               {event.Notes.split('|')[0].trim()}
-            </p>
+            </div>
           )}
 
           {/* Tags */}
