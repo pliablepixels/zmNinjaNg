@@ -5,7 +5,7 @@
  * Allows adding, editing, deleting, and switching between ZoneMinder servers.
  */
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProfileStore } from '../stores/profile';
 import { useCurrentProfile } from '../hooks/useCurrentProfile';
@@ -262,26 +262,36 @@ export default function Profiles() {
     }
   };
 
-  const handleSwitchProfile = async (profileId: string) => {
-    if (profileId === currentProfile?.id) return;
+  const switchAbortRef = useRef<AbortController | null>(null);
 
+  const handleSwitchProfile = async (profileId: string) => {
     const profile = profiles.find((p) => p.id === profileId);
     if (!profile) return;
 
-    // Dismiss any lingering toasts from a previous switch attempt
+    // Abort any in-flight switch attempt
+    if (switchAbortRef.current) {
+      switchAbortRef.current.abort();
+    }
+    const abort = new AbortController();
+    switchAbortRef.current = abort;
+
+    // Clear previous state
     sonnerToast.dismiss();
     setSwitchingProfileId(profileId);
-    const loadingToast = sonnerToast.loading(t('profiles.switching', { name: profile.name }));
+    const loadingToast = sonnerToast.loading(t('profiles.switching_to', { name: profile.name }));
 
     try {
       await switchProfile(profileId);
 
+      // If this switch was aborted (user clicked another profile), bail
+      if (abort.signal.aborted) return;
+
       sonnerToast.dismiss(loadingToast);
       sonnerToast.success(t('profiles.switched_to', { name: profile.name }));
-
-      // Navigate to monitors to show the new server's data
+      setSwitchingProfileId(null);
       navigate('/monitors');
     } catch {
+      if (abort.signal.aborted) return;
       sonnerToast.dismiss(loadingToast);
       sonnerToast.error(t('profiles.switch_failed'));
       setSwitchingProfileId(null);
