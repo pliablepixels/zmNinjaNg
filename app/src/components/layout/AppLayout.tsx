@@ -37,7 +37,7 @@ import {
   Server,
   Eye,
   EyeOff,
-  Pencil,
+  ArrowUpDown,
   Check,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -285,7 +285,7 @@ function SidebarContent({ onMobileClose, isCollapsed }: SidebarContentProps) {
               title={isReordering ? t('dashboard.done') : t('settings.nav_order')}
               data-testid="nav-reorder-toggle"
             >
-              {isReordering ? <Check className="h-3.5 w-3.5" /> : <Pencil className="h-3 w-3" />}
+              {isReordering ? <Check className="h-3.5 w-3.5" /> : <ArrowUpDown className="h-3 w-3" />}
             </Button>
           </div>
         )}
