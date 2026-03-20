@@ -319,7 +319,7 @@ function MontageMonitorComponent({
         <button
           type="button"
           className={cn(
-            "absolute bottom-1 left-1 z-30 rounded-full p-1.5 touch-manipulation transition-all",
+            "absolute bottom-1 left-1 z-30 rounded-full p-1.5 touch-manipulation transition-all no-drag",
             isPinned
               ? "bg-blue-500 text-white shadow-md"
               : "bg-black/50 text-white/70 hover:bg-black/70 hover:text-white"

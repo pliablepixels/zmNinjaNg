@@ -364,7 +364,7 @@ export default function Montage() {
               isResizable={isEditMode}
               isDraggable={isEditMode}
               resizeHandles={['se', 'sw', 'ne', 'nw']}
-              draggableCancel=".pin-locked"
+              draggableCancel=".pin-locked,.no-drag"
               onLayoutChange={handleLayoutChange}
               onDragStop={handleDragStop}
               onResizeStop={handleResizeStop}
