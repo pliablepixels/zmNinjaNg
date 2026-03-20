@@ -494,16 +494,9 @@
   background: transparent;
 }
 
-/* --- Hidden responsive labels: show always at compact size --- */
-.compact-mode .hidden.sm\:inline {
-  display: inline !important;
-  font-size: 0.6875rem;
-}
-.compact-mode .hidden.sm\:block {
-  display: block !important;
-  font-size: 0.6875rem;
-}
-/* But keep page subtitles hidden (handled by h1 + p rule above) */
+/* Responsive hidden/show classes should work naturally in compact mode.
+   Do NOT force-show hidden.sm:inline or hidden.sm:block — it breaks patterns
+   where two elements provide mobile vs desktop variants of the same content. */
 
 /* --- Event cards: tighter rows --- */
 .compact-mode [data-testid="event-card"] {
