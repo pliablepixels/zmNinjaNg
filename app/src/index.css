@@ -57,34 +57,53 @@
 
 /* Montage grid: resize handles for all corners */
 .react-grid-item > .react-resizable-handle {
-  width: 28px !important;
-  height: 28px !important;
+  position: absolute !important;
+  width: 24px !important;
+  height: 24px !important;
   z-index: 40 !important;
 }
 .react-grid-item > .react-resizable-handle::after {
+  content: '' !important;
+  position: absolute !important;
   width: 10px !important;
   height: 10px !important;
   border-style: solid !important;
   border-color: rgba(250, 204, 21, 0.8) !important;
 }
 /* Bottom-right */
+.react-grid-item > .react-resizable-handle-se {
+  bottom: 0 !important; right: 0 !important;
+  cursor: se-resize !important;
+}
 .react-grid-item > .react-resizable-handle-se::after {
-  right: 3px !important; bottom: 3px !important;
+  bottom: 3px !important; right: 3px !important;
   border-width: 0 3px 3px 0 !important;
 }
 /* Bottom-left */
+.react-grid-item > .react-resizable-handle-sw {
+  bottom: 0 !important; left: 0 !important;
+  cursor: sw-resize !important;
+}
 .react-grid-item > .react-resizable-handle-sw::after {
-  left: 3px !important; bottom: 3px !important;
+  bottom: 3px !important; left: 3px !important;
   border-width: 0 0 3px 3px !important;
 }
 /* Top-right */
+.react-grid-item > .react-resizable-handle-ne {
+  top: 0 !important; right: 0 !important;
+  cursor: ne-resize !important;
+}
 .react-grid-item > .react-resizable-handle-ne::after {
-  right: 3px !important; top: 3px !important;
+  top: 3px !important; right: 3px !important;
   border-width: 3px 3px 0 0 !important;
 }
 /* Top-left */
+.react-grid-item > .react-resizable-handle-nw {
+  top: 0 !important; left: 0 !important;
+  cursor: nw-resize !important;
+}
 .react-grid-item > .react-resizable-handle-nw::after {
-  left: 3px !important; top: 3px !important;
+  top: 3px !important; left: 3px !important;
   border-width: 3px 0 0 3px !important;
 }
 
