@@ -112,6 +112,7 @@ export default function Montage() {
     handleApplyGridLayout,
     handleLoadSavedLayout,
     handleLayoutChange,
+    handleDragStop,
     handleResizeStop,
     handleWidthChange,
     togglePinMonitor,
@@ -350,6 +351,7 @@ export default function Montage() {
               isDraggable={isEditMode}
               draggableCancel=".pin-locked"
               onLayoutChange={handleLayoutChange}
+              onDragStop={handleDragStop}
               onResizeStop={handleResizeStop}
             >
               {monitors.map(({ Monitor, Monitor_Status }) => (

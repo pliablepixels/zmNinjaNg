@@ -115,6 +115,7 @@ interface UseMontageGridReturn {
   handleResizeStop: (layout: Layout[], oldItem: Layout, newItem: Layout) => void;
   handleWidthChange: (width: number) => void;
   setGridCols: React.Dispatch<React.SetStateAction<number>>;
+  handleDragStop: (layout: Layout[], oldItem: Layout, newItem: Layout) => void;
   togglePinMonitor: (monitorId: string) => void;
   isMonitorPinned: (monitorId: string) => boolean;
 }
@@ -317,14 +318,18 @@ export function useMontageGrid({
     [recalcHeights]
   );
 
+  // onLayoutChange fires on EVERY re-render due to RGL compaction.
+  // Do NOT persist here — it overwrites our layout with compacted positions.
   const handleLayoutChange = useCallback(
+    (_nextLayout: Layout[]) => { /* no-op */ },
+    []
+  );
+
+  // Save layout only when user finishes a drag
+  const handleDragStop = useCallback(
     (nextLayout: Layout[]) => {
-      // Only persist when user is actively editing (drag/resize).
-      if (!isEditModeRef.current) return;
-      if (!currentProfileRef.current) return;
-
-      console.log('[LAYOUT_CHANGE] fired', JSON.stringify(nextLayout.map(l => ({ i: l.i, x: l.x, y: l.y, w: l.w, h: l.h }))));
-
+      if (!isEditModeRef.current || !currentProfileRef.current) return;
+      setLayout(nextLayout);
       saveMontageLayout(currentProfileRef.current.id, {
         ...settingsRef.current.montageLayouts,
         lg: nextLayout,
@@ -365,7 +370,6 @@ export function useMontageGrid({
   const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
 
   const togglePinMonitor = useCallback((monitorId: string) => {
-    console.log('[PIN] toggle', monitorId, 'layout before:', JSON.stringify(layout.map(l => ({ i: l.i, x: l.x, y: l.y, w: l.w, h: l.h }))));
     setPinnedIds((prev) => {
       const next = new Set(prev);
       if (next.has(monitorId)) next.delete(monitorId);
@@ -388,6 +392,7 @@ export function useMontageGrid({
     handleApplyGridLayout,
     handleLoadSavedLayout,
     handleLayoutChange,
+    handleDragStop,
     handleResizeStop,
     handleWidthChange,
     setGridCols: setDisplayCols,
