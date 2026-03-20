@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { MontageMonitor } from '../components/monitors/MontageMonitor';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { RefreshCw, Video, AlertCircle, Maximize, Pencil } from 'lucide-react';
+import { RefreshCw, Video, AlertCircle, Maximize, Pencil, ArrowLeftRight } from 'lucide-react';
 import { filterEnabledMonitors, filterMonitorsByGroup } from '../lib/filters';
 import { useGroupFilter } from '../hooks/useGroupFilter';
 import { GroupFilterSelect } from '../components/filters/GroupFilterSelect';
@@ -293,7 +293,7 @@ export default function Montage() {
                   title={t('montage.fill_width', 'Fill Width')}
                   data-testid="montage-fill-width"
                 >
-                  <Maximize className="h-4 w-4 sm:mr-2" />
+                  <ArrowLeftRight className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">{t('montage.fill_width', 'Fill')}</span>
                 </Button>
               )}

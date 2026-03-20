@@ -366,43 +366,24 @@ export function useMontageGrid({
     [saveMontageLayout]
   );
 
-  // Scale all items so each row fills the full grid width, preserving relative proportions
+  // Make every item full width (x:0, w:12), stacked vertically, preserving order
   const handleFillWidth = useCallback(() => {
     if (!currentProfileRef.current) return;
 
     setLayout((prev) => {
-      // Group items by row (same y = same row)
-      const rows = new Map<number, Layout[]>();
-      for (const item of prev) {
-        const row = rows.get(item.y) || [];
-        row.push(item);
-        rows.set(item.y, row);
-      }
+      // Sort by current position (top-to-bottom, left-to-right)
+      const sorted = [...prev].sort((a, b) => a.y - b.y || a.x - b.x);
 
-      const nextLayout = prev.map((item) => {
-        const row = rows.get(item.y)!;
-        const totalW = row.reduce((sum, r) => sum + r.w, 0);
-        if (totalW === 0 || totalW === INTERNAL_COLS) return item;
-
-        // Scale width proportionally to fill INTERNAL_COLS
-        const scale = INTERNAL_COLS / totalW;
-        const newW = Math.max(1, Math.round(item.w * scale));
-
-        // Recalculate x positions: items sorted by x, placed sequentially
-        const sorted = [...row].sort((a, b) => a.x - b.x);
-        let newX = 0;
-        for (const r of sorted) {
-          if (r.i === item.i) break;
-          newX += Math.max(1, Math.round(r.w * scale));
-        }
-
-        return { ...item, w: newW, x: newX };
+      let currentY = 0;
+      const nextLayout = sorted.map((item) => {
+        const newItem = { ...item, x: 0, w: INTERNAL_COLS, y: currentY };
+        currentY += item.h;
+        return newItem;
       });
 
-      // Recalculate heights for new widths
+      // Recalculate heights for full width
       const recalculated = recalcHeights(nextLayout, currentWidthRef.current);
 
-      // Persist
       saveMontageLayout(currentProfileRef.current!.id, {
         ...settingsRef.current.montageLayouts,
         lg: recalculated,
