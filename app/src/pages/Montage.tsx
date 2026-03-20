@@ -345,7 +345,7 @@ export default function Montage() {
               margin={[0, 0]}
               containerPadding={[0, 0]}
               compactType={isEditMode ? null : "vertical"}
-              preventCollision={isEditMode}
+              preventCollision={false}
               isResizable={isEditMode}
               isDraggable={isEditMode}
               onLayoutChange={handleLayoutChange}
