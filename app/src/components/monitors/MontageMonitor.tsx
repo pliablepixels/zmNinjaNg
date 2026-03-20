@@ -167,13 +167,19 @@ function MontageMonitorComponent({
   };
 
   return (
-    <Card className={cn(
-      "h-full overflow-hidden flex flex-col rounded-none relative",
-      isFullscreen
-        ? "border-none shadow-none bg-black m-0 p-0"
-        : "border-0 shadow-none bg-card",
-      isEditing && !isFullscreen && (isPinned ? "outline outline-2 -outline-offset-2 outline-blue-400/70" : "outline outline-2 -outline-offset-2 outline-yellow-400/70")
-    )}>
+    <Card
+      className={cn(
+        "h-full overflow-hidden flex flex-col rounded-none relative",
+        isFullscreen
+          ? "border-none shadow-none bg-black m-0 p-0"
+          : "border-0 shadow-none bg-card",
+      )}
+      style={isEditing && !isFullscreen ? {
+        boxShadow: isPinned
+          ? 'inset 0 0 0 2px rgba(96, 165, 250, 0.7)'
+          : 'inset 0 0 0 2px rgba(250, 204, 21, 0.7)',
+      } : undefined}
+    >
       {/* Header / Drag Handle - Toggled via toolbar button in fullscreen mode */}
       <div
         className={cn(

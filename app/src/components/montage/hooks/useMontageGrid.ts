@@ -318,11 +318,12 @@ export function useMontageGrid({
 
   const handleLayoutChange = useCallback(
     (nextLayout: Layout[]) => {
+      // Skip the layout change triggered by a pin toggle — positions haven't moved
+      if (skipNextLayoutChangeRef.current) {
+        skipNextLayoutChangeRef.current = false;
+        return;
+      }
       // Only persist when user is actively editing (drag/resize).
-      // Never overwrite React layout state from onLayoutChange — RGL manages
-      // its own internal layout. Our state is the source of truth for explicit
-      // changes (column switch, resize stop, width change). Overwriting here
-      // would revert recalculated heights with RGL's stale values.
       if (!isEditModeRef.current) return;
       if (!currentProfileRef.current) return;
 
@@ -361,7 +362,10 @@ export function useMontageGrid({
     [saveMontageLayout]
   );
 
+  const skipNextLayoutChangeRef = useRef(false);
+
   const togglePinMonitor = useCallback((monitorId: string) => {
+    skipNextLayoutChangeRef.current = true;
     setLayout((prev) =>
       prev.map((item) =>
         item.i === monitorId ? { ...item, static: !item.static } : item
