@@ -618,11 +618,55 @@ We use multiple stores for different domains:
    ├── useMonitorStore.ts       # Monitor data cache
    ├── useNotificationStore.ts  # Push notifications
    ├── useLogStore.ts           # Application logs (ephemeral)
-   └── useQueryCacheStore.ts    # API response cache
+   ├── useQueryCacheStore.ts    # API response cache
+   └── kioskStore.ts            # Kiosk mode lock state (ephemeral)
 
 **Why multiple stores?** - Separation of concerns - Better performance
 (components subscribe to relevant store only) - Easier to test and
 reason about
+
+Kiosk Store (``stores/kioskStore.ts``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Manages kiosk (lock) mode state. The store is **ephemeral** — it is not
+persisted, so the app always starts unlocked after a restart.
+
+**State:**
+
+- ``isLocked`` — whether kiosk mode is currently active
+- ``previousInsomniaState`` — the insomnia setting value captured just before
+  locking, so it can be restored on unlock
+- ``pinAttempts`` — number of consecutive failed PIN attempts in the current
+  cooldown window
+- ``cooldownUntil`` — Unix timestamp (ms) until which PIN entry is blocked;
+  ``null`` when not in cooldown
+
+**Actions:**
+
+- ``lock(currentInsomniaState)`` — activates kiosk mode and captures the
+  current insomnia state
+- ``unlock()`` — deactivates kiosk mode and resets attempt counters
+- ``recordFailedAttempt()`` — increments ``pinAttempts``; after 5 consecutive
+  failures, sets a 30-second ``cooldownUntil``
+- ``isCoolingDown()`` — returns ``true`` if the current time is before
+  ``cooldownUntil``
+
+**Usage:**
+
+.. code:: typescript
+
+   import { useKioskStore } from '../stores/kioskStore';
+
+   // In a component
+   const { isLocked, lock, unlock } = useKioskStore();
+
+   // Lock with current insomnia state
+   lock(currentInsomniaState);
+
+   // Outside React
+   useKioskStore.getState().isCoolingDown();
+
+PIN storage is handled separately by ``lib/kioskPin.ts`` (not in this store).
 
 Store Organization Pattern
 --------------------------

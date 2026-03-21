@@ -1310,6 +1310,52 @@ orchestrates the notification lifecycle:
 
 --------------
 
+Kiosk PIN Utility (``lib/kioskPin.ts``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Handles hashing, storage, and verification of the kiosk mode PIN.
+The PIN is never stored in plain text — it is hashed with SHA-256 and
+a random 128-bit salt before being written to secure storage.
+
+**Storage:** Uses ``secureStorage.ts`` (Keychain on iOS, Keystore on
+Android, encrypted localStorage on web). Keys: ``kiosk_pin_hash`` and
+``kiosk_pin_salt``.
+
+**Functions:**
+
+- ``hashPin(pin, salt): Promise<string>`` — returns hex-encoded SHA-256
+  of ``salt + pin``. Exported for testing; not normally called directly.
+- ``storePin(pin): Promise<void>`` — generates a random salt, hashes the
+  PIN, and stores both hash and salt in secure storage.
+- ``verifyPin(pin): Promise<boolean>`` — retrieves the stored hash and
+  salt, hashes the candidate PIN, and compares.
+- ``hasPinStored(): Promise<boolean>`` — returns ``true`` if a PIN hash
+  is present in secure storage.
+- ``clearPin(): Promise<void>`` — removes the hash and salt from secure
+  storage (used when the user disables kiosk mode via settings).
+
+**Usage:**
+
+.. code:: typescript
+
+   import { storePin, verifyPin, hasPinStored, clearPin } from '../lib/kioskPin';
+
+   // First-time setup
+   if (!(await hasPinStored())) {
+     await storePin('1234');
+   }
+
+   // Unlock attempt
+   const ok = await verifyPin(enteredPin);
+
+   // Remove PIN
+   await clearPin();
+
+**Used By:** ``hooks/useKioskLock.ts`` (setup flow),
+``components/kiosk/KioskOverlay.tsx`` (unlock verification)
+
+--------------
+
 Next Steps
 ----------
 

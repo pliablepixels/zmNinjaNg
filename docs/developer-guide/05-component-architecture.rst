@@ -32,6 +32,8 @@ Key Directories Explained
   - ``useMonitorStream``: Manages video stream URLs and auth.
   - ``useEventPlayer``: Manages JPEGs streaming for recorded events.
   - ``useTokenRefresh``: Handles background token renewal.
+  - ``useKioskLock``: PIN setup and lock-activation flow for kiosk mode.
+  - ``useBiometricAuth``: Dynamic-import wrapper for biometric authentication.
 
 - **``lib/``**: “Library” code - helpers that could theoretically be in
   a separate npm package.
@@ -66,6 +68,9 @@ Components are organized by domain in ``src/components/``:
    │       ├── EventsWidget.tsx
    │       ├── HeatmapWidget.tsx
    │       └── TimelineWidget.tsx
+   ├── kiosk/            # Kiosk mode components
+   │   ├── KioskOverlay.tsx
+   │   └── PinPad.tsx
    ├── monitors/          # Monitor-related components
    │   ├── MonitorCard.tsx
    │   ├── MontageMonitor.tsx
@@ -650,6 +655,154 @@ re-trigger the animation.
    </div>
 
 Added to all page headers (Dashboard, Events, Monitors, etc.).
+
+Kiosk Mode
+----------
+
+Kiosk mode locks the UI so that the current view stays visible and
+live-updating while all navigation and interaction is blocked. It is
+activated from the sidebar lock icon or the fullscreen montage controls.
+
+KioskOverlay
+~~~~~~~~~~~~
+
+**Location**: ``src/components/kiosk/KioskOverlay.tsx``
+
+Full-screen transparent overlay rendered on top of the entire app when
+``kioskStore.isLocked`` is ``true``. The underlying view continues to
+update (streams, event counts, etc.) — only interaction is blocked.
+
+**Behaviour:**
+
+- Covers the viewport with ``z-index: 9999`` and ``pointer-events: auto``
+- Intercepts browser back navigation (pushState trick) so the user cannot
+  leave the locked view
+- On Android, swallows the hardware back button via ``@capacitor/app``
+  listener (dynamic import, native platforms only)
+- Blocks keyboard shortcuts while locked
+- Shows a small unlock button (bottom-right, semi-transparent glass style)
+- On tap: tries biometrics first; on failure or cancellation falls through
+  to the PIN pad
+- After a successful unlock, calls the ``onUnlock`` prop callback
+
+**Props:**
+
+- ``onUnlock`` — callback called after the store is unlocked
+
+**Key test IDs:** ``kiosk-overlay``, ``kiosk-unlock-button``,
+``kiosk-pin-pad``
+
+**Renders ``null`` when** ``isLocked`` is ``false``.
+
+PinPad
+~~~~~~
+
+**Location**: ``src/components/kiosk/PinPad.tsx``
+
+4-digit numeric keypad rendered in a modal. Used for both PIN setup
+(first-time) and unlock.
+
+**Modes (``PinPadMode``):**
+
+- ``'set'`` — prompts the user to choose a PIN (first-time setup)
+- ``'confirm'`` — prompts the user to re-enter the PIN to verify it
+- ``'unlock'`` — prompts for the PIN to unlock the session
+
+Auto-submits on the 4th digit (100 ms delay to allow the filled dot to
+render). PIN state resets when ``mode`` or ``error`` props change.
+
+**Props:**
+
+- ``mode`` — one of ``'set'``, ``'confirm'``, ``'unlock'``
+- ``onSubmit(pin)`` — called with the 4-digit PIN string
+- ``onCancel`` — called when the user taps Cancel
+- ``error`` — optional error string shown below the PIN dots
+- ``cooldownSeconds`` — when > 0, shows a countdown and disables digit
+  buttons
+
+**Key test IDs:** ``kiosk-pin-pad``, ``kiosk-pin-input``,
+``kiosk-pin-digit-{0-9}``, ``kiosk-pin-cancel``, ``kiosk-pin-delete``
+
+Kiosk Hooks
+~~~~~~~~~~~
+
+useKioskLock
+^^^^^^^^^^^^
+
+**Location**: ``src/hooks/useKioskLock.ts``
+
+Shared lock-activation logic used by the sidebar and the fullscreen
+montage controls. Encapsulates the first-time PIN setup flow so neither
+call site needs to duplicate it.
+
+**Behaviour:**
+
+1. On ``handleLockToggle``: checks whether a PIN is already stored
+   (``hasPinStored()``).
+2. If no PIN exists, opens a ``PinPad`` in ``'set'`` mode, then
+   ``'confirm'`` mode, stores the PIN via ``storePin()``, then activates
+   kiosk mode.
+3. If a PIN is already stored, activates kiosk mode immediately.
+4. On lock, enables insomnia (keep-screen-on) if it was off, so the
+   display stays active.
+
+**Returns:**
+
+- ``isLocked`` — current lock state from the kiosk store
+- ``showSetPin`` — whether the PIN setup pad should be shown
+- ``setPinMode`` — current ``PinPadMode`` (``'set'`` or ``'confirm'``)
+- ``pinError`` — error string for the PIN pad (or ``null``)
+- ``handleLockToggle`` — call to initiate locking
+- ``handleSetPinSubmit(pin)`` — pass digits from the PIN pad
+- ``handleSetPinCancel`` — dismiss the PIN setup pad
+
+**Usage:**
+
+.. code:: tsx
+
+   const {
+     isLocked,
+     showSetPin,
+     setPinMode,
+     pinError,
+     handleLockToggle,
+     handleSetPinSubmit,
+     handleSetPinCancel,
+   } = useKioskLock({ onLocked: () => closeSidebar() });
+
+useBiometricAuth
+^^^^^^^^^^^^^^^^
+
+**Location**: ``src/hooks/useBiometricAuth.ts``
+
+Dynamic import wrapper for ``@aparajita/capacitor-biometric-auth``.
+Exports two async functions (not a React hook) that work on all platforms
+(Touch ID, Face ID, Windows Hello). Falls back gracefully when
+biometrics are unavailable.
+
+- ``checkBiometricAvailability(): Promise<boolean>`` — returns ``true``
+  if the device has enrolled biometrics and the plugin is available.
+- ``authenticateWithBiometrics(reason): Promise<{ success, error? }>``
+  — prompts the system biometric UI. Returns ``{ success: true }`` on
+  success or ``{ success: false, error }`` on failure/cancellation.
+
+Both functions catch all errors and return a safe value so callers never
+need their own try/catch.
+
+**Usage:**
+
+.. code:: typescript
+
+   import {
+     checkBiometricAvailability,
+     authenticateWithBiometrics,
+   } from '../hooks/useBiometricAuth';
+
+   const available = await checkBiometricAvailability();
+   if (available) {
+     const result = await authenticateWithBiometrics(t('kiosk.biometric_prompt'));
+     if (result.success) { /* unlock */ }
+   }
 
 Component Composition
 ---------------------
