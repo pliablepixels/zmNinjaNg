@@ -420,7 +420,7 @@ export default function ProfileForm() {
                 value={portalUrl}
                 onChange={(e) => setPortalUrl(e.target.value)}
                 disabled={testing}
-                className="h-10 pl-10 bg-background/50 border-input/50 focus:border-primary/50 transition-colors"
+                className="h-10 !pl-10 bg-background/50 border-input/50 focus:border-primary/50 transition-colors"
                 autoCapitalize="none"
                 autoCorrect="off"
               />
@@ -441,7 +441,7 @@ export default function ProfileForm() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={testing}
-                className="h-10 pl-10 bg-background/50 border-input/50 focus:border-primary/50 transition-colors"
+                className="h-10 !pl-10 bg-background/50 border-input/50 focus:border-primary/50 transition-colors"
                 autoCapitalize="none"
                 autoCorrect="off"
               />
