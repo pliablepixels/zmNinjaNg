@@ -619,6 +619,8 @@ We use multiple stores for different domains:
    ├── useNotificationStore.ts  # Push notifications
    ├── useLogStore.ts           # Application logs (ephemeral)
    ├── useQueryCacheStore.ts    # API response cache
+   ├── backgroundTasks.ts       # Background download/upload tasks
+   ├── eventFavorites.ts        # Per-profile favorited events
    └── kioskStore.ts            # Kiosk mode lock state (ephemeral)
 
 **Why multiple stores?** - Separation of concerns - Better performance
@@ -674,6 +676,100 @@ persisted, so the app always starts unlocked after a restart.
    useKioskStore.getState().isCoolingDown();
 
 PIN storage is handled separately by ``lib/kioskPin.ts`` (not in this store).
+
+Background Tasks Store (``stores/backgroundTasks.ts``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Manages long-running operations such as file downloads and uploads. The
+store is **ephemeral** — not persisted. Tasks are tracked in memory only
+for the current app session.
+
+**State:**
+
+- ``tasks`` — array of ``BackgroundTask`` objects (each with id, type,
+  status, progress 0–100, metadata, optional error, timestamps, and
+  optional ``cancelFn``)
+- ``drawerState`` — controls the task-progress UI drawer
+  (``'hidden'``, ``'badge'``, ``'collapsed'``, ``'expanded'``)
+
+**Task types:** ``'download'``, ``'upload'``, ``'sync'``, ``'export'``
+
+**Task statuses:** ``'pending'``, ``'in_progress'``, ``'completed'``,
+``'failed'``, ``'cancelled'``
+
+**Actions:**
+
+- ``addTask(task)`` — registers a new task; returns the generated task
+  id; auto-expands the drawer
+- ``updateProgress(taskId, progress, bytesProcessed?)`` — updates
+  progress (0–100) and optional bytes count
+- ``completeTask(taskId)`` — marks the task completed; collapses the
+  drawer to badge when all tasks finish
+- ``failTask(taskId, error)`` — marks the task failed
+- ``cancelTask(taskId)`` — calls the task's ``cancelFn`` (if any) and
+  marks it cancelled
+- ``removeTask(taskId)`` — removes a task from the list
+- ``clearCompleted()`` — removes all completed, failed, and cancelled tasks
+- ``setDrawerState(state)`` — manually control the drawer
+
+**Computed getters (call as functions):**
+
+- ``activeTasks()`` — pending or in-progress tasks
+- ``completedTasks()`` — completed, failed, or cancelled tasks
+- ``hasActiveTasks()`` — ``true`` if any task is pending or in progress
+
+**Usage:**
+
+.. code:: typescript
+
+   import { useBackgroundTasks } from '../stores/backgroundTasks';
+
+   const taskStore = useBackgroundTasks.getState();
+   const taskId = taskStore.addTask({
+     type: 'download',
+     metadata: { title: 'Video.mp4', description: 'Event 12345' },
+     cancelFn: () => abortController.abort(),
+   });
+   taskStore.updateProgress(taskId, 50, 512000);
+   taskStore.completeTask(taskId);
+
+Event Favorites Store (``stores/eventFavorites.ts``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Manages favorited events, scoped per profile. Persisted to storage so
+favorites survive app restarts.
+
+**State:**
+
+- ``profileFavorites`` — ``Record<profileId, string[]>`` mapping each
+  profile to its list of favorited event IDs
+
+**Actions:**
+
+- ``isFavorited(profileId, eventId)`` — returns ``true`` if the event
+  is favorited for that profile
+- ``toggleFavorite(profileId, eventId)`` — adds or removes the event
+- ``addFavorite(profileId, eventId)`` — adds an event to favorites
+- ``removeFavorite(profileId, eventId)`` — removes an event from favorites
+- ``getFavorites(profileId)`` — returns the array of favorited event IDs
+- ``clearFavorites(profileId)`` — removes all favorites for a profile
+- ``getFavoriteCount(profileId)`` — returns the count
+
+**Usage:**
+
+.. code:: typescript
+
+   import { useEventFavoritesStore } from '../stores/eventFavorites';
+   import { useShallow } from 'zustand/react/shallow';
+
+   // Read (use useShallow to avoid infinite re-renders on arrays)
+   const favorites = useEventFavoritesStore(
+     useShallow((state) => state.getFavorites(profileId))
+   );
+
+   // Toggle
+   const toggleFavorite = useEventFavoritesStore((state) => state.toggleFavorite);
+   toggleFavorite(profileId, eventId);
 
 Store Organization Pattern
 --------------------------

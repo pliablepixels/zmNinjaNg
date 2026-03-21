@@ -154,19 +154,22 @@ For streaming URLs, ZoneMinder uses connection keys instead of tokens:
 streams - Generated via ``/host/getConnkey.json`` - Appended to stream
 URLs - Expire after a period (server-configured)
 
-**Generation** (``src/api/streaming.ts``):
+**Generation** (``src/stores/monitors.ts``):
+
+Connection keys are generated and managed by the monitors store.
+``regenerateConnKey(monitorId)`` produces a new random key for a given
+monitor and stores it in ``connKeys``. The ``useMonitorStream`` hook
+calls this when a stream needs a new key.
 
 .. code:: tsx
 
-   export async function generateConnKey(profile: Profile): Promise<string> {
-     const tokens = await getAuthTokens(profile.id);
-
-     const response = await fetch(
-       `${profile.portalUrl}/api/host/getConnkey.json?token=${tokens.accessToken}`
-     );
-
-     const data = await response.json();
-     return data.connkey;
+   // From stores/monitors.ts
+   regenerateConnKey: (monitorId: string) => {
+     const newKey = Math.floor(Math.random() * 100000);
+     set((state) => ({
+       connKeys: { ...state.connKeys, [monitorId]: newKey },
+     }));
+     return newKey;
    }
 
 **Usage in stream URLs:**
@@ -175,30 +178,12 @@ URLs - Expire after a period (server-configured)
 
    const streamUrl = `${portalUrl}/cgi-bin/nph-zms?mode=jpeg&monitor=${monitorId}&connkey=${connkey}`;
 
-**Caching:**
+**Persistence:**
 
-Connection keys are cached to avoid repeated API calls:
-
-.. code:: tsx
-
-   const connkeyCache = new Map<string, { key: string; expires: number }>();
-
-   export async function getConnKey(profileId: string): Promise<string> {
-     const cached = connkeyCache.get(profileId);
-
-     if (cached && cached.expires > Date.now()) {
-       return cached.key;
-     }
-
-     const key = await generateConnKey(profile);
-
-     connkeyCache.set(profileId, {
-       key,
-       expires: Date.now() + 5 * 60 * 1000,  // 5 minutes
-     });
-
-     return key;
-   }
+Connection keys are stored in the Zustand monitors store (persisted via
+``localStorage``). ``getConnKey(monitorId)`` returns the existing key if
+one is already stored, or generates a new one. ``regenerateConnKey``
+always creates a fresh key (used on stream failure).
 
    ### Streaming Mechanics
 

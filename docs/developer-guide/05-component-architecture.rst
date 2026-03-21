@@ -30,10 +30,12 @@ Key Directories Explained
 - **``hooks/``**: Reusable React logic.
 
   - ``useMonitorStream``: Manages video stream URLs and auth.
-  - ``useEventPlayer``: Manages JPEGs streaming for recorded events.
   - ``useTokenRefresh``: Handles background token renewal.
   - ``useKioskLock``: PIN setup and lock-activation flow for kiosk mode.
   - ``useBiometricAuth``: Dynamic-import wrapper for biometric authentication.
+
+  Note: ``usePTZControl`` lives in ``pages/hooks/usePTZControl.ts``, not
+  in ``src/hooks/``.
 
 - **``lib/``**: “Library” code - helpers that could theoretically be in
   a separate npm package.
@@ -46,7 +48,6 @@ Key Directories Explained
   features.
 
   - ``notifications.ts``: Push notification handling.
-  - ``storage.ts``: Wrapper around Capacitor preferences/secure storage.
 
 - **``stores/``**: Global state management (see Chapter 3).
 
@@ -928,8 +929,7 @@ Complex logic is extracted into hooks:
 - ``useCurrentProfile()`` - Current profile and settings (stable
   references, prevents re-render loops)
 - ``useMonitorStream()`` - Stream URL and connection management
-- ``useEventPlayer()`` - Event playback state
-- ``usePTZControl()`` - PTZ command handling
+- ``usePTZControl()`` - PTZ command handling (in ``pages/hooks/``)
 
 3. Refs for DOM Access
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -1011,7 +1011,7 @@ Key Takeaways
 3. **Data attributes for testing**: All interactive elements have
    :doc:``data-testid``
 4. **Custom hooks extract logic**: ``useMonitorStream``,
-   ``useEventPlayer``, etc.
+   ``usePTZControl``, etc.
 5. **Refs for DOM access**: Screenshots, video playback, scroll position
 6. **Stop propagation**: Nested clickable areas need
    ``e.stopPropagation()``
@@ -1027,8 +1027,8 @@ The ``src/services/`` directory allows the React application to interact
 with native device features provided by Capacitor. This layer acts as a
 bridge, ensuring the UI code remains platform-agnostic.
 
-Storage Service (``services/storage.ts``)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Storage Service (``lib/secureStorage.ts``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We use a hybrid storage approach: - **Web**: Standard ``localStorage``.
 - **Native (iOS/Android)**: Encrypted ``SecureStorage`` (via
@@ -1039,11 +1039,12 @@ a shared device (or even a phone) is a security risk. SecureStorage uses
 the device’s hardware-backed keystore (Keychain on iOS, Keystore on
 Android).
 
-Connection Settings (``components/settings/ConnectionSettings.tsx``)
+Connection Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Settings card for self-signed certificate support using TOFU (Trust On
-First Use) certificate pinning.
+Self-signed certificate support (TOFU — Trust On First Use certificate
+pinning) is implemented in the **Settings page** (Advanced section) and
+in ``components/CertTrustDialog.tsx``.
 
 - Reads/writes ``allowSelfSignedCerts`` and ``trustedCertFingerprint``
   from profile-scoped settings
