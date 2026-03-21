@@ -7,7 +7,7 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Video as VideoIcon, Zap, Gauge, Leaf, RefreshCw, ChevronDown, Lock } from 'lucide-react';
-import { hasPinStored, storePin, clearPin } from '../lib/kioskPin';
+import { hasPinStored, storePin, clearPin, verifyPin } from '../lib/kioskPin';
 import { PinPad, type PinPadMode } from '../components/kiosk/PinPad';
 import { useToast } from '../hooks/use-toast';
 import { cn } from '../lib/utils';
@@ -129,6 +129,8 @@ export default function Settings() {
   const [pendingPin, setPendingPin] = useState<string | null>(null);
   const [pinError, setPinError] = useState<string | null>(null);
   const [hasPin, setHasPin] = useState<boolean | null>(null);
+  // Tracks what action to take after verifying current PIN: 'clear' or 'change'
+  const [pendingAction, setPendingAction] = useState<'clear' | 'change' | null>(null);
 
   // Check PIN status on first render
   useState(() => {
@@ -136,20 +138,50 @@ export default function Settings() {
   });
 
   const handleSetOrChangePin = useCallback(() => {
-    setPinPadMode('set');
+    if (hasPin) {
+      // Verify current PIN first, then proceed to set new one
+      setPendingAction('change');
+      setPinPadMode('unlock');
+      setPinError(null);
+      setShowPinPad(true);
+    } else {
+      setPendingAction(null);
+      setPinPadMode('set');
+      setPinError(null);
+      setPendingPin(null);
+      setShowPinPad(true);
+    }
+  }, [hasPin]);
+
+  const handleClearPin = useCallback(() => {
+    // Verify current PIN before clearing
+    setPendingAction('clear');
+    setPinPadMode('unlock');
     setPinError(null);
-    setPendingPin(null);
     setShowPinPad(true);
   }, []);
 
-  const handleClearPin = useCallback(async () => {
-    await clearPin();
-    setHasPin(false);
-    toast({ title: t('kiosk.pin_cleared') });
-  }, [toast, t]);
-
   const handlePinSubmit = useCallback(async (pin: string) => {
-    if (pinPadMode === 'set') {
+    if (pinPadMode === 'unlock') {
+      // Verifying current PIN before clear or change
+      const valid = await verifyPin(pin);
+      if (!valid) {
+        setPinError(t('kiosk.pin_incorrect'));
+        return;
+      }
+      if (pendingAction === 'clear') {
+        await clearPin();
+        setShowPinPad(false);
+        setHasPin(false);
+        setPendingAction(null);
+        toast({ title: t('kiosk.pin_cleared') });
+      } else if (pendingAction === 'change') {
+        // PIN verified, now set new one
+        setPendingAction(null);
+        setPinPadMode('set');
+        setPinError(null);
+      }
+    } else if (pinPadMode === 'set') {
       setPendingPin(pin);
       setPinPadMode('confirm');
       setPinError(null);
@@ -170,12 +202,13 @@ export default function Settings() {
         setPendingPin(null);
       }
     }
-  }, [pinPadMode, pendingPin, toast, t]);
+  }, [pinPadMode, pendingPin, pendingAction, toast, t]);
 
   const handlePinCancel = useCallback(() => {
     setShowPinPad(false);
     setPendingPin(null);
     setPinError(null);
+    setPendingAction(null);
   }, []);
 
   const customDatePreview = validateFormatString(customDateDraft);
