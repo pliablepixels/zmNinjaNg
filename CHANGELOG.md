@@ -1,5 +1,13 @@
 # Changelog
 
+## [zmNinjaNG-1.1.1](https://github.com/pliablepixels/zmNinjaNG/tree/zmNinjaNG-1.1.1) (2026-03-21)
+
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNG/compare/zmNinjaNG-1.1.0...zmNinjaNG-1.1.1)
+
+**Implemented enhancements:**
+
+- feat: add kiosk mode \(lock/unlock\) with PIN and biometric auth [\#73](https://github.com/pliablepixels/zmNinjaNG/issues/73)
+
 ## [zmNinjaNG-1.1.0](https://github.com/pliablepixels/zmNinjaNG/tree/zmNinjaNG-1.1.0) (2026-03-20)
 
 [Full Changelog](https://github.com/pliablepixels/zmNinjaNG/compare/zmNinjaNG-1.0.9...zmNinjaNG-1.1.0)
