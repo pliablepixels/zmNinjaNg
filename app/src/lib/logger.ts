@@ -178,6 +178,7 @@ class Logger {
   eventMontage = this.makeComponentLogger('EventMontage');
   http = this.makeComponentLogger('HTTP');
   imageError = this.makeComponentLogger('ImageError');
+  kiosk = this.makeComponentLogger('Kiosk');
   monitor = this.makeComponentLogger('Monitor', LogLevel.DEBUG);
   monitorCard = this.makeComponentLogger('MonitorCard');
   monitorDetail = this.makeComponentLogger('MonitorDetail');
@@ -222,7 +223,7 @@ export { LogLevel } from './log-level';
 // Create component logger wrappers dynamically
 const componentLoggers = [
   'api', 'app', 'auth', 'crypto', 'dashboard', 'discovery', 'download', 'errorBoundary',
-  'eventCard', 'eventDetail', 'eventMontage', 'http', 'imageError', 'monitor', 'monitorCard',
+  'eventCard', 'eventDetail', 'eventMontage', 'http', 'imageError', 'kiosk', 'monitor', 'monitorCard',
   'monitorDetail', 'montageMonitor', 'navigation', 'notificationHandler', 'notifications',
   'notificationSettings', 'profile', 'profileForm', 'profileService', 'profileSwitcher',
   'push', 'queryCache', 'secureImage', 'secureStorage', 'server', 'sslTrust', 'time', 'videoMarkers',
