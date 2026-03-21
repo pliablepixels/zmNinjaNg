@@ -59,18 +59,22 @@ export function useKioskLock(options?: UseKioskLockOptions) {
     }
   }, [isLocked, activateKioskMode]);
 
-  const handleSetPinSubmit = useCallback((pin: string) => {
+  const handleSetPinSubmit = useCallback(async (pin: string) => {
     if (setPinMode === 'set') {
       setPendingPin(pin);
       setSetPinMode('confirm');
       setPinError(null);
     } else if (setPinMode === 'confirm') {
       if (pin === pendingPin) {
-        storePin(pin).then(() => {
+        try {
+          await storePin(pin);
           setShowSetPin(false);
           setPendingPin(null);
           activateKioskMode();
-        });
+        } catch {
+          log.kiosk('Failed to store PIN', LogLevel.ERROR);
+          setPinError(t('common.unknown_error'));
+        }
       } else {
         setPinError(t('kiosk.pin_mismatch'));
         setSetPinMode('set');

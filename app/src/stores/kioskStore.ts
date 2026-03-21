@@ -46,7 +46,10 @@ export const useKioskStore = create<KioskState>()((set, get) => ({
   },
 
   recordFailedAttempt: () => {
-    const attempts = get().pinAttempts + 1;
+    const { cooldownUntil, pinAttempts } = get();
+    // Reset counter if previous cooldown has expired
+    const currentAttempts = (cooldownUntil && Date.now() >= cooldownUntil) ? 0 : pinAttempts;
+    const attempts = currentAttempts + 1;
     set({
       pinAttempts: attempts,
       cooldownUntil: attempts >= MAX_PIN_ATTEMPTS ? Date.now() + COOLDOWN_MS : null,

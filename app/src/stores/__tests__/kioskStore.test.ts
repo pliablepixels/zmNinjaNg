@@ -71,5 +71,22 @@ describe('kioskStore', () => {
       useKioskStore.setState({ cooldownUntil: Date.now() - 1000 });
       expect(useKioskStore.getState().isCoolingDown()).toBe(false);
     });
+
+    it('resets attempt counter after cooldown expires', () => {
+      // Simulate 5 failed attempts triggering cooldown
+      const store = useKioskStore.getState();
+      for (let i = 0; i < 5; i++) {
+        store.recordFailedAttempt();
+      }
+      expect(useKioskStore.getState().pinAttempts).toBe(5);
+
+      // Simulate cooldown expiring
+      useKioskStore.setState({ cooldownUntil: Date.now() - 1000 });
+
+      // Next attempt should reset counter to 1, not 6
+      useKioskStore.getState().recordFailedAttempt();
+      expect(useKioskStore.getState().pinAttempts).toBe(1);
+      expect(useKioskStore.getState().cooldownUntil).toBeNull();
+    });
   });
 });
