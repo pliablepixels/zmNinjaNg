@@ -83,7 +83,7 @@ export default function NotificationHistory() {
   // Early return if no profile
   if (!currentProfile) {
     return (
-      <div className="p-4 max-w-5xl mx-auto">
+      <div className="p-4">
         <div className="flex items-center justify-center min-h-[300px]">
           <div className="text-center space-y-2">
             <AlertCircle className="h-10 w-10 text-muted-foreground mx-auto" />
@@ -97,7 +97,7 @@ export default function NotificationHistory() {
 
   return (
     <div
-      className="p-3 sm:p-4 md:p-6 max-w-5xl mx-auto space-y-3 sm:space-y-4"
+      className="p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4"
       data-testid="notification-history"
     >
       {/* Header */}

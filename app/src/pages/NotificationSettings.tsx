@@ -295,7 +295,7 @@ export default function NotificationSettings() {
   // Early return if no profile
   if (!currentProfile || !settings) {
     return (
-      <div className="p-6 md:p-8 max-w-5xl mx-auto" data-testid="notification-settings-empty">
+      <div className="p-6 md:p-8" data-testid="notification-settings-empty">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center space-y-3">
             <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto" />
@@ -308,7 +308,7 @@ export default function NotificationSettings() {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-5" data-testid="notification-settings">
+    <div className="p-6 md:p-8 space-y-5" data-testid="notification-settings">
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">

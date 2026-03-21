@@ -231,7 +231,7 @@ export default function Settings() {
 
   return (
     <>
-      <div className="p-3 sm:p-4 md:p-6 max-w-3xl mx-auto space-y-6">
+      <div className="p-3 sm:p-4 md:p-6 space-y-6">
         {/* Page header */}
         <div>
           <div className="flex items-center gap-2">
