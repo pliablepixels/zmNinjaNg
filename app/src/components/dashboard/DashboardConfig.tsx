@@ -259,19 +259,10 @@ export function DashboardConfig() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="contain" data-testid="dashboard-monitor-fit-contain">
-                                        {t('dashboard.fit_contain')}
+                                        {t('montage.fit_fit')}
                                     </SelectItem>
                                     <SelectItem value="cover" data-testid="dashboard-monitor-fit-cover">
-                                        {t('dashboard.fit_cover')}
-                                    </SelectItem>
-                                    <SelectItem value="fill" data-testid="dashboard-monitor-fit-fill">
-                                        {t('dashboard.fit_fill')}
-                                    </SelectItem>
-                                    <SelectItem value="none" data-testid="dashboard-monitor-fit-none">
-                                        {t('dashboard.fit_none')}
-                                    </SelectItem>
-                                    <SelectItem value="scale-down" data-testid="dashboard-monitor-fit-scale-down">
-                                        {t('dashboard.fit_scale_down')}
+                                        {t('montage.fit_crop')}
                                     </SelectItem>
                                 </SelectContent>
                             </Select>

@@ -231,10 +231,8 @@ export default function EventMontage() {
                 <SelectValue placeholder={t('events.thumbnail_fit')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="contain">{t('events.fit_contain')}</SelectItem>
-                <SelectItem value="cover">{t('events.fit_cover')}</SelectItem>
-                <SelectItem value="none">{t('events.fit_none')}</SelectItem>
-                <SelectItem value="scale-down">{t('events.fit_scale_down')}</SelectItem>
+                <SelectItem value="contain">{t('montage.fit_fit')}</SelectItem>
+                <SelectItem value="cover">{t('montage.fit_crop')}</SelectItem>
               </SelectContent>
             </Select>
           </div>

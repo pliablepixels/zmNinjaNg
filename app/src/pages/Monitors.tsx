@@ -140,19 +140,10 @@ export default function Monitors() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="contain" data-testid="monitors-fit-contain">
-                  {t('monitors.fit_contain')}
+                  {t('montage.fit_fit')}
                 </SelectItem>
                 <SelectItem value="cover" data-testid="monitors-fit-cover">
-                  {t('monitors.fit_cover')}
-                </SelectItem>
-                <SelectItem value="fill" data-testid="monitors-fit-fill">
-                  {t('monitors.fit_fill')}
-                </SelectItem>
-                <SelectItem value="none" data-testid="monitors-fit-none">
-                  {t('monitors.fit_none')}
-                </SelectItem>
-                <SelectItem value="scale-down" data-testid="monitors-fit-scale-down">
-                  {t('monitors.fit_scale_down')}
+                  {t('montage.fit_crop')}
                 </SelectItem>
               </SelectContent>
             </Select>
