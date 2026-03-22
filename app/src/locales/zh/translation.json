@@ -1,6 +1,8 @@
 {
   "common": {
     "go_back": "返回",
+    "previous": "上一个",
+    "next": "下一个",
     "refresh": "刷新",
     "reset": "重置",
     "view_list": "列表视图",
@@ -240,6 +242,10 @@
     "pause": "暂停",
     "rewind": "快退",
     "fast_forward": "快进",
+    "seek_back": "5s",
+    "seek_forward": "5s",
+    "go_to_start": "跳到开头",
+    "go_to_end": "跳到结尾",
     "previous_frame": "上一帧",
     "next_frame": "下一帧",
     "frame_position": "帧位置",

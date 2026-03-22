@@ -15,8 +15,8 @@ import {
   Pause,
   SkipBack,
   SkipForward,
-  Rewind,
-  FastForward,
+  ChevronLeft,
+  ChevronRight,
   AlertCircle,
 } from 'lucide-react';
 import { getEventImageUrl } from '../../api/events';
@@ -145,6 +145,13 @@ export function ZmsEventPlayer({
         const fraction = status.progress / status.duration;
         const frame = Math.max(1, Math.round(fraction * totalFrames));
         setCurrentFrame(frame);
+
+        // Stop at end of event to prevent looping
+        if (fraction >= 0.99) {
+          sendCommand(ZM_CMD.PAUSE);
+          setIsPlaying(false);
+          setCurrentFrame(totalFrames);
+        }
       }
     } catch {
       // Status query failed — ignore and retry next tick
@@ -192,23 +199,27 @@ export function ZmsEventPlayer({
     sendCommand(ZM_CMD.SEEK, offset);
   }, [totalFrames, frameToOffset, sendCommand]);
 
-  const stepBackward = useCallback(() => {
-    sendCommand(ZM_CMD.PREV);
-    setCurrentFrame((prev) => Math.max(1, prev - 1));
-  }, [sendCommand]);
+  const seekBack = useCallback(() => {
+    // Seek back 5 seconds
+    const targetOffset = Math.max(0, frameToOffset(currentFrame) - 5);
+    const targetFrame = Math.max(1, Math.round((targetOffset / eventLength) * totalFrames));
+    goToFrame(targetFrame);
+  }, [currentFrame, frameToOffset, eventLength, totalFrames, goToFrame]);
 
-  const stepForward = useCallback(() => {
-    sendCommand(ZM_CMD.NEXT);
-    setCurrentFrame((prev) => Math.min(totalFrames, prev + 1));
-  }, [sendCommand, totalFrames]);
+  const seekForward = useCallback(() => {
+    // Seek forward 5 seconds
+    const targetOffset = Math.min(eventLength, frameToOffset(currentFrame) + 5);
+    const targetFrame = Math.min(totalFrames, Math.round((targetOffset / eventLength) * totalFrames));
+    goToFrame(targetFrame);
+  }, [currentFrame, frameToOffset, eventLength, totalFrames, goToFrame]);
 
-  const jumpBackward = useCallback(() => {
-    goToFrame(currentFrame - 10);
-  }, [currentFrame, goToFrame]);
+  const goToStart = useCallback(() => {
+    goToFrame(1);
+  }, [goToFrame]);
 
-  const jumpForward = useCallback(() => {
-    goToFrame(currentFrame + 10);
-  }, [currentFrame, goToFrame]);
+  const goToEnd = useCallback(() => {
+    goToFrame(totalFrames);
+  }, [goToFrame, totalFrames]);
 
   // Jump to alarm frame
   const jumpToAlarmFrame = useCallback(() => {
@@ -279,49 +290,63 @@ export function ZmsEventPlayer({
       <Card className="p-4 space-y-4 bg-card/95 backdrop-blur">
         {/* Transport Controls */}
         <div className="flex items-center justify-center gap-2">
+          {/* Jump to start */}
           <Button
             variant="outline"
             size="icon"
-            onClick={jumpBackward}
+            onClick={goToStart}
             disabled={currentFrame <= 1}
-            title={t('event_detail.rewind')}
-          >
-            <Rewind className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={stepBackward}
-            disabled={currentFrame <= 1}
-            title={t('event_detail.previous_frame')}
+            title={t('event_detail.go_to_start')}
+            data-testid="zms-go-to-start"
           >
             <SkipBack className="h-4 w-4" />
           </Button>
+          {/* Seek back 5s */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={seekBack}
+            disabled={currentFrame <= 1}
+            title={t('event_detail.rewind')}
+            className="gap-1"
+            data-testid="zms-seek-back"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="text-xs">{t('event_detail.seek_back')}</span>
+          </Button>
+          {/* Play/Pause */}
           <Button
             variant="default"
             size="icon"
             onClick={togglePlayPause}
             title={isPlaying ? t('event_detail.pause') : t('event_detail.play')}
+            data-testid="zms-play-pause"
           >
             {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           </Button>
+          {/* Seek forward 5s */}
           <Button
             variant="outline"
-            size="icon"
-            onClick={stepForward}
-            disabled={currentFrame >= totalFrames}
-            title={t('event_detail.next_frame')}
-          >
-            <SkipForward className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={jumpForward}
+            size="sm"
+            onClick={seekForward}
             disabled={currentFrame >= totalFrames}
             title={t('event_detail.fast_forward')}
+            className="gap-1"
+            data-testid="zms-seek-forward"
           >
-            <FastForward className="h-4 w-4" />
+            <span className="text-xs">{t('event_detail.seek_forward')}</span>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          {/* Jump to end */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={goToEnd}
+            disabled={currentFrame >= totalFrames}
+            title={t('event_detail.go_to_end')}
+            data-testid="zms-go-to-end"
+          >
+            <SkipForward className="h-4 w-4" />
           </Button>
         </div>
 

@@ -1,6 +1,8 @@
 {
   "common": {
     "go_back": "Zurück",
+    "previous": "Zurück",
+    "next": "Weiter",
     "refresh": "Aktualisieren",
     "reset": "Zurücksetzen",
     "view_list": "Listenansicht",
@@ -240,6 +242,10 @@
     "pause": "Pause",
     "rewind": "Zurückspulen",
     "fast_forward": "Vorspulen",
+    "seek_back": "5s",
+    "seek_forward": "5s",
+    "go_to_start": "Zum Anfang",
+    "go_to_end": "Zum Ende",
     "previous_frame": "Vorheriges Frame",
     "next_frame": "Nächstes Frame",
     "frame_position": "Frame-Position",
