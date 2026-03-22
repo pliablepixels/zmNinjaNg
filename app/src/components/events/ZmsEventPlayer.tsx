@@ -139,8 +139,8 @@ export function ZmsEventPlayer({
   const queryStatus = useCallback(async () => {
     const url = getZmsControlUrl(portalUrl, ZM_CMD.QUERY, connKey, { token, apiUrl });
     try {
-      const resp = await httpGet<{ data?: { status?: { progress?: number; duration?: number } } }>(url);
-      const status = resp.data?.data?.status;
+      const resp = await httpGet<{ status?: { progress?: number; duration?: number } }>(url);
+      const status = resp.data?.status;
       if (status && typeof status.progress === 'number' && typeof status.duration === 'number' && status.duration > 0) {
         const fraction = status.progress / status.duration;
         const frame = Math.max(1, Math.round(fraction * totalFrames));
