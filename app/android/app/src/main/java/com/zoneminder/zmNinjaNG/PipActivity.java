@@ -30,8 +30,14 @@ public class PipActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Remove window background so the PlayerView surface is visible in PiP
+        getWindow().setBackgroundDrawable(null);
+        getWindow().getDecorView().setBackgroundColor(0xFF000000);
+
         playerView = new PlayerView(this);
-        playerView.setBackgroundColor(0xFF000000); // Black background while loading
+        playerView.setBackgroundColor(0xFF000000);
+        // Use TextureView instead of SurfaceView for better PiP compatibility
+        playerView.setUseController(false); // Hide controls in PiP
         setContentView(playerView);
 
         String url = getIntent().getStringExtra("url");

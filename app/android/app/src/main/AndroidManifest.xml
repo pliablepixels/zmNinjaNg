@@ -29,7 +29,7 @@
             android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:exported="false"
-            android:theme="@style/AppTheme.NoActionBarLaunch" />
+            android:theme="@android:style/Theme.NoTitleBar" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
