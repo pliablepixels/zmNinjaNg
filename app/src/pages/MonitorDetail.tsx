@@ -17,7 +17,7 @@ import { Card } from '../components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Switch } from '../components/ui/switch';
 import { Label } from '../components/ui/label';
-import { ArrowLeft, Settings, Maximize2, Minimize2, Clock, AlertTriangle, Download, ChevronUp, ChevronDown, Layers } from 'lucide-react';
+import { ArrowLeft, Settings, Maximize2, Minimize2, Clock, AlertTriangle, Download, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Layers } from 'lucide-react';
 import { useState, useRef, useMemo, useCallback } from 'react';
 import { cn } from '../lib/utils';
 import { toast } from 'sonner';
@@ -86,7 +86,7 @@ export default function MonitorDetail() {
   });
 
   // Custom hooks for extracted logic
-  const { isSliding, enabledMonitors, onSwipeLeft, onSwipeRight } = useMonitorNavigation({
+  const { isSliding, enabledMonitors, hasPrev, hasNext, onSwipeLeft, onSwipeRight } = useMonitorNavigation({
     currentMonitorId: id,
     cycleSeconds: settings.monitorDetailCycleSeconds,
   });
@@ -235,6 +235,17 @@ export default function MonitorDetail() {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onSwipeRight}
+            disabled={!hasPrev}
+            aria-label={t('common.previous')}
+            className="h-7 w-7"
+            data-testid="monitor-detail-prev"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
           <div>
             <div className="flex items-center gap-1.5">
               <span
@@ -249,6 +260,17 @@ export default function MonitorDetail() {
               {monitor.Monitor.Function}
             </div>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onSwipeLeft}
+            disabled={!hasNext}
+            aria-label={t('common.next')}
+            className="h-7 w-7"
+            data-testid="monitor-detail-next"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
           <Button
