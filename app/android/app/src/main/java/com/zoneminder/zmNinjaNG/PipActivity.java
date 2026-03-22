@@ -3,10 +3,7 @@ package com.zoneminder.zmNinjaNG;
 import android.app.PendingIntent;
 import android.app.PictureInPictureParams;
 import android.app.RemoteAction;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.graphics.drawable.Icon;
 import android.os.Build;
@@ -28,27 +25,13 @@ import java.util.List;
 public class PipActivity extends Activity {
 
     private static final String TAG = "PipActivity";
-    private static final String ACTION_PLAY_PAUSE = "com.zoneminder.zmNinjaNG.PIP_PLAY_PAUSE";
+    private static final String ACTION_PLAY_PAUSE = "play_pause";
+    private static final int REQUEST_PLAY_PAUSE = 1;
 
     private ExoPlayer player;
     private PlayerView playerView;
     private boolean pipEntered = false;
     private Rational aspectRatio;
-
-    private final BroadcastReceiver pipReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (ACTION_PLAY_PAUSE.equals(intent.getAction()) && player != null) {
-                if (player.isPlaying()) {
-                    player.pause();
-                } else {
-                    player.play();
-                }
-                // Update PiP actions to reflect new play/pause state
-                updatePipActions();
-            }
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +43,6 @@ public class PipActivity extends Activity {
 
         playerView = new PlayerView(this);
         playerView.setBackgroundColor(0xFF000000);
-        // Use TextureView instead of SurfaceView for better PiP compatibility
         playerView.setUseController(false); // Hide controls in PiP
         setContentView(playerView);
 
@@ -82,8 +64,6 @@ public class PipActivity extends Activity {
         player = new ExoPlayer.Builder(this).build();
         playerView.setPlayer(player);
 
-        // Build MediaItem with explicit MIME type so ExoPlayer doesn't
-        // have to guess from ZoneMinder's PHP endpoint URL
         MediaItem mediaItem = new MediaItem.Builder()
                 .setUri(url)
                 .setMimeType(MimeTypes.VIDEO_MP4)
@@ -109,6 +89,12 @@ public class PipActivity extends Activity {
             }
 
             @Override
+            public void onIsPlayingChanged(boolean isPlaying) {
+                // Update PiP action icon when play state changes
+                updatePipActions();
+            }
+
+            @Override
             public void onPlayerError(@NonNull androidx.media3.common.PlaybackException error) {
                 Log.e(TAG, "Player error: " + error.getMessage(), error);
                 finishWithPosition();
@@ -121,12 +107,19 @@ public class PipActivity extends Activity {
                     .setAspectRatio(aspectRatio);
             setPictureInPictureParams(pipBuilder.build());
         }
+    }
 
-        // Register broadcast receiver for PiP controls
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(pipReceiver, new IntentFilter(ACTION_PLAY_PAUSE), Context.RECEIVER_NOT_EXPORTED);
-        } else {
-            registerReceiver(pipReceiver, new IntentFilter(ACTION_PLAY_PAUSE));
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // Handle PiP control actions via activity intent
+        if (intent != null && ACTION_PLAY_PAUSE.equals(intent.getAction()) && player != null) {
+            Log.d(TAG, "onNewIntent: play/pause toggle");
+            if (player.isPlaying()) {
+                player.pause();
+            } else {
+                player.play();
+            }
         }
     }
 
@@ -156,7 +149,7 @@ public class PipActivity extends Activity {
     }
 
     private void updatePipActions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && pipEntered) {
             PictureInPictureParams.Builder pipBuilder = new PictureInPictureParams.Builder()
                     .setActions(buildPipActions());
             setPictureInPictureParams(pipBuilder.build());
@@ -172,8 +165,11 @@ public class PipActivity extends Activity {
                     : android.R.drawable.ic_media_play;
             String title = isPlaying ? "Pause" : "Play";
 
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                    this, 0, new Intent(ACTION_PLAY_PAUSE),
+            // Use an explicit activity intent instead of broadcast
+            Intent intent = new Intent(this, PipActivity.class);
+            intent.setAction(ACTION_PLAY_PAUSE);
+            PendingIntent pendingIntent = PendingIntent.getActivity(
+                    this, REQUEST_PLAY_PAUSE, intent,
                     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
             RemoteAction action = new RemoteAction(
@@ -206,9 +202,6 @@ public class PipActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        try {
-            unregisterReceiver(pipReceiver);
-        } catch (Exception ignored) {}
         if (player != null) {
             player.release();
             player = null;
