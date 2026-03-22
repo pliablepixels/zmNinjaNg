@@ -1,5 +1,28 @@
 # Changelog
 
+## [zmNinjaNG-1.1.3](https://github.com/pliablepixels/zmNinjaNG/tree/zmNinjaNG-1.1.3) (2026-03-22)
+
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNG/compare/zmNinjaNG-1.1.2...zmNinjaNG-1.1.3)
+
+**Implemented enhancements:**
+
+- feat: native Android PiP via ExoPlayer for event video playback [\#83](https://github.com/pliablepixels/zmNinjaNG/issues/83)
+- feat: add prev/next monitor buttons to MonitorDetail header [\#82](https://github.com/pliablepixels/zmNinjaNG/issues/82)
+- feat: keep PiP video alive across navigation [\#81](https://github.com/pliablepixels/zmNinjaNG/issues/81)
+- chore: change default theme to slate [\#80](https://github.com/pliablepixels/zmNinjaNG/issues/80)
+
+**Fixed bugs:**
+
+- fix: ZMS player progress bar doesn't advance during playback [\#79](https://github.com/pliablepixels/zmNinjaNG/issues/79)
+- fix: video zoom controls overlap with video.js control bar [\#78](https://github.com/pliablepixels/zmNinjaNG/issues/78)
+- fix: inconsistent resize options across views [\#77](https://github.com/pliablepixels/zmNinjaNG/issues/77)
+- fix: sidebar menu items too close together on desktop [\#76](https://github.com/pliablepixels/zmNinjaNG/issues/76)
+- fix: heading overlaps with device status bar on iPad/tablet [\#75](https://github.com/pliablepixels/zmNinjaNG/issues/75)
+
+## [zmNinjaNG-1.1.2](https://github.com/pliablepixels/zmNinjaNG/tree/zmNinjaNG-1.1.2) (2026-03-21)
+
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNG/compare/zmNinjaNG-1.1.1...zmNinjaNG-1.1.2)
+
 ## [zmNinjaNG-1.1.1](https://github.com/pliablepixels/zmNinjaNG/tree/zmNinjaNG-1.1.1) (2026-03-21)
 
 [Full Changelog](https://github.com/pliablepixels/zmNinjaNG/compare/zmNinjaNG-1.1.0...zmNinjaNG-1.1.1)
