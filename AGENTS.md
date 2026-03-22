@@ -13,7 +13,7 @@
 10. **HTTP**: Use `lib/http.ts` abstractions (`httpGet`, `httpPost`, etc.), never raw `fetch()` or `axios`
 11. **Text Overflow**: Use `truncate` + `min-w-0` in flex containers; add `title` for tooltips
 12. **Coding**: DRY, small files (~400 LOC max), extract complex logic to separate modules
-13. **Semantic Search**: Use grepai as primary tool for code exploration. See [grepai section](#grepai---semantic-code-search).
+13. **Cross-Platform Tests**: E2E tests run on real devices — Android emulator, iOS simulator (phone + tablet), Tauri desktop, and web browser. See [Testing section](#testing).
 
 ---
 
@@ -55,20 +55,23 @@ Structure:
 
 ## Testing
 
-### Philosophy
-Test everything like a human would. Every button, tap, and interaction must be tested as a real user would experience it.
+### Philosophy: Be a Human Tester
+Every test must verify what a real human would verify. Sit in front of the device and ask: "Can I accomplish this task? Does this look right? Does the data make sense?"
 
 **Do**:
-- Click buttons and verify actions happen
-- Fill forms and verify data is saved
-- Test on mobile viewports (375x812)
-- Test error states and edge cases
+- Click buttons and verify the outcome (data changed, navigation happened, file downloaded)
+- Fill forms and verify data persists after refresh or navigation
+- Test on all platforms: Android phone, iOS phone, iOS tablet, Tauri desktop, web browser
+- Test error states, edge cases, and device-specific layout behavior
+- Add `@visual` screenshots at the end of scenarios to catch layout regressions
+- Verify real data (monitor names, event counts, dates) — not just element presence
 
 **Don't**:
 - Mock the thing you're testing
+- Write "check heading is visible" as a test — that's not testing anything
 - Only test that "component renders"
-- Skip mobile viewport tests
 - Write tests that pass but don't verify real behavior
+- Skip platform-specific layout checks (phone vs. tablet vs. desktop)
 
 ### Test-First Workflow
 1. Understand the bug/feature requirement
@@ -91,24 +94,150 @@ Test everything like a human would. Every button, tap, and interaction must be t
 
 **Location**: `app/tests/features/*.feature` (Gherkin format, never .spec.ts directly)
 
+**Step definitions**: `app/tests/steps/<screen>.steps.ts` (one file per screen, not one monolith)
+
 **Run**: `npm run test:e2e -- <feature>.feature`
+
+### Cross-Platform E2E Tests
+Tests run on 5 platform profiles using two drivers. Playwright drives Chromium-based platforms (web, Android) via CDP. WebDriverIO + Appium drives WebKit-based platforms (iOS, Tauri) via native drivers. A shared `TestActions` abstraction keeps step definitions driver-agnostic.
+
+| Profile | Device | Driver | Connection |
+|---|---|---|---|
+| `web-chromium` | Desktop browser | Playwright | Direct launch |
+| `android-phone` | Pixel 7 Emulator | Playwright | ADB port-forward → CDP |
+| `ios-phone` | iPhone 15 Simulator | WebDriverIO + Appium XCUITest | WebView context switch |
+| `ios-tablet` | iPad Air Simulator | WebDriverIO + Appium XCUITest | WebView context switch |
+| `desktop-tauri` | Tauri macOS app | WebDriverIO + tauri-driver | WebDriver protocol |
+
+### Platform Tags
+Use tags in `.feature` files to control which platforms run each scenario:
+- `@all` — runs on every platform
+- `@android` — Android emulator only
+- `@ios` — iPhone + iPad simulators
+- `@ios-phone` / `@ios-tablet` — specific iOS form factor
+- `@tauri` — Tauri desktop only
+- `@web` — browser only
+- `@visual` — takes comparison screenshots
+- `@native` — requires Appium (native-plugin flows only)
 
 ### Test Commands
 ```bash
-npm test                              # Unit tests
-npm test -- --coverage                # With coverage
-npm run test:e2e                      # All e2e tests
-npm run test:e2e -- <feature>.feature # Specific feature
-npm run test:e2e -- --headed          # See browser
+# Unit tests
+npm test                                # Unit tests
+npm test -- --coverage                  # With coverage
+
+# E2E tests (web browser only - fast)
+npm run test:e2e                        # All web e2e tests
+npm run test:e2e -- <feature>.feature   # Specific feature
+npm run test:e2e -- --headed            # See browser
+
+# Cross-platform e2e (requires simulators/emulators)
+npm run test:e2e:android                # Android emulator (Playwright via CDP)
+npm run test:e2e:ios-phone              # iPhone simulator (WebDriverIO + Appium)
+npm run test:e2e:ios-tablet             # iPad simulator (WebDriverIO + Appium)
+npm run test:e2e:tauri                  # Tauri desktop (WebDriverIO + tauri-driver)
+npm run test:e2e:all-platforms          # All platforms sequentially
+
+# Visual regression
+npm run test:e2e:visual-update          # Regenerate all baselines
+npm run test:e2e:android -- --update-snapshots  # Platform-specific
+
+# Native-only (Appium)
+npm run test:native                     # PiP, biometrics, push, downloads
+
+# Setup verification
+npm run test:platform:setup             # Check tools, simulators, ports
 ```
 
-### E2E Test Configuration
-Configure test server in `.env`:
+### Platform Test Configuration
+Simulator names, ports, and timeouts are in `app/tests/platforms.config.defaults.ts`. To customize for your machine, copy to `platforms.config.local.ts` (gitignored) and edit.
+
+Server credentials in `.env`:
 ```bash
 ZM_HOST_1=http://your-server:port
 ZM_USER_1=admin
 ZM_PASSWORD_1=password
 ```
+
+### Visual Regression
+Scenarios tagged `@visual` capture screenshots and compare against per-platform baselines in `app/tests/screenshots/<platform>/`. Threshold: 0.2% pixel diff.
+
+```gherkin
+@all @visual
+Scenario: Dashboard with widgets
+  Given I am logged into zmNinjaNG
+  ...
+  Then the page should match the visual baseline
+```
+
+First run on a new platform: use `--update-snapshots` to generate baselines.
+
+### Extending Tests for New Features
+
+When you add a new feature, ask yourself: "If I were a human QA tester with this feature on 5 devices, what would I check?"
+
+**Step 1: Write the human test plan.** Before writing Gherkin, list what a human would do:
+- What actions would they take? (tap, scroll, fill, swipe, toggle)
+- What would they verify after each action? (data changed, UI updated, file appeared)
+- What looks different on a phone vs. tablet vs. desktop? (columns, layout, overflow)
+- What could go wrong? (network error, empty state, slow load)
+
+**Step 2: Write Gherkin scenarios.** One scenario per distinct user goal — not per element.
+
+Bad (testing for the sake of it):
+```gherkin
+Scenario: View new feature page
+  Given I am logged into zmNinjaNG
+  When I navigate to the "New Feature" page
+  Then I should see the heading "New Feature"
+```
+
+Good (testing like a human):
+```gherkin
+@all @visual
+Scenario: Create and verify a new widget
+  Given I am logged into zmNinjaNG
+  When I navigate to the "Dashboard" page
+  And I open the Add Widget dialog
+  And I select widget type "My New Widget"
+  And I enter the title "Test Widget"
+  And I save the widget
+  Then the widget "Test Widget" should appear on the dashboard
+  And the widget should display real data
+  When I refresh the page
+  Then the widget "Test Widget" should still be present
+  And the page should match the visual baseline
+
+@ios-phone @android
+Scenario: New widget adapts to phone layout
+  Given I am logged into zmNinjaNG
+  When I navigate to the "Dashboard" page
+  Then the new widget should not overflow the screen width
+  And all widget content should be readable without horizontal scroll
+  And the page should match the visual baseline
+```
+
+**Step 3: Add platform-specific scenarios when layout differs.** If the feature looks different on phone vs. tablet vs. desktop, add tagged scenarios:
+- `@ios-phone @android` for phone-specific layout checks
+- `@ios-tablet` for tablet-specific layout checks
+- `@tauri` for desktop-specific behavior (resize, keyboard shortcuts)
+
+**Step 4: Add step definitions** to the appropriate `app/tests/steps/<screen>.steps.ts` file. Create a new steps file if adding a new screen. Use `TestActions` interface methods (not raw Playwright or WebDriverIO APIs) so steps work across all drivers. See `app/tests/steps/dashboard.steps.ts` for the pattern.
+
+**Step 5: Add visual baselines.** Run with `--update-snapshots` on each platform to capture baselines, then commit them.
+
+**Step 6: If the feature uses a native plugin** (haptics, filesystem, camera, etc.), add a test to the Appium suite in `app/tests/native/specs/`.
+
+### Extending Tests Checklist
+- [ ] Human test plan written (what would a QA tester check on each device?)
+- [ ] Gherkin scenarios test user goals, not element presence
+- [ ] `@all` tag on scenarios that apply to every platform
+- [ ] Device-specific scenarios tagged (`@ios-phone`, `@ios-tablet`, `@android`, `@tauri`)
+- [ ] `@visual` tag on scenarios that should capture screenshots
+- [ ] Step definitions in per-screen file (not monolith)
+- [ ] Visual baselines generated for all platforms
+- [ ] Native plugin flows covered in Appium suite if applicable
+- [ ] Run `npm run test:e2e` (web) + at least one platform test before committing
 
 ### Conditional Testing Pattern
 For features depending on dynamic content:
@@ -129,6 +258,15 @@ Then('I should see progress if started', async ({ page }) => {
 });
 ```
 
+### Native-Only Tests (Appium)
+For flows that require native OS interaction (not reachable via WebView):
+
+**Location**: `app/tests/native/specs/<feature>.spec.ts`
+
+**When to add**: PiP, biometric auth, push notifications, native file downloads, share sheet, app lifecycle (background/foreground)
+
+**Run**: `npm run test:native`
+
 ---
 
 ## Verification Workflow
@@ -139,9 +277,10 @@ For every code change, execute in order:
 2. **Type Check**: `npx tsc --noEmit`
 3. **Build**: `npm run build`
 4. **E2E Tests** (if UI/navigation changed): `npm run test:e2e -- <feature>.feature`
-5. **Commit** only after all tests pass
+5. **Platform Tests** (if layout/rendering changed): run at least one platform test (`npm run test:e2e:android`, `npm run test:e2e:ios-phone`, etc.)
+6. **Commit** only after all tests pass
 
-State which tests were run: "Tests verified: npm test ✓, npm run test:e2e -- dashboard.feature ✓"
+State which tests were run: "Tests verified: npm test ✓, tsc --noEmit ✓, build ✓, test:e2e -- dashboard.feature ✓, test:e2e:ios-phone ✓"
 
 ### Pre-Commit Checklist
 
@@ -153,16 +292,23 @@ State which tests were run: "Tests verified: npm test ✓, npm run test:e2e -- d
 
 **UI changes** (additional):
 - [ ] `data-testid` added to new elements
-- [ ] E2E tests updated in .feature file
+- [ ] E2E tests updated in .feature file with platform tags (`@all`, `@ios-phone`, etc.)
 - [ ] `npm run test:e2e -- <feature>.feature` passes
-- [ ] Responsive reflow verified (mobile portrait)
+- [ ] At least one platform test passes (android, ios-phone, ios-tablet, or tauri)
+- [ ] Visual baselines updated if layout changed (`--update-snapshots`)
 - [ ] All language files updated
+
+**Native plugin changes** (additional):
+- [ ] Appium test added/updated in `app/tests/native/specs/`
+- [ ] `npm run test:native` passes
 
 ### Never commit if:
 - Tests are failing
 - Tests don't exist for new functionality
 - You haven't actually run the tests
 - You only ran build but not unit/e2e tests
+- You changed layout but didn't run a platform test
+- You wrote a scenario that only checks element presence without interaction
 
 ---
 
@@ -185,8 +331,10 @@ Every user-facing string must be internationalized.
 ## UI & Cross-Platform
 
 ### Platform Support
-- Test on iOS, Android, Desktop
-- Verify mobile portrait reflow before committing
+- Test on all 5 platform profiles: web-chromium, android-phone, ios-phone, ios-tablet, desktop-tauri
+- Run `npm run test:e2e:all-platforms` for full cross-platform verification
+- At minimum, run web + one mobile platform test before committing UI changes
+- Verify phone portrait layout doesn't overflow or truncate content
 
 ### Data Tags
 - **Format**: `data-testid="kebab-case-name"`
@@ -521,7 +669,7 @@ For complex features with multiple approaches, UX changes, or architectural deci
 → Create GitHub issue (describe bug + repro steps), write reproduction test, fix, verify test passes
 
 **Adding UI?**
-→ Need: `data-testid`, e2e test in .feature file, i18n keys in ALL languages, responsive check, text overflow handling
+→ Need: `data-testid`, e2e test in .feature file with platform tags, human-tester scenarios (not just "element visible"), i18n keys in ALL languages, visual baselines on each platform, text overflow handling
 
 **Adding New API Module?**
 → Create in `api/`, update `docs/developer-guide/07-api-and-data-fetching.rst`
@@ -550,6 +698,12 @@ For complex features with multiple approaches, UX changes, or architectural deci
 **Adding Polling/Auto-Refresh Feature?**
 → Use `useBandwidthSettings()` and appropriate interval property (e.g., `monitorStatusInterval`, `consoleEventsInterval`). If no matching property exists, add to `lib/zmninja-ng-constants.ts` with values for both normal and low modes.
 
+**Adding a New Screen/Page?**
+→ Create `.feature` file in `app/tests/features/`, step definitions in `app/tests/steps/<screen>.steps.ts`, write human-tester scenarios (what would a QA person do on each device?), tag with `@all` + device-specific tags, add `@visual` for layout verification, generate visual baselines on all platforms.
+
+**Using a Native Plugin?**
+→ Dynamic import with platform check, add unit test mock to `setup.ts`, add Appium test in `app/tests/native/specs/` for the native flow.
+
 ---
 
 ## AI Agent Pitfalls
@@ -566,34 +720,8 @@ For complex features with multiple approaches, UX changes, or architectural deci
 10. **Implementing without GitHub issue** - Create issue first for features and bugs
 11. **Forgetting documentation updates** - Update developer-guide when adding APIs/components
 12. **Hardcoding polling intervals** - Use `useBandwidthSettings()` for all polling/auto-refresh features
+13. **Writing shallow E2E tests** - Never write "element is visible" as a test. Every scenario must include user interaction and verification of outcomes. Ask: "Would a human QA tester consider this tested?"
+14. **Skipping platform-specific tests** - UI changes must be tested on at least one real platform (android, ios-phone, ios-tablet, or tauri), not just web browser viewport emulation
+15. **Forgetting visual baselines** - Layout changes require updating screenshot baselines on all affected platforms
+16. **Monolith step definitions** - Step definitions go in per-screen files (`app/tests/steps/<screen>.steps.ts`), not one giant file
 
----
-
-## grepai - Semantic Code Search
-
-Use grepai as your primary tool for code exploration.
-
-### When to Use grepai
-- Understanding what code does or where functionality lives
-- Finding implementations by intent ("authentication logic", "error handling")
-- Exploring unfamiliar parts of the codebase
-
-### When to Use Standard Grep/Glob
-- Exact text matching (variable names, imports, specific strings)
-- File path patterns (`**/*.ts`)
-
-### Usage
-```bash
-grepai search "user authentication flow" --json --compact
-grepai search "error handling middleware" --json --compact
-```
-
-### Call Graph Tracing
-```bash
-grepai trace callers "HandleRequest" --json
-grepai trace callees "ProcessOrder" --json
-grepai trace graph "ValidateToken" --depth 3 --json
-```
-
-### Fallback
-If grepai fails, inform the user and fall back to standard Grep/Glob tools.
