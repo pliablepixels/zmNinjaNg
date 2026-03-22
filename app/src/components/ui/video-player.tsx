@@ -18,6 +18,7 @@ import { log, LogLevel } from '../../lib/logger';
 import type { VideoMarker } from '../../lib/video-markers';
 import type { MarkerConfig } from '../../types/videojs-markers';
 import { usePip } from '../../contexts/PipContext';
+import { Pip } from '../../plugins/pip';
 
 interface VideoPlayerProps {
   /** The source URL of the video stream */
@@ -85,7 +86,7 @@ export function VideoPlayer({
   const playerRef = useRef<Player | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { adoptForPip, reclaimFromPip, closePip, activePipEventId } = usePip();
+  const { adoptForPip, reclaimFromPip, closePip, activePipEventId, enterAndroidPip, getAndroidPipPosition, isAndroid } = usePip();
   const adoptedForPip = useRef(false);
 
   const updateMarkers = (player: Player, markers: VideoMarker[]) => {
@@ -229,10 +230,10 @@ export function VideoPlayer({
     }
   }, [markers, onMarkerClick]);
 
-  // Listen for PiP activation to adopt the player
+  // Listen for PiP activation — browser API on desktop/iOS only
   useEffect(() => {
     const player = playerRef.current;
-    if (!player || !eventId) return;
+    if (!player || !eventId || isAndroid) return;
 
     let videoEl: HTMLVideoElement | null = null;
     try {
@@ -251,7 +252,46 @@ export function VideoPlayer({
     return () => {
       videoEl!.removeEventListener('enterpictureinpicture', handleEnterPip);
     };
-  }, [playerRef.current, eventId, adoptForPip]);
+  }, [playerRef.current, eventId, adoptForPip, isAndroid]);
+
+  // Android: override PiP button to use native PiP
+  useEffect(() => {
+    if (!isAndroid || !playerRef.current || !eventId) return;
+    const player = playerRef.current;
+
+    // Check if native PiP is supported on this device
+    Pip.isPipSupported().then(({ supported }) => {
+      if (!supported) {
+        // Hide PiP button on unsupported Android devices
+        const toggle = (player as any).controlBar?.pictureInPictureToggle;
+        if (toggle) toggle.hide();
+      }
+    });
+
+    const pipButton = (player as any).controlBar?.pictureInPictureToggle?.el();
+    if (!pipButton) return;
+
+    const handleNativePip = async (e: Event) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const currentTime = player.currentTime() || 0;
+      const videoSrc = player.currentSrc();
+      if (videoSrc) {
+        player.pause();
+        await enterAndroidPip(videoSrc, currentTime, eventId);
+        const returnedPosition = getAndroidPipPosition();
+        if (returnedPosition > 0) {
+          player.currentTime(returnedPosition);
+        }
+        player.play();
+      }
+    };
+
+    pipButton.addEventListener('click', handleNativePip, true);
+    return () => {
+      pipButton.removeEventListener('click', handleNativePip, true);
+    };
+  }, [playerRef.current, eventId, isAndroid, enterAndroidPip, getAndroidPipPosition]);
 
   // Dispose the player on unmount (skip if adopted for PiP)
   useEffect(() => {
