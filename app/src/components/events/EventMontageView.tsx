@@ -38,6 +38,7 @@ interface EventMontageViewProps {
   isFetching?: boolean;
   onLoadMore: () => void;
   eventTagMap?: Map<string, Tag[]>;
+  eventFilters?: Record<string, unknown>;
 }
 
 export const EventMontageView = ({
@@ -53,6 +54,7 @@ export const EventMontageView = ({
   isFetching = false,
   onLoadMore,
   eventTagMap,
+  eventFilters,
 }: EventMontageViewProps) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -115,7 +117,7 @@ export const EventMontageView = ({
             <Card
               key={event.Id}
               className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all"
-              onClick={() => navigate(`/events/${event.Id}`)}
+              onClick={() => navigate(`/events/${event.Id}`, { state: { from: '/events', eventFilters } })}
             >
               <div className="relative bg-black" style={{ aspectRatio: aspectRatio.toString() }}>
                 <SecureImage

@@ -30,7 +30,7 @@ import { TagChipList } from './TagChip';
  * @param props.monitorName - Name of the monitor that recorded the event
  * @param props.thumbnailUrl - URL for the event thumbnail image
  */
-function EventCardComponent({ event, monitorName, thumbnailUrl, objectFit = 'contain', thumbnailWidth, thumbnailHeight, tags }: EventCardProps) {
+function EventCardComponent({ event, monitorName, thumbnailUrl, objectFit = 'contain', thumbnailWidth, thumbnailHeight, tags, eventFilters }: EventCardProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { fmtDate, fmtTime } = useDateTimeFormat();
@@ -68,11 +68,11 @@ function EventCardComponent({ event, monitorName, thumbnailUrl, objectFit = 'con
   return (
     <Card
       className="group overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-200 hover:ring-2 hover:ring-primary/50 focus:outline-none focus:ring-2 focus:ring-primary"
-      onClick={() => navigate(`/events/${event.Id}`, { state: { from: '/events' } })}
+      onClick={() => navigate(`/events/${event.Id}`, { state: { from: '/events', eventFilters } })}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          navigate(`/events/${event.Id}`, { state: { from: '/events' } });
+          navigate(`/events/${event.Id}`, { state: { from: '/events', eventFilters } });
         }
       }}
       role="button"

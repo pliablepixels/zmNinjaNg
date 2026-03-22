@@ -562,6 +562,7 @@ export interface EventCardProps {
   thumbnailWidth: number;
   thumbnailHeight: number;
   tags?: Tag[];
+  eventFilters?: Record<string, unknown>;
 }
 
 // Zone types

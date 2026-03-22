@@ -10,6 +10,7 @@ import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { getEvents } from '../api/events';
+import type { EventFilters } from '../api/events';
 import { getMonitors } from '../api/monitors';
 import { useCurrentProfile } from '../hooks/useCurrentProfile';
 import { useAuthStore } from '../stores/auth';
@@ -141,6 +142,14 @@ export default function Events() {
     // No filter - fetch all
     return undefined;
   }, [filters.monitorId, isGroupFilterActive, groupMonitorIds]);
+
+  // Build filters with server-formatted dates for passing to EventDetail
+  const serverFilters: EventFilters = useMemo(() => ({
+    ...filters,
+    startDateTime: filters.startDateTime ? formatForServer(new Date(filters.startDateTime)) : undefined,
+    endDateTime: filters.endDateTime ? formatForServer(new Date(filters.endDateTime)) : undefined,
+    monitorId: effectiveMonitorId,
+  }), [filters, effectiveMonitorId]);
 
   // Fetch events with configured limit
   // Include effectiveMonitorId and group filter state in query key for proper cache invalidation
@@ -492,6 +501,7 @@ export default function Events() {
             isFetching={isFetching}
             onLoadMore={loadNextPage}
             eventTagMap={eventTagMap}
+            eventFilters={serverFilters}
           />
         ) : (
           <EventListView
@@ -508,6 +518,7 @@ export default function Events() {
             parentRef={parentRef}
             parentElement={parentElement}
             eventTagMap={eventTagMap}
+            eventFilters={serverFilters}
           />
         )}
       </div>

@@ -31,6 +31,7 @@ interface EventListViewProps {
   parentRef: React.RefObject<HTMLDivElement | null>;
   parentElement: HTMLDivElement | null;
   eventTagMap?: Map<string, Tag[]>;
+  eventFilters?: Record<string, unknown>;
 }
 
 // Helper to render a single event item
@@ -41,6 +42,7 @@ const EventItem = ({
   portalUrl,
   accessToken,
   eventTagMap,
+  eventFilters,
 }: {
   event: any;
   monitors: Array<{ Monitor: Monitor }>;
@@ -48,6 +50,7 @@ const EventItem = ({
   portalUrl: string;
   accessToken?: string;
   eventTagMap?: Map<string, Tag[]>;
+  eventFilters?: Record<string, unknown>;
 }) => {
   const { Event } = event;
   const monitorData = monitors.find((m) => m.Monitor.Id === Event.MonitorId)?.Monitor;
@@ -80,6 +83,7 @@ const EventItem = ({
         thumbnailWidth={thumbnailWidth}
         thumbnailHeight={thumbnailHeight}
         tags={eventTagMap?.get(Event.Id)}
+        eventFilters={eventFilters}
       />
     </div>
   );
@@ -99,6 +103,7 @@ export const EventListView = ({
   parentRef,
   parentElement,
   eventTagMap,
+  eventFilters,
 }: EventListViewProps) => {
   const { t } = useTranslation();
   const listContainerRef = useRef<HTMLDivElement>(null);
@@ -249,6 +254,7 @@ export const EventListView = ({
             portalUrl={portalUrl}
             accessToken={accessToken}
             eventTagMap={eventTagMap}
+            eventFilters={eventFilters}
           />
         ))}
         {footer}
@@ -292,6 +298,7 @@ export const EventListView = ({
                 portalUrl={portalUrl}
                 accessToken={accessToken}
                 eventTagMap={eventTagMap}
+                eventFilters={eventFilters}
               />
             </div>
           );

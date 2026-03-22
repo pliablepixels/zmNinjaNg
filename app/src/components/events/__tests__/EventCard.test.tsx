@@ -131,6 +131,6 @@ describe('EventCard', () => {
 
     fireEvent.click(screen.getByTestId('event-card'));
 
-    expect(navigate).toHaveBeenCalledWith('/events/202', { state: { from: '/events' } });
+    expect(navigate).toHaveBeenCalledWith('/events/202', { state: { from: '/events', eventFilters: undefined } });
   });
 });
