@@ -123,7 +123,7 @@ const getDefaultLogLevel = (): LogLevel => (
 export const DEFAULT_SETTINGS: ProfileSettings = {
   viewMode: 'snapshot',
   displayMode: getDefaultDisplayMode(),
-  theme: 'light',
+  theme: 'slate',
   logLevel: getDefaultLogLevel(),
   snapshotRefreshInterval: 3,
   streamMaxFps: 10,
