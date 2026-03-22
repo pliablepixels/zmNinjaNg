@@ -564,6 +564,54 @@ handling - Breakpoint support
 
 --------------
 
+Bandwidth Settings (``lib/zmninja-ng-constants.ts``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Configurable polling and refresh intervals that adapt to the user's
+bandwidth mode (normal vs. low). Defined in the ``BandwidthSettings``
+interface and the ``BANDWIDTH_SETTINGS`` constant map.
+
+**Usage:**
+
+.. code:: typescript
+
+   import { useBandwidthSettings } from '../hooks/useBandwidthSettings';
+
+   const bandwidth = useBandwidthSettings();
+
+   // Use in React Query
+   const { data } = useQuery({
+     queryKey: ['monitors'],
+     queryFn: getMonitors,
+     refetchInterval: bandwidth.monitorStatusInterval,
+   });
+
+**Available Properties:**
+
+- ``monitorStatusInterval`` — Monitor status updates
+- ``alarmStatusInterval`` — Alarm state checking
+- ``consoleEventsInterval`` — Event count refreshing
+- ``eventsWidgetInterval`` — Dashboard events widget
+- ``timelineHeatmapInterval`` — Timeline/heatmap data
+- ``daemonCheckInterval`` — Server daemon health
+- ``snapshotRefreshInterval`` — Snapshot image refresh
+- ``zmsStatusInterval`` — ZMS playback status polling interval
+  (normal: 3000 ms, low: 5000 ms). Used by ``ZmsEventPlayer`` to poll
+  the ZMS stream status (``ZM_CMD.QUERY``) for tracking playback
+  position.
+- ``imageScale`` — Image scaling percentage
+- ``imageQuality`` — Image quality percentage
+- ``streamMaxFps`` — Maximum stream FPS
+
+**Adding a new property:** Add the field to ``BandwidthSettings`` in
+``lib/zmninja-ng-constants.ts`` with values for both ``normal`` and
+``low`` modes, then consume it via ``useBandwidthSettings()``.
+
+**Used By:** Dashboard widgets, monitor views, event player, montage,
+any component that polls or auto-refreshes
+
+--------------
+
 Reusable UI Components
 ----------------------
 

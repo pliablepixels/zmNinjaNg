@@ -1385,7 +1385,7 @@ API functions are thin wrappers around the HTTP client.
    src/api/
    ├── auth.ts          # login(), logout(), refreshAccessToken()
    ├── monitors.ts      # fetchMonitors(), updateMonitor(), getAlarmStatus()
-   ├── events.ts        # fetchEvents(), fetchEvent(), deleteEvent()
+   ├── events.ts        # fetchEvents(), fetchEvent(), deleteEvent(), getAdjacentEvent()
    ├── groups.ts        # getGroups() - monitor groups for filtering
    ├── tags.ts          # getTags(), getEventTags() - event tagging (ZM 1.37+)
    ├── states.ts        # fetchStates(), changeState()
@@ -1468,6 +1468,40 @@ Returns ``null`` instead of throwing on 404/401/403 responses
 
    ['tags', profileId]           // All available tags
    ['eventTags', profileId, eventIds]  // Tags for specific events
+
+Adjacent Event Navigation
+-------------------------
+
+The ``getAdjacentEvent`` function (``src/api/events.ts``) fetches a single
+event adjacent to a given timestamp. It is used by the ``useEventNavigation``
+hook to provide prev/next event navigation in EventDetail.
+
+**Signature:**
+
+.. code:: typescript
+
+   export async function getAdjacentEvent(
+     direction: 'next' | 'prev',
+     currentStartDateTime: string,
+     filters?: EventFilters
+   ): Promise<EventData | null>
+
+**How it works:**
+
+1. Builds a ZM API filter path using ``StartDateTime >`` (for next) or
+   ``StartDateTime <`` (for prev) relative to the provided timestamp
+2. Applies the same server-side filters as the events list: ``monitorId``,
+   ``minAlarmFrames``, and ``notesRegexp``
+3. Requests a single result (``limit: 1``) sorted by ``StartDateTime`` in
+   ascending order (next) or descending order (prev)
+4. Returns the closest matching event, or ``null`` if none exists
+
+**Usage:**
+
+.. code:: typescript
+
+   const nextEvent = await getAdjacentEvent('next', currentEvent.StartDateTime, filters);
+   const prevEvent = await getAdjacentEvent('prev', currentEvent.StartDateTime, filters);
 
 Data Flow Example
 -----------------

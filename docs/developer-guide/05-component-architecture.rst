@@ -415,8 +415,20 @@ ZmsEventPlayer
 
 Video player for event playback using ZoneMinder’s zms streaming.
 
-**Features:** - Play/pause controls - Frame-by-frame navigation - Speed
-control (0.25x - 2x) - Progress bar with scrubbing - Fullscreen support
+**Controls layout:** ``|<`` (start), ``< 5s`` (seek back), Play/Pause,
+``5s >`` (seek forward), ``>|`` (end). Seek operations use 5-second
+increments via ``ZM_CMD.SEEK``.
+
+**Features:**
+
+- Play/pause and seek controls (5-second increments)
+- Speed control (0.25x - 2x)
+- Progress bar displays time (``m:ss``) when duration is provided,
+  falls back to frame numbers otherwise
+- Polls ZMS stream status via ``ZM_CMD.QUERY`` to track playback
+  position; uses bandwidth-aware interval via ``zmsStatusInterval``
+- Auto-pauses at end of event to prevent looping
+- Fullscreen support
 
 **Implementation Detail:**
 
@@ -577,6 +589,43 @@ Wrapper around HTML5 video with Ionic integration.
 
 **Features:** - Autoplay control - Play/pause callbacks - Error handling
 - Fullscreen support
+
+**Picture-in-Picture integration:**
+
+- Accepts an ``eventId`` prop to enable PiP persistence across route
+  changes.
+- When PiP activates, VideoPlayer adopts the player element to the
+  ``PipProvider`` portal so the video stays alive outside the component
+  tree.
+- On unmount, skips ``dispose()`` if PiP is active so the stream
+  continues.
+- On remount with the same ``eventId``, reclaims the player from the
+  portal for inline resume.
+- On remount with a different ``eventId``, closes the existing PiP
+  session first.
+
+PipContext
+~~~~~~~~~~
+
+**Location**: ``src/contexts/PipContext.tsx``
+
+Provides ``PipProvider`` and ``usePip()`` hook for Picture-in-Picture
+video that survives route changes.
+
+**API:**
+
+- ``adoptForPip(player, videoEl, eventId)`` — moves the video element
+  to a root portal so it persists outside the component tree.
+- ``reclaimFromPip()`` — reclaims the element for inline resume in the
+  original component.
+- ``closePip()`` — ends PiP and cleans up resources.
+- ``activePipEventId`` — tracks which event is currently in PiP.
+
+**Integration:**
+
+``PipProvider`` wraps the app in ``App.tsx`` and renders a hidden portal
+``div`` as a sibling of the router. VideoPlayer uses ``usePip()`` to
+adopt/reclaim its player element during PiP transitions.
 
 PasswordInput
 ~~~~~~~~~~~~~
@@ -930,6 +979,28 @@ Complex logic is extracted into hooks:
   references, prevents re-render loops)
 - ``useMonitorStream()`` - Stream URL and connection management
 - ``usePTZControl()`` - PTZ command handling (in ``pages/hooks/``)
+- ``useEventNavigation()`` - Adjacent event navigation (see below)
+
+useEventNavigation
+^^^^^^^^^^^^^^^^^^
+
+**Location**: ``src/hooks/useEventNavigation.ts``
+
+Fetches adjacent events on demand via the ``getAdjacentEvent()`` API.
+Uses server-side filters passed through router navigation state to
+maintain filter context when navigating between events.
+
+**Returns:**
+
+- ``goToPrevEvent`` / ``goToNextEvent`` — callbacks that navigate to
+  the previous or next event.
+- Loading states for each direction.
+
+**Behaviour:**
+
+- Triggers directional slide animations (``event-slide-left``,
+  ``event-slide-right`` CSS classes, 300 ms).
+- Used in the EventDetail header with ChevronLeft/ChevronRight buttons.
 
 3. Refs for DOM Access
 ~~~~~~~~~~~~~~~~~~~~~~
