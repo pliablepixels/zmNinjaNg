@@ -55,6 +55,43 @@
   }
 }
 
+/* Event slide animations for prev/next navigation */
+.event-slide-left {
+  animation: event-slide-left 0.3s ease-out;
+}
+.event-slide-right {
+  animation: event-slide-right 0.3s ease-out;
+}
+
+@keyframes event-slide-left {
+  from {
+    transform: translateX(8%);
+    opacity: 0.7;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes event-slide-right {
+  from {
+    transform: translateX(-8%);
+    opacity: 0.7;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .event-slide-left,
+  .event-slide-right {
+    animation: none;
+  }
+}
+
 /* Montage grid: resize handles for all corners — use handle div borders directly, skip ::after */
 .react-grid-item > .react-resizable-handle {
   position: absolute !important;
