@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   PersonStanding, Car, Truck, Bus, Bike, Dog, Cat, Bird,
-  Plane, TrainFront, Sailboat, PawPrint, Scissors, Tag,
+  Plane, TrainFront, Sailboat, PawPrint, Scissors, SearchCheck,
 } from 'lucide-react';
 import {
   getObjectClassIcon,
@@ -75,9 +75,9 @@ describe('getObjectClassIcon', () => {
   });
 
   it('returns Tag fallback for unknown classes', () => {
-    expect(getObjectClassIcon('unknown')).toBe(Tag);
-    expect(getObjectClassIcon('')).toBe(Tag);
-    expect(getObjectClassIcon('spaceship')).toBe(Tag);
+    expect(getObjectClassIcon('unknown')).toBe(SearchCheck);
+    expect(getObjectClassIcon('')).toBe(SearchCheck);
+    expect(getObjectClassIcon('spaceship')).toBe(SearchCheck);
   });
 });
 
@@ -114,6 +114,6 @@ describe('getObjectClassIconFromList', () => {
   });
 
   it('returns Tag fallback for empty string', () => {
-    expect(getObjectClassIconFromList('')).toBe(Tag);
+    expect(getObjectClassIconFromList('')).toBe(SearchCheck);
   });
 });

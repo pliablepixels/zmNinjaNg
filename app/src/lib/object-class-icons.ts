@@ -50,7 +50,7 @@ import {
   ShoppingBag,
   Smartphone,
   Sofa,
-  Tag,
+  SearchCheck,
   TrainFront,
   Truck,
   Tv,
@@ -143,7 +143,7 @@ const classIconMap: Record<string, LucideIcon> = {
 };
 
 /** Fallback icon for classes without a specific mapping. */
-const fallbackIcon: LucideIcon = Tag;
+const fallbackIcon: LucideIcon = SearchCheck;
 
 /**
  * Returns the Lucide icon for an object detection class name.
