@@ -7,47 +7,41 @@ Feature: Timeline Visualization
     Given I am logged into zmNinjaNG
     When I navigate to the "Timeline" page
 
-  Scenario: View timeline interface
-    Then I should see the page heading "Timeline"
-    And I should see timeline interface elements
+  @all
+  Scenario: Timeline loads with data elements or empty state
+    Then I should see the timeline container
+    And I should see the timeline visualization or empty state
 
-  Scenario: Timeline shows date filter controls
-    Then I should see the start date picker
-    And I should see the end date picker
-    And I should see the monitor filter button
-
-  Scenario: Timeline shows quick date range buttons
+  @all
+  Scenario: Quick date range buttons update the displayed range
     Then I should see quick date range options
     When I click a quick date range option
     Then the date filters should update
 
-  Scenario: Timeline shows refresh button
-    Then I should see the refresh button
-    When I click the refresh button
-    Then the timeline should reload
-
-  Scenario: Timeline shows loading state
-    # Loading state is shown while fetching events
-    Then I should see the timeline container
-
-  Scenario: Timeline shows event statistics when events exist
-    Then I should see the timeline visualization or empty state
-    # If events exist, statistics cards are shown
-
+  @all
   Scenario: Click event on timeline navigates to detail
     Given there are events on the timeline
     When I click on an event in the timeline
     Then I should navigate to the event detail page
 
+  @all
   Scenario: Filter timeline by monitor
     When I click the monitor filter button
     Then I should see monitor filter options
     When I select a monitor from the filter
     Then the timeline should show only that monitor's events
 
-  # Mobile tests run on mobile-chrome and mobile-safari projects which already have mobile viewport
-  @mobile
-  Scenario: Timeline is responsive on mobile
-    Then I should see the page heading "Timeline"
-    And the timeline controls should be accessible
+  @all
+  Scenario: Refresh button reloads timeline data
+    Then I should see the refresh button
+    When I click the refresh button
+    Then the timeline should reload
+    And I should see the timeline visualization or empty state
+
+  @ios-phone @android @visual
+  Scenario: Phone layout has scrollable timeline and accessible controls
+    Given the viewport is mobile size
+    Then the timeline controls should be accessible
     And the timeline should be scrollable
+    And no element should overflow the viewport horizontally
+    And the page should match the visual baseline

@@ -277,10 +277,11 @@ For every code change, execute in order:
 2. **Type Check**: `npx tsc --noEmit`
 3. **Build**: `npm run build`
 4. **E2E Tests** (if UI/navigation changed): `npm run test:e2e -- <feature>.feature`
-5. **Platform Tests** (if layout/rendering changed): run at least one platform test (`npm run test:e2e:android`, `npm run test:e2e:ios-phone`, etc.)
-6. **Commit** only after all tests pass
+5. **Commit** only after all tests pass
 
-State which tests were run: "Tests verified: npm test ✓, tsc --noEmit ✓, build ✓, test:e2e -- dashboard.feature ✓, test:e2e:ios-phone ✓"
+Device platform tests (`test:e2e:ios-phone`, `test:e2e:android`, etc.) are manual-only — too slow for the automated dev workflow. Run them explicitly when you want to verify cross-platform behavior.
+
+State which tests were run: "Tests verified: npm test ✓, tsc --noEmit ✓, build ✓, test:e2e -- dashboard.feature ✓"
 
 ### Pre-Commit Checklist
 
@@ -294,20 +295,17 @@ State which tests were run: "Tests verified: npm test ✓, tsc --noEmit ✓, bui
 - [ ] `data-testid` added to new elements
 - [ ] E2E tests updated in .feature file with platform tags (`@all`, `@ios-phone`, etc.)
 - [ ] `npm run test:e2e -- <feature>.feature` passes
-- [ ] At least one platform test passes (android, ios-phone, ios-tablet, or tauri)
 - [ ] Visual baselines updated if layout changed (`--update-snapshots`)
 - [ ] All language files updated
 
 **Native plugin changes** (additional):
 - [ ] Appium test added/updated in `app/tests/native/specs/`
-- [ ] `npm run test:native` passes
 
 ### Never commit if:
 - Tests are failing
 - Tests don't exist for new functionality
 - You haven't actually run the tests
 - You only ran build but not unit/e2e tests
-- You changed layout but didn't run a platform test
 - You wrote a scenario that only checks element presence without interaction
 
 ---
@@ -721,7 +719,7 @@ For complex features with multiple approaches, UX changes, or architectural deci
 11. **Forgetting documentation updates** - Update developer-guide when adding APIs/components
 12. **Hardcoding polling intervals** - Use `useBandwidthSettings()` for all polling/auto-refresh features
 13. **Writing shallow E2E tests** - Never write "element is visible" as a test. Every scenario must include user interaction and verification of outcomes. Ask: "Would a human QA tester consider this tested?"
-14. **Skipping platform-specific tests** - UI changes must be tested on at least one real platform (android, ios-phone, ios-tablet, or tauri), not just web browser viewport emulation
+14. **Auto-running device e2e tests** - Device tests (ios-phone, ios-tablet, android, tauri) are manual-invoke-only. They are too slow for the automated dev workflow. Only `npm run test:e2e` (web browser) runs automatically
 15. **Forgetting visual baselines** - Layout changes require updating screenshot baselines on all affected platforms
 16. **Monolith step definitions** - Step definitions go in per-screen files (`app/tests/steps/<screen>.steps.ts`), not one giant file
 

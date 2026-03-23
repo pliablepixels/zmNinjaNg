@@ -1,413 +1,405 @@
-# Testing Guide for zmNinjaNG
+# Cross-Platform Test Setup
 
-Comprehensive testing strategy with unit tests and BDD-first E2E tests.
-
-## Quick Start
-
-```bash
-# Run all unit tests (fast)
-npm test
-
-# Start dev server with proxy (required for E2E in browser)
-npm run dev:all
-
-# Run all E2E tests
-npm run test:e2e
-
-# Run specific feature
-npm run test:e2e -- tests/features/dashboard.feature
-
-# Run E2E with UI mode
-npm run test:e2e:ui
-```
-
-## Testing Strategy
-
-zmNinjaNG uses a layered testing approach:
-
-1. **Unit Tests** (Vitest) - Test pure functions, utilities, and logic
-   - Fast execution (< 2 seconds)
-   - Test edge cases, algorithms, security functions
-   - Located in `src/lib/__tests__/`, `src/stores/__tests__/`, etc.
-
-2. **E2E Tests** (Playwright + BDD) - Test user flows and integration
-   - Gherkin feature files as source of truth
-   - Test complete user journeys
-   - Located in `tests/features/`
-
-## Current Test Coverage
-
-**Unit Tests**: 765+ tests across 58 files
-- ✓ API validation and error handling
-- ✓ Cryptographic functions (AES-GCM)
-- ✓ Log sanitization (security-critical)
-- ✓ URL utilities and derivation
-- ✓ Time/timezone conversions
-- ✓ Grid layout calculations
-- ✓ Monitor filtering and rotation
-- ✓ Video markers and timestamps
-- ✓ Dashboard store
-- ✓ Notification service
-- ✓ Download utilities
-- ✓ Profile validation
-
-**E2E Tests**: 9 feature files with 74 scenarios covering all major features
-- ✓ Dashboard widgets and editing (dashboard.feature - 8 scenarios)
-- ✓ Monitor list, montage, and detail (monitors.feature - 7 scenarios)
-- ✓ Monitor detail page controls (monitor-detail.feature - 7 scenarios)
-- ✓ Event browsing, filtering, and favorites (events.feature - 14 scenarios)
-- ✓ Timeline visualization and filtering (timeline.feature - 10 scenarios)
-- ✓ Profile management (profiles.feature - 5 scenarios)
-- ✓ Settings, server info, and logs (settings.feature - 7 scenarios)
-- ✓ Go2RTC WebRTC streaming (go2rtc-streaming.feature - 3 scenarios)
-- ✓ Full app navigation walkthrough (full-app-walkthrough.feature - 8 scenarios)
+This guide covers setting up and running the full cross-platform test suite, which drives the actual app on Android Emulator, iOS Simulator (iPhone and iPad), Tauri desktop, and web browser.
 
 ---
 
-# Unit Tests
+## 1. Prerequisites
 
-## Running Unit Tests
+Install these tools before running any platform tests:
 
-```bash
-# Run all unit tests
-npm test
-
-# Run specific test file
-npm test -- src/lib/__tests__/crypto.test.ts
-
-# Run tests in watch mode
-npm test -- --watch
-
-# Run tests with coverage
-npm test -- --coverage
-```
-
-## Writing Unit Tests
-
-Unit tests use Vitest and follow this structure:
-
-```typescript
-import { describe, it, expect } from 'vitest';
-import { functionToTest } from '../module';
-
-describe('functionToTest', () => {
-  describe('Success cases', () => {
-    it('handles valid input', () => {
-      const result = functionToTest('valid');
-      expect(result).toBe('expected');
-    });
-  });
-
-  describe('Edge cases', () => {
-    it('handles empty input', () => {
-      const result = functionToTest('');
-      expect(result).toBe('');
-    });
-  });
-});
-```
-
-## What to Unit Test
-
-Focus on:
-- **Pure functions** - Deterministic, no side effects
-- **Algorithms** - Grid calculations, time conversions
-- **Security-critical** - Encryption, sanitization, validation
-- **Edge cases** - null, undefined, empty arrays, invalid input
-- **Error handling** - Throw/catch behavior
-
-Avoid:
-- UI components (use E2E tests)
-- Complex integration (use E2E tests)
-- External API calls (mock or use E2E)
-
-## Test File Location
-
-Place tests next to the code they test:
-
-```
-src/lib/
-├── crypto.ts
-└── __tests__/
-    └── crypto.test.ts
-
-src/stores/
-├── dashboard.ts
-└── __tests__/
-    └── dashboard.test.ts
-```
-
-## Mocking
-
-Use Vitest mocking for dependencies:
-
-```typescript
-import { vi } from 'vitest';
-
-// Mock a module
-vi.mock('../logger', () => ({
-  log: {
-    error: vi.fn(),
-    warn: vi.fn(),
-  },
-}));
-
-// Mock a store
-vi.mock('../../stores/settings', () => ({
-  useSettingsStore: {
-    getState: vi.fn(() => ({
-      getProfileSettings: vi.fn(() => ({
-        disableLogRedaction: false,
-      })),
-    })),
-  },
-}));
-```
+| Tool | Version | Notes |
+|---|---|---|
+| Xcode | 15+ | Required for iOS simulators and `xcrun simctl` |
+| Android Studio | Latest | Required for AVD manager and Android SDK |
+| Rust + Cargo | Latest stable | Required for `tauri-driver` |
+| Node.js | 20+ | Required for all npm scripts |
+| Appium | 2.x | Global install; manages iOS and Android drivers |
 
 ---
 
-# E2E Tests
+## 2. First-Time Setup
 
-## Overview
+Run these steps once on a new machine. After completing all steps, run `npm run test:platform:setup` from `app/` to verify everything is ready.
 
-All E2E tests are generated from Gherkin `.feature` files using playwright-bdd:
+### Android
 
-**Workflow:** Gherkin → Step Definitions → Generated Tests → Execution
+1. Open Android Studio → Virtual Device Manager → Create Device.
+2. Select **Pixel 7** as the hardware profile.
+3. Select system image: **API 34**, **arm64-v8a**, `google_apis` image (required for Apple Silicon Macs).
+4. Name the AVD **`Pixel_7_API_34`** (this is the default name expected by the config).
+5. Finish creating the AVD.
+6. Verify `adb` is on your PATH:
+   ```bash
+   adb version
+   ```
+   If not found, add `$ANDROID_HOME/platform-tools` to your shell PATH.
 
+### iOS
+
+1. Open Xcode → Settings → Platforms → click **+** to add a platform.
+2. Install **iOS 17** simulator runtime (download size is several GB).
+3. Verify the required simulators exist:
+   ```bash
+   xcrun simctl list devices | grep -E "iPhone 15|iPad Air"
+   ```
+   You need both **iPhone 15** and **iPad Air 11-inch (M2)** listed. If missing, add them via Xcode → Window → Devices and Simulators.
+
+### Appium
+
+```bash
+npm install -g appium
+appium driver install xcuitest
+appium driver install uiautomator2
 ```
-tests/
-├── features/
-│   ├── dashboard.feature           # Dashboard widget tests (8 scenarios)
-│   ├── monitors.feature            # Monitor list and montage tests (7 scenarios)
-│   ├── monitor-detail.feature      # Monitor detail page tests (7 scenarios)
-│   ├── events.feature              # Event browsing tests (14 scenarios)
-│   ├── timeline.feature            # Timeline visualization tests (10 scenarios)
-│   ├── profiles.feature            # Profile management tests (5 scenarios)
-│   ├── settings.feature            # Settings, server, logs tests (7 scenarios)
-│   ├── go2rtc-streaming.feature    # WebRTC streaming tests (3 scenarios)
-│   └── full-app-walkthrough.feature # Full navigation walkthrough (8 scenarios)
-├── helpers/
-│   └── config.ts                   # Test configuration
-├── steps.ts                        # Step implementations (150+ step definitions)
-└── README.md                       # This file
+
+Verify:
+```bash
+appium --version        # should be 2.x
+appium driver list      # should show xcuitest and uiautomator2 as installed
 ```
 
-## Configuration
+### Tauri
 
-Configure your ZoneMinder server in `.env`:
+```bash
+cargo install tauri-driver
+```
+
+Verify:
+```bash
+tauri-driver --version
+```
+
+### Verify All Setup
+
+From the `app/` directory:
+
+```bash
+npm run test:platform:setup
+```
+
+This checks Xcode, iOS runtime, simulators, Android SDK, AVD, adb, Appium drivers, tauri-driver, and port availability. Any failing check includes a fix instruction.
+
+---
+
+## 3. Platform Config
+
+### Default Config
+
+`app/tests/platforms.config.defaults.ts` ships with the repo and contains the default simulator names, ports, and timeouts:
+
+- Android AVD: `Pixel_7_API_34`
+- Android CDP port: `9222`
+- iOS phone simulator: `iPhone 15` (iOS 17.5)
+- iOS tablet simulator: `iPad Air 11-inch (M2)` (iOS 17.5)
+- Appium port: `4723`
+- Tauri driver port: `4444`
+- App launch timeout: `30000` ms
+- WebView switch timeout: `10000` ms
+
+### Local Overrides
+
+To use different simulator names or ports, copy the defaults file:
+
+```bash
+cp app/tests/platforms.config.defaults.ts app/tests/platforms.config.local.ts
+```
+
+The `*.local` gitignore pattern already covers this file, so it will not be committed.
+
+Edit `platforms.config.local.ts` with your values. The config loader merges local over defaults at startup — you only need to set the fields you want to change.
+
+### Finding Your Simulator Names
+
+```bash
+# List iOS simulators
+xcrun simctl list devices
+
+# List Android AVDs
+emulator -list-avds
+```
+
+Use the exact name shown in the output as the value in your local config.
+
+### Server Credentials
+
+E2E tests connect to a real ZoneMinder server. Set credentials in `app/.env`:
 
 ```env
-ZM_HOST_1=http://192.168.1.100
+ZM_HOST_1=http://your-server:port
 ZM_USER_1=admin
 ZM_PASSWORD_1=password
 ```
 
-**Important:** E2E tests require the dev server with proxy:
-```bash
-npm run dev:all  # Starts both Vite (5173) and proxy server (3001)
-```
+---
 
-The proxy is needed because browser security (CORS) blocks direct requests to ZoneMinder servers.
+## 4. Running Tests
 
-Timeout settings in `helpers/config.ts`:
-- Overall test: 30s per test case
-- Page transitions: 5s max
-- Element visibility: 3s max
+All commands run from the `app/` directory.
 
-## Writing E2E Tests
+### Web E2E (fast, no devices needed)
 
-### 1. Add Scenarios to the Feature File
+| Command | Description |
+|---|---|
+| `npm run test:e2e` | All web browser tests |
+| `npm run test:e2e -- tests/features/dashboard.feature` | Single feature file |
+| `npm run test:e2e -- --headed` | See the browser |
+| `npm run test:e2e:visual-update` | Regenerate web visual baselines |
+| `npm test` | Unit tests (Vitest, no server needed) |
+| `npm run test:all` | Unit + web E2E |
+| `npm run test:platform:setup` | Verify tools and simulators are ready |
 
-Edit `tests/features/full-app-walkthrough.feature`:
+### Device E2E (requires simulators/emulators)
 
-```gherkin
-Feature: Full Application Walkthrough
-  As a ZoneMinder user
-  I want to navigate through all application screens
-  So that I can verify the application works correctly
+Device tests are run via shell scripts from the repo root. Each script handles building the app, booting the device, and running the tests.
 
-  Background:
-    Given I am logged into zmNinjaNG
+| Command | What it does |
+|---|---|
+| `bash scripts/test-android.sh` | Build APK, boot emulator, forward CDP port, run Playwright |
+| `bash scripts/test-ios.sh phone` | Build iOS app, boot iPhone 15 sim, start Appium, run WebDriverIO |
+| `bash scripts/test-ios.sh tablet` | Build iOS app, boot iPad Air sim, start Appium, run WebDriverIO |
+| `bash scripts/test-tauri.sh` | Start tauri-driver, run WebDriverIO against Tauri app |
+| `bash scripts/test-all-platforms.sh` | Run all 5 platforms sequentially (web → Android → iOS phone → iOS tablet → Tauri) |
 
-  Scenario: Dashboard - Add and verify widget
-    When I navigate to the "Dashboard" page
-    Then I should see the page heading "Dashboard"
-    When I open the Add Widget dialog
-    And I select the "Timeline" widget type
-    And I enter widget title "Test Timeline"
-    And I click the Add button in the dialog
-    Then the widget "Test Timeline" should appear on the dashboard
-```
+### Running Device Tests Step by Step
 
-### 2. Implement Steps (if needed)
-
-If you need new steps, add them to `tests/steps.ts`:
-
-```typescript
-import { createBdd } from 'playwright-bdd';
-import { expect } from '@playwright/test';
-
-const { Given, When, Then } = createBdd();
-
-When('I perform a new action', async ({ page }) => {
-  await page.getByRole('button', { name: 'Action' }).click();
-});
-
-Then('I should see the new result', async ({ page }) => {
-  await expect(page.getByText('Result')).toBeVisible();
-});
-```
-
-### 3. Check Available Steps
-
-Before writing new steps, check what's already available:
+#### Android
 
 ```bash
-npx bddgen export
+# 1. Build and sync the Capacitor app to Android
+cd app && npm run android:sync
+
+# 2. Run the test script — it builds the APK, boots the emulator,
+#    installs the app, forwards the CDP port, and runs Playwright
+#    against the Android WebView.
+bash scripts/test-android.sh
+
+# Run a single feature file:
+bash scripts/test-android.sh tests/features/dashboard.feature
 ```
 
-This shows all 27 existing step definitions you can reuse.
+**How it works:** The Android WebView exposes Chrome DevTools Protocol on a debug socket. The script uses `adb forward` to map it to `localhost:9222`, then Playwright connects via `connectOverCDP()` and drives the app like a regular browser.
 
-### 4. Run Tests
+#### iOS (iPhone)
 
 ```bash
-npm run test:e2e       # Generate from Gherkin + run tests
-npm run test:e2e:ui    # Run with UI mode
+# 1. Build and sync the Capacitor app to iOS
+cd app && npm run ios:sync
+
+# 2. Run the test script — it builds the app via xcodebuild for the
+#    simulator, boots iPhone 15, starts Appium with XCUITest driver,
+#    launches the app, switches to the WebView context, and runs
+#    WebDriverIO tests.
+bash scripts/test-ios.sh phone
 ```
 
-## E2E Best Practices
+**How it works:** Appium's XCUITest driver launches the app on the iOS simulator. WebDriverIO connects to Appium (default port 4723), which switches into the WKWebView context. From there, WebDriverIO can find elements by `data-testid` and drive the app.
 
-### Element Selection Priority
-
-1. **data-testid** (Preferred)
-   ```typescript
-   page.getByTestId('monitor-card')
-   ```
-
-2. **Role-based selectors**
-   ```typescript
-   page.getByRole('button', { name: /submit/i })
-   ```
-
-3. **Text content**
-   ```typescript
-   page.getByText('Monitor name')
-   ```
-
-4. **Avoid CSS selectors and XPath** (fragile)
-
-### Gherkin Guidelines
-
-```gherkin
-# Good - Specific and testable
-Scenario: User adds a monitor and verifies it appears
-  When I click the "Add Monitor" button
-  And I enter "Front Door" as the monitor name
-  Then I should see a monitor card with name "Front Door"
-
-# Bad - Vague and untestable
-Scenario: Monitor works
-  When I do stuff
-  Then it works
-```
-
-### Step Definition Guidelines
-
-1. Keep steps simple - each does one thing
-2. Use data-testid for element selection
-3. Wait for specific conditions, not arbitrary timeouts
-4. Reuse existing steps (`npx bddgen export`)
-5. Use parameters: `{string}`, `{int}` for flexibility
-
-## Debugging E2E Tests
-
-### View Traces
-
-All tests capture traces (timeline with screenshots):
+#### iOS (iPad)
 
 ```bash
-npx playwright show-trace test-results/*/trace.zip
+cd app && npm run ios:sync
+bash scripts/test-ios.sh tablet
 ```
 
-### Use UI Mode
+Same flow as iPhone, but targets `iPad Air 11-inch (M2)`.
 
-Interactive debugging:
+#### Tauri Desktop
 
 ```bash
-npm run test:e2e:ui
+# Run the test script — it starts tauri-driver on port 4444 and runs
+# WebDriverIO against the Tauri app's WKWebView.
+bash scripts/test-tauri.sh
 ```
 
-### Console Logs
+**How it works:** `tauri-driver` implements the WebDriver protocol and connects to the Tauri app's WKWebView. WebDriverIO drives the app through this bridge.
 
-Add logs in step definitions:
+#### All Platforms
 
-```typescript
-Then('I verify something', async ({ page }) => {
-  console.log('Current URL:', page.url());
-  // ...
-});
+```bash
+bash scripts/test-all-platforms.sh
 ```
 
-## How E2E Tests Work
+Runs in order: web → Android → iOS phone → iOS tablet → Tauri.
 
-1. **Write Gherkin** - Edit `features/full-app-walkthrough.feature`
-2. **BDD generates tests** - `bddgen` creates `.features-gen/*.spec.js`
-3. **Playwright runs tests** - Standard Playwright execution
-4. **View results** - HTML reports with traces
+### Device Screenshot Capture
 
-The `.features-gen/` directory contains auto-generated tests - never edit these manually.
+For capturing device screenshots without running the full E2E suite:
+
+| Command | Description |
+|---|---|
+| `npm run test:screenshots:ios-phone` | Capture screenshots on iPhone sim |
+| `npm run test:screenshots:ios-tablet` | Capture screenshots on iPad sim |
+| `npm run test:screenshots:android` | Capture screenshots on Android emulator |
+
+These use `wdio.config.device-screenshots.ts` with Appium to launch the app and capture screenshots of each screen.
+
+### Platform Tags
+
+Scenarios are tagged to control which platforms run them:
+
+| Tag | Runs on |
+|---|---|
+| `@all` | All platforms |
+| `@android` | Android emulator only |
+| `@ios` | iPhone + iPad simulators |
+| `@ios-phone` | iPhone simulator only |
+| `@ios-tablet` | iPad simulator only |
+| `@tauri` | Tauri desktop only |
+| `@web` | Web browser only |
+| `@visual` | Triggers screenshot comparison |
+| `@native` | Appium native suite only |
 
 ---
 
-# Testing Workflow
+## 5. Visual Baselines
 
-## Before Committing
+### Storage
 
-```bash
-# Run unit tests (fast)
-npm test
+Screenshot baselines are stored in `app/tests/screenshots/` per platform:
 
-# Run E2E tests (slower, ensure server is configured)
-npm run test:e2e
+```
+tests/screenshots/
+├── web-chromium/
+├── android-phone/
+├── ios-phone/
+├── ios-tablet/
+└── desktop-tauri/
 ```
 
-## When to Use Each Type
+Baselines are checked into git so every developer and CI run compares against the same reference images.
 
-**Unit Tests** when:
-- Testing pure functions (crypto, sanitization, formatting)
-- Testing algorithms (grid calculations, time conversions)
-- Testing edge cases (null, undefined, empty values)
-- Testing error handling
-- Quick feedback needed
+### Generating Baselines
 
-**E2E Tests** when:
-- Testing user flows (login → navigate → interact)
-- Testing integration between components
-- Testing UI interactions
-- Verifying complete features work end-to-end
+On first run for a platform, or after intentional UI changes, generate new baselines:
 
-## Additional Resources
+```bash
+# Web baselines
+npm run test:e2e:visual-update
 
-- [Vitest Documentation](https://vitest.dev)
-- [Playwright Documentation](https://playwright.dev)
-- [playwright-bdd Documentation](https://vitalets.github.io/playwright-bdd)
-- [Gherkin Reference](https://cucumber.io/docs/gherkin/reference/)
+# Device baselines (pass the update flag through the test script)
+bash scripts/test-android.sh --update-snapshots
+bash scripts/test-ios.sh phone --update-snapshots
+bash scripts/test-ios.sh tablet --update-snapshots
+```
 
-## Contributing Tests
+### Threshold
 
-### Adding Unit Tests
+The pixel diff threshold is **0.2%**. Differences within this threshold pass. Differences above it fail.
 
-1. Create test file next to source: `__tests__/module.test.ts`
-2. Write comprehensive tests (success, failure, edge cases)
-3. Run `npm test` to verify
-4. Commit changes
+### Reviewing Failures
 
-### Adding E2E Tests
+When a visual test fails, a diff image is saved next to the baseline file showing the changed pixels. Inspect the diff to determine whether the change is intentional (update the baseline) or a regression (fix the code).
 
-1. Add scenario to `features/full-app-walkthrough.feature`
-2. Implement new steps in `steps.ts` (if needed)
-3. Run `npm run test:e2e`
-4. Verify all tests pass
-5. Commit changes
+---
 
-Keep tests focused, well-organized, and comprehensive.
+## 6. Architecture
+
+### Two-Driver Design
+
+Tests use two browser automation drivers:
+
+| Driver | Platforms | Why |
+|---|---|---|
+| **Playwright** | Web, Android | Connects to Chromium-based WebViews via CDP |
+| **WebDriverIO + Appium** | iOS, Tauri | Drives WKWebView (WebKit) via XCUITest or tauri-driver |
+
+### TestActions Abstraction
+
+Step definitions never call Playwright or WebDriverIO APIs directly. They use a shared `TestActions` interface (`tests/actions/types.ts`) so the same `.feature` files and step definitions work across all 5 platforms.
+
+Implementations:
+- `PlaywrightActions` (`tests/actions/playwright-actions.ts`) — for web and Android
+- `WebDriverIOActions` — for iOS and Tauri
+
+### Config Loader
+
+`tests/platforms.config.ts` loads defaults from `platforms.config.defaults.ts` and merges any overrides from `platforms.config.local.ts` (gitignored). The merged config provides simulator names, ports, timeouts, and app paths to all test infrastructure.
+
+### Helper Modules
+
+| File | Purpose |
+|---|---|
+| `tests/helpers/config.ts` | Loads server credentials from `.env` |
+| `tests/helpers/ios-launcher.ts` | Builds iOS app, boots simulators, generates Appium capabilities |
+| `tests/helpers/visual-regression.ts` | Screenshot paths and diff threshold constants |
+
+---
+
+## 7. Adding Tests
+
+See the **"Extending Tests for New Features"** section in `AGENTS.md` for the full workflow.
+
+Summary:
+
+1. Write a human test plan — what would a QA tester check on each device?
+2. Add Gherkin scenarios to the appropriate `tests/features/<screen>.feature` file. Tag with `@all`, `@ios-phone`, etc. as needed.
+3. Add step definitions to `tests/steps/<screen>.steps.ts`. Use `TestActions` interface methods (not raw Playwright or WebDriverIO APIs) so steps work across all drivers.
+4. If the feature uses a native plugin (haptics, filesystem, camera, etc.), add a test to `tests/native/specs/`.
+5. Run with `--update-snapshots` on each platform to generate visual baselines, then commit them.
+
+---
+
+## 8. Troubleshooting
+
+### "WebView context not found"
+
+The app may not have finished loading when the test tried to switch context. Increase the `webviewSwitch` timeout in `platforms.config.local.ts`:
+
+```typescript
+timeouts: {
+  webviewSwitch: 20000, // increase from default 10000
+}
+```
+
+### "Appium can't find device" or "No device found"
+
+The simulator or emulator name in config does not match what is installed. Check exact names:
+
+```bash
+xcrun simctl list devices     # iOS
+emulator -list-avds           # Android
+```
+
+Update `platforms.config.local.ts` with the exact name shown.
+
+### "Port already in use"
+
+A previous test run left a process holding the port. Find and kill it:
+
+```bash
+lsof -ti :4723 | xargs kill   # Appium port
+lsof -ti :4444 | xargs kill   # tauri-driver port
+lsof -ti :9222 | xargs kill   # Android CDP port
+```
+
+Or change the port in `platforms.config.local.ts` to an unused one.
+
+### "bddgen missing steps" / step not found error
+
+A step used in a `.feature` file has no matching implementation. Add the step definition to the appropriate `tests/steps/<screen>.steps.ts` file.
+
+### "Emulator won't boot" or hangs at startup
+
+Check the AVD name matches exactly:
+
+```bash
+emulator -list-avds
+```
+
+If the name is wrong, update `platforms.config.local.ts`. If the AVD is corrupted, delete and recreate it in Android Studio Virtual Device Manager.
+
+### iOS build fails with xcodebuild
+
+Ensure Xcode CLI tools are installed and agree to the license:
+
+```bash
+xcode-select --install
+sudo xcodebuild -license accept
+```
+
+Then verify the correct SDK is available:
+
+```bash
+xcodebuild -showsdks | grep iphonesimulator
+```

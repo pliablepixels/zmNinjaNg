@@ -1,21 +1,86 @@
 Testing Strategy
 ================
 
-This chapter covers zmNinjaNG’s testing approach in detail, including unit
-tests, E2E tests, and best practices.
+This chapter covers zmNinjaNG's testing approach: unit tests, web E2E
+tests, and cross-platform device tests.
 
 Testing Philosophy
 ------------------
 
-zmNinjaNG uses a two-tier testing strategy:
+zmNinjaNG uses a three-tier testing strategy:
 
 1. **Unit Tests**: Fast, isolated tests for logic and components
-2. **E2E Tests**: Full user journey tests with a real ZoneMinder server
+2. **Web E2E Tests**: Full user journey tests in a browser against a real ZoneMinder server
+3. **Device E2E Tests**: The same user journeys driven on Android emulator, iOS simulator, and Tauri desktop
 
-**Why both?** - Unit tests catch logic bugs quickly (< 2 seconds to run
-all tests) - E2E tests catch integration issues and verify actual user
-workflows - Together, they provide confidence that the app works
-correctly
+Every test must verify what a real human would verify. Ask: "Can I
+accomplish this task? Does this look right? Does the data make sense?"
+
+Cross-Platform Architecture
+---------------------------
+
+Tests run on 5 platform profiles using two drivers:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Profile
+     - Device
+     - Driver
+     - Connection
+   * - ``web-chromium``
+     - Desktop browser
+     - Playwright
+     - Direct launch
+   * - ``android-phone``
+     - Pixel 7 emulator
+     - Playwright
+     - ADB port-forward to CDP
+   * - ``ios-phone``
+     - iPhone 15 simulator
+     - WebDriverIO + Appium XCUITest
+     - WebView context switch
+   * - ``ios-tablet``
+     - iPad Air simulator
+     - WebDriverIO + Appium XCUITest
+     - WebView context switch
+   * - ``desktop-tauri``
+     - Tauri macOS app
+     - WebDriverIO + tauri-driver
+     - WebDriver protocol
+
+**Why two drivers?** Playwright can only connect to Chromium-based
+WebViews via Chrome DevTools Protocol (CDP). iOS and Tauri use
+WKWebView (WebKit), which requires WebDriverIO + Appium or
+tauri-driver.
+
+TestActions Abstraction
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Step definitions never call Playwright or WebDriverIO APIs directly.
+They use a shared ``TestActions`` interface
+(``tests/actions/types.ts``) so the same Gherkin steps work across all
+platforms:
+
+.. code:: typescript
+
+   export interface TestActions {
+     goto(path: string): Promise<void>;
+     click(testId: string): Promise<void>;
+     fill(testId: string, value: string): Promise<void>;
+     getText(testId: string): Promise<string>;
+     isVisible(testId: string, timeout?: number): Promise<boolean>;
+     screenshot(name: string): Promise<Buffer>;
+     compareScreenshot(name: string, threshold?: number): Promise<void>;
+     platform(): PlatformProfile;
+     // ... more methods in types.ts
+   }
+
+Two implementations exist:
+
+- ``PlaywrightActions`` (``tests/actions/playwright-actions.ts``) — for
+  web and Android
+- ``WebDriverIOActions`` — for iOS and Tauri
 
 Unit Tests
 ----------
@@ -50,9 +115,6 @@ Tests live next to the code they test in ``__tests__/`` subdirectories:
        └── __tests__/
            └── useProfileStore.test.ts
 
-**Why co-located?** - Easy to find related tests - Tests are more likely
-to be updated when code changes - Clear which code has test coverage
-
 Running Unit Tests
 ~~~~~~~~~~~~~~~~~~
 
@@ -81,7 +143,6 @@ Basic Test Structure
 
 .. code:: tsx
 
-   // src/lib/__tests__/utils.test.ts
    import { describe, it, expect } from 'vitest';
    import { formatEventCount } from '../utils';
 
@@ -101,347 +162,90 @@ Basic Test Structure
      });
    });
 
-**Test structure:** - ``describe()``: Group related tests - ``it()``:
-Individual test case - ``expect()``: Assertion
-
 Testing React Components
-^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code:: tsx
 
-   // src/components/monitors/__tests__/MonitorCard.test.tsx
    import { describe, it, expect, vi } from 'vitest';
    import { render, screen } from '@testing-library/react';
+   import userEvent from '@testing-library/user-event';
    import { MonitorCard } from '../MonitorCard';
 
    describe('MonitorCard', () => {
      const mockMonitor = {
-       Id: '1',
-       Name: 'Front Door',
-       Width: '1920',
-       Height: '1080',
-       Function: 'Modect',
-       Controllable: '0',
-     };
-
-     const mockStatus = {
-       Status: 'Connected',
-       CaptureFPS: '15.2',
+       Id: '1', Name: 'Front Door',
+       Width: '1920', Height: '1080',
+       Function: 'Modect', Controllable: '0',
      };
 
      it('renders monitor name', () => {
-       render(
-         <MonitorCard
-           monitor={mockMonitor}
-           status={mockStatus}
-           eventCount={0}
-           onShowSettings={vi.fn()}
-         />
-       );
-
+       render(<MonitorCard monitor={mockMonitor} />);
        expect(screen.getByText('Front Door')).toBeInTheDocument();
-     });
-
-     it('displays status badge as "Live" when connected', () => {
-       render(
-         <MonitorCard
-           monitor={mockMonitor}
-           status={mockStatus}
-           eventCount={0}
-           onShowSettings={vi.fn()}
-         />
-       );
-
-       const badge = screen.getByTestId('monitor-status');
-       expect(badge).toHaveTextContent('Live');
-     });
-
-     it('shows FPS from status', () => {
-       render(
-         <MonitorCard
-           monitor={mockMonitor}
-           status={mockStatus}
-           eventCount={0}
-           onShowSettings={vi.fn()}
-         />
-       );
-
-       expect(screen.getByText('15.2 FPS')).toBeInTheDocument();
      });
 
      it('calls onShowSettings when settings button clicked', async () => {
        const handleShowSettings = vi.fn();
+       render(<MonitorCard monitor={mockMonitor} onShowSettings={handleShowSettings} />);
 
-       render(
-         <MonitorCard
-           monitor={mockMonitor}
-           status={mockStatus}
-           eventCount={0}
-           onShowSettings={handleShowSettings}
-         />
-       );
-
-       const settingsButton = screen.getByTestId('monitor-settings-button');
-       await userEvent.click(settingsButton);
-
+       await userEvent.click(screen.getByTestId('monitor-settings-button'));
        expect(handleShowSettings).toHaveBeenCalledWith(mockMonitor);
      });
    });
 
-**Key points:** - ``render()``: Renders component into test DOM -
-``screen``: Query the rendered output - ``getByText()``,
-``getByTestId()``: Find elements - ``toBeInTheDocument()``,
-``toHaveTextContent()``: Assertions - ``vi.fn()``: Create mock functions
-- ``userEvent.click()``: Simulate user interaction
-
 Mocking Dependencies
 ^^^^^^^^^^^^^^^^^^^^
 
-Components often depend on hooks, stores, or external modules. Mock
-them:
-
-**Mocking Zustand stores:**
+**Zustand stores:**
 
 .. code:: tsx
 
-   import { vi } from 'vitest';
-   import { useProfileStore } from '../../../stores/useProfileStore';
-
-   // Mock the entire module
    vi.mock('../../../stores/useProfileStore');
 
-   describe('ProfileSelector', () => {
-     it('displays current profile name', () => {
-       // Set up mock return value
-       useProfileStore.mockReturnValue({
-         currentProfile: { id: '1', name: 'My Profile' },
-         profiles: [],
-         setCurrentProfile: vi.fn(),
-       });
-
-       render(<ProfileSelector />);
-
-       expect(screen.getByText('My Profile')).toBeInTheDocument();
+   it('displays current profile name', () => {
+     useProfileStore.mockReturnValue({
+       currentProfile: { id: '1', name: 'My Profile' },
      });
+     render(<ProfileSelector />);
+     expect(screen.getByText('My Profile')).toBeInTheDocument();
    });
 
-**Mocking React Query:**
+**React Query:**
 
 .. code:: tsx
-
-   import { useQuery } from '@tanstack/react-query';
 
    vi.mock('@tanstack/react-query');
 
-   describe('MonitorList', () => {
-     it('renders monitors when loaded', () => {
-       useQuery.mockReturnValue({
-         data: {
-           monitors: [
-             { Monitor: { Id: '1', Name: 'Monitor 1' } },
-             { Monitor: { Id: '2', Name: 'Monitor 2' } },
-           ],
-         },
-         isLoading: false,
-         error: null,
-       });
-
-       render(<MonitorList />);
-
-       expect(screen.getByText('Monitor 1')).toBeInTheDocument();
-       expect(screen.getByText('Monitor 2')).toBeInTheDocument();
+   it('renders monitors when loaded', () => {
+     useQuery.mockReturnValue({
+       data: { monitors: [{ Monitor: { Id: '1', Name: 'Monitor 1' } }] },
+       isLoading: false,
      });
-
-     it('shows skeleton when loading', () => {
-       useQuery.mockReturnValue({
-         data: null,
-         isLoading: true,
-         error: null,
-       });
-
-       render(<MonitorList />);
-
-       expect(screen.getByTestId('monitor-list-skeleton')).toBeInTheDocument();
-     });
-   });
-
-**Mocking custom hooks:**
-
-.. code:: tsx
-
-   import { useMonitorStream } from '../../../hooks/useMonitorStream';
-
-   vi.mock('../../../hooks/useMonitorStream');
-
-   describe('MonitorCard', () => {
-     it('displays stream URL', () => {
-       useMonitorStream.mockReturnValue({
-         streamUrl: 'https://example.com/stream.jpg',
-         displayedImageUrl: null,
-         imgRef: { current: null },
-         regenerateConnection: vi.fn(),
-       });
-
-       render(<MonitorCard monitor={mockMonitor} />);
-
-       const img = screen.getByTestId('monitor-player');
-       expect(img).toHaveAttribute('src', 'https://example.com/stream.jpg');
-     });
-   });
-
-What to Test in Unit Tests
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Logic Functions
-^^^^^^^^^^^^^^^
-
-Test all code paths, edge cases, and error conditions:
-
-.. code:: tsx
-
-   describe('calculateMaxCols', () => {
-     it('returns correct columns for standard widths', () => {
-       expect(calculateMaxCols(1200, 300, 20)).toBe(4);
-     });
-
-     it('handles narrow widths', () => {
-       expect(calculateMaxCols(320, 300, 20)).toBe(1);
-     });
-
-     it('handles zero margin', () => {
-       expect(calculateMaxCols(1200, 300, 0)).toBe(4);
-     });
-
-     it('throws on invalid inputs', () => {
-       expect(() => calculateMaxCols(-100, 300, 20)).toThrow();
-     });
-   });
-
-Component Rendering
-^^^^^^^^^^^^^^^^^^^
-
-Test that components render correctly with different props:
-
-.. code:: tsx
-
-   it('renders with minimum props', () => {
-     render(<MonitorCard monitor={mockMonitor} />);
-     expect(screen.getByTestId('monitor-card')).toBeInTheDocument();
-   });
-
-   it('renders with all optional props', () => {
-     render(
-       <MonitorCard
-         monitor={mockMonitor}
-         status={mockStatus}
-         eventCount={42}
-         objectFit="contain"
-         onShowSettings={vi.fn()}
-       />
-     );
-     // Assertions...
-   });
-
-User Interactions
-^^^^^^^^^^^^^^^^^
-
-Test that clicking, typing, etc. work correctly:
-
-.. code:: tsx
-
-   it('updates input value when user types', async () => {
-     render(<ProfileForm />);
-
-     const nameInput = screen.getByPlaceholderText('Profile name');
-     await userEvent.type(nameInput, 'My Server');
-
-     expect(nameInput).toHaveValue('My Server');
-   });
-
-Store Actions
-^^^^^^^^^^^^^
-
-Test that store actions update state correctly:
-
-.. code:: tsx
-
-   import { useProfileStore } from '../useProfileStore';
-
-   describe('ProfileStore', () => {
-     beforeEach(() => {
-       // Reset store before each test
-       useProfileStore.setState({
-         profiles: [],
-         currentProfile: null,
-       });
-     });
-
-     it('adds profile to list', () => {
-       const profile = { id: '1', name: 'Test', portalUrl: 'http://test' };
-
-       useProfileStore.getState().addProfile(profile);
-
-       expect(useProfileStore.getState().profiles).toContain(profile);
-     });
-
-     it('sets current profile', () => {
-       const profile = { id: '1', name: 'Test', portalUrl: 'http://test' };
-
-       useProfileStore.getState().setCurrentProfile(profile);
-
-       expect(useProfileStore.getState().currentProfile).toBe(profile);
-     });
+     render(<MonitorList />);
+     expect(screen.getByText('Monitor 1')).toBeInTheDocument();
    });
 
 Unit Testing Best Practices
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1. **Test behavior, not implementation**
-
-   - ✅ “When user clicks delete, monitor is removed”
-   - ❌ “handleDelete function calls removeMonitor”
-
-2. **Use data-testid for element queries**
-
-   - ✅ ``screen.getByTestId('monitor-card')``
-   - ❌ ``container.querySelector('.monitor-card-class-xyz')``
-
-3. **Mock external dependencies**
-
-   - Mock Zustand stores, React Query, custom hooks
-   - Use real implementations for simple utilities
-
-4. **Reset state between tests**
-
-   - Use ``beforeEach()`` to reset stores, mocks
-   - Tests should be independent
-
-5. **Test edge cases**
-
-   - Empty lists, null values, errors
-   - Boundary conditions (max/min values)
+1. **Test behavior, not implementation** — "user clicks delete,
+   monitor is removed" not "handleDelete calls removeMonitor"
+2. **Use data-testid for queries** —
+   ``screen.getByTestId('monitor-card')``
+3. **Mock external dependencies** — stores, React Query, custom hooks
+4. **Reset state between tests** — ``beforeEach()`` to reset stores
+5. **Test edge cases** — empty lists, null values, boundary conditions
 
 E2E Tests
 ---------
 
-.. _technology-stack-1:
-
 Technology Stack
 ~~~~~~~~~~~~~~~~
 
-- **Playwright**: Browser automation
-- **playwright-bdd**: Gherkin/Cucumber integration
-- **Real ZoneMinder server**: Tests connect to actual server
-
-Why Playwright + Gherkin?
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-- **Gherkin** (``.feature`` files) makes tests readable by
-  non-developers
-- **Playwright** is fast, reliable, and cross-browser
-- **playwright-bdd** bridges them together
-
-.. _file-organization-1:
+- **Playwright**: Browser automation (web + Android)
+- **WebDriverIO + Appium**: Device automation (iOS + Tauri)
+- **playwright-bdd**: Gherkin/Cucumber integration for Playwright
+- **Real ZoneMinder server**: Tests connect to an actual server
 
 File Organization
 ~~~~~~~~~~~~~~~~~
@@ -449,339 +253,434 @@ File Organization
 ::
 
    tests/
-   ├── features/           # Gherkin feature files
+   ├── features/               # Gherkin feature files
    │   ├── dashboard.feature
    │   ├── monitors.feature
    │   ├── events.feature
-   │   └── full-app-walkthrough.feature
-   ├── steps.ts           # Step definitions
+   │   └── ...
+   ├── steps/                  # Step definitions (one file per screen)
+   │   ├── common.steps.ts     # Login, navigation, visual baseline
+   │   ├── dashboard.steps.ts
+   │   ├── monitors.steps.ts
+   │   ├── monitor-detail.steps.ts
+   │   ├── events.steps.ts
+   │   ├── timeline.steps.ts
+   │   ├── montage.steps.ts
+   │   ├── settings.steps.ts
+   │   ├── profiles.steps.ts
+   │   ├── kiosk.steps.ts
+   │   ├── group-filter.steps.ts
+   │   └── platform.steps.ts
+   ├── actions/                # Driver abstraction
+   │   ├── types.ts            # TestActions interface
+   │   └── playwright-actions.ts
    ├── helpers/
-   │   └── config.ts      # Test configuration
-   └── README.md          # Testing documentation
+   │   ├── config.ts           # Server credentials from .env
+   │   ├── ios-launcher.ts     # Build iOS app, boot simulator, Appium caps
+   │   └── visual-regression.ts
+   ├── screenshots/            # Visual baselines per platform
+   │   ├── web-chromium/
+   │   ├── android-phone/
+   │   ├── ios-phone/
+   │   ├── ios-tablet/
+   │   └── desktop-tauri/
+   ├── device-screenshots/     # Device screenshot capture specs
+   │   └── specs/
+   ├── platforms.config.defaults.ts  # Default simulator names, ports, timeouts
+   ├── platforms.config.local.ts     # Local overrides (gitignored)
+   └── platforms.config.ts           # Config loader (merges local over defaults)
 
-Running E2E Tests
-~~~~~~~~~~~~~~~~~
+Platform Tags
+~~~~~~~~~~~~~
 
-.. code:: bash
+Use tags in ``.feature`` files to control which platforms run each
+scenario:
 
-   # Run all E2E tests
-   npm run test:e2e
+.. list-table::
+   :header-rows: 1
 
-   # Run specific feature
-   npm run test:e2e -- dashboard.feature
+   * - Tag
+     - Runs on
+   * - ``@all``
+     - Every platform
+   * - ``@android``
+     - Android emulator only
+   * - ``@ios``
+     - iPhone + iPad simulators
+   * - ``@ios-phone``
+     - iPhone simulator only
+   * - ``@ios-tablet``
+     - iPad simulator only
+   * - ``@tauri``
+     - Tauri desktop only
+   * - ``@web``
+     - Web browser only
+   * - ``@visual``
+     - Triggers screenshot comparison
+   * - ``@native``
+     - Appium native suite only
 
-   # Run multiple features
-   npm run test:e2e -- dashboard.feature events.feature
-
-   # Run in headed mode (see browser)
-   npm run test:e2e -- --headed
-
-   # Debug mode
-   npm run test:e2e -- --debug
-
-   # Run specific scenario by line number
-   npm run test:e2e -- dashboard.feature:10
-
-E2E Test Configuration
-~~~~~~~~~~~~~~~~~~~~~~
-
-Tests connect to a ZoneMinder server configured in ``.env``:
-
-.. code:: bash
-
-   # .env
-   ZM_HOST_1=http://192.168.50.11
-   ZM_USER_1=admin
-   ZM_PASSWORD_1=admin
-
-**Important**: E2E tests use **dynamic selectors** - they work with any
-server that has at least one monitor. No hardcoded monitor names or IDs.
-
-Writing E2E Tests
-~~~~~~~~~~~~~~~~~
-
-Gherkin Feature Files
-^^^^^^^^^^^^^^^^^^^^^
-
-Feature files describe user journeys in plain English:
+Writing Gherkin Feature Files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: gherkin
 
    # tests/features/monitors.feature
    Feature: Monitor Management
-     As a ZoneMinder user
-     I want to view and manage my monitors
-     So that I can watch my camera feeds
 
      Background:
-       Given I am on the app home page
-       When I select the first profile
-       And I navigate to Monitors
+       Given I am logged into zmNinjaNG
 
-     Scenario: View monitor list
+     @all @visual
+     Scenario: View monitor list with live status
+       When I navigate to the "Monitors" page
        Then I should see at least 1 monitor card
        And each monitor card should show the monitor name
-       And each monitor card should show a status badge
+       And the page should match the visual baseline
 
-     Scenario: View monitor detail
-       When I click on the first monitor card
-       Then I should be on the monitor detail page
-       And I should see the video player
-       And I should see the monitor controls
+     @ios-phone @android
+     Scenario: Monitor list adapts to phone layout
+       When I navigate to the "Monitors" page
+       Then monitor cards should not overflow the screen width
+       And the page should match the visual baseline
 
-     Scenario: Download monitor snapshot
-       When I click the download button on the first monitor card
-       Then a snapshot file should be downloaded
-
-     Scenario: Filter monitors by status
-       When I open the filter menu
-       And I select "Connected" status filter
-       Then I should only see connected monitors
-
-**Gherkin Keywords:** - ``Feature``: Top-level description -
-``Background``: Steps run before each scenario - ``Scenario``:
-Individual test case - ``Given``: Set up initial state - ``When``: User
-action - ``Then``: Expected outcome - ``And``, ``But``: Continuation
+Write scenarios that test user goals, not element presence. Ask: "Would
+a human QA tester consider this tested?"
 
 Step Definitions
-^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~
 
-Step definitions implement the Gherkin steps:
+Step definitions go in per-screen files under ``tests/steps/``. Use
+``TestActions`` methods so steps work across all drivers:
 
 .. code:: tsx
 
-   // tests/steps.ts
-   import { Given, When, Then, expect } from '@playwright/test';
+   // tests/steps/monitors.steps.ts
+   import { createBdd } from 'playwright-bdd';
 
-   Given('I am on the app home page', async ({ page }) => {
-     await page.goto('http://localhost:5173');
+   const { Given, When, Then } = createBdd();
+
+   When('I navigate to the {string} page', async ({ page }, pageName) => {
+     await page.getByTestId(`nav-${pageName.toLowerCase()}`).click();
      await page.waitForLoadState('networkidle');
    });
 
-   When('I select the first profile', async ({ page }) => {
-     const profileCard = page.locator('[data-testid="profile-card"]').first();
-     await profileCard.click();
-   });
-
-   When('I navigate to Monitors', async ({ page }) => {
-     const monitorsLink = page.locator('[data-testid="nav-monitors"]');
-     await monitorsLink.click();
-     await page.waitForURL('**/monitors');
-   });
-
    Then('I should see at least {int} monitor card(s)', async ({ page }, count) => {
-     const cards = page.locator('[data-testid="monitor-card"]');
-     await expect(cards).toHaveCount(await cards.count());
+     const cards = page.getByTestId('monitor-card');
      expect(await cards.count()).toBeGreaterThanOrEqual(count);
    });
 
-   When('I click on the first monitor card', async ({ page }) => {
-     const firstCard = page.locator('[data-testid="monitor-card"]').first();
-     await firstCard.click();
-   });
+Use dynamic selectors (``.first()``, ``.nth(n)``, "at least N") — never
+hardcode monitor names or IDs.
 
-   Then('I should be on the monitor detail page', async ({ page }) => {
-     await page.waitForURL('**/monitors/**');
-   });
+Running Tests
+-------------
 
-   Then('I should see the video player', async ({ page }) => {
-     const player = page.locator('[data-testid="video-player"]');
-     await expect(player).toBeVisible();
-   });
+All commands run from the ``app/`` directory.
 
-**Key Points:** - Use ``data-testid`` selectors:
-``[data-testid="monitor-card"]`` - Use ``.first()``, ``.last()``,
-``.nth(n)`` for list items (not hardcoded names/IDs) - Use dynamic
-counts: ``toHaveCount(await cards.count())`` - Wait for navigation:
-``waitForURL()`` - Wait for elements: ``toBeVisible()``
+Quick Reference
+~~~~~~~~~~~~~~~
 
-Dynamic Selectors (Critical)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. list-table::
+   :header-rows: 1
 
-E2E tests must work with **any** ZoneMinder server. Never hardcode
-monitor names or IDs:
+   * - Command
+     - Description
+   * - ``npm test``
+     - Unit tests (Vitest)
+   * - ``npm run test:e2e``
+     - Web browser E2E (Playwright, fast)
+   * - ``npm run test:e2e -- --headed``
+     - Web E2E with visible browser
+   * - ``npm run test:e2e -- tests/features/dashboard.feature``
+     - Single feature file
+   * - ``npm run test:e2e:visual-update``
+     - Regenerate web visual baselines
+   * - ``npm run test:platform:setup``
+     - Verify device tools and simulators
 
-**❌ Bad** (hardcoded):
+Device E2E tests are run via shell scripts in ``scripts/``:
 
-.. code:: tsx
+.. list-table::
+   :header-rows: 1
 
-   When('I select Front Door monitor', async ({ page }) => {
-     await page.locator('text=Front Door').click();  // Fails if server doesn't have this monitor
-   });
+   * - Command
+     - Description
+   * - ``bash scripts/test-android.sh``
+     - Android emulator (Playwright via CDP)
+   * - ``bash scripts/test-ios.sh phone``
+     - iPhone simulator (WebDriverIO + Appium)
+   * - ``bash scripts/test-ios.sh tablet``
+     - iPad simulator (WebDriverIO + Appium)
+   * - ``bash scripts/test-tauri.sh``
+     - Tauri desktop (WebDriverIO + tauri-driver)
+   * - ``bash scripts/test-all-platforms.sh``
+     - All platforms sequentially
 
-**✅ Good** (dynamic):
+Running Device Tests Step by Step
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: tsx
+**Android emulator:**
 
-   When('I select the first monitor', async ({ page }) => {
-     const firstMonitor = page.locator('[data-testid="monitor-card"]').first();
-     await firstMonitor.click();  // Works with any monitor
-   });
+.. code:: bash
 
-**Dynamic assertions:**
+   # 1. Build and sync the app
+   cd app && npm run android:sync
 
-.. code:: tsx
+   # 2. The test script handles building, booting the emulator,
+   #    installing the APK, forwarding the CDP port, and running
+   #    Playwright against the Android WebView.
+   bash scripts/test-android.sh
 
-   Then('I should see at least {int} monitor(s)', async ({ page }, count) => {
-     const monitors = page.locator('[data-testid="monitor-card"]');
-     expect(await monitors.count()).toBeGreaterThanOrEqual(count);
-   });
+   # Run a single feature:
+   bash scripts/test-android.sh tests/features/dashboard.feature
 
-What to Test in E2E Tests
+**iOS simulator (iPhone or iPad):**
+
+.. code:: bash
+
+   # 1. Build and sync the app
+   cd app && npm run ios:sync
+
+   # 2. The test script builds the app via xcodebuild, boots the
+   #    simulator, starts Appium, launches the app, switches to
+   #    the WebView context, and runs WebDriverIO tests.
+   bash scripts/test-ios.sh phone     # iPhone 15
+   bash scripts/test-ios.sh tablet    # iPad Air
+
+**Tauri desktop:**
+
+.. code:: bash
+
+   # The test script starts tauri-driver and runs WebDriverIO
+   # against the Tauri app's WKWebView.
+   bash scripts/test-tauri.sh
+
+**All platforms sequentially:**
+
+.. code:: bash
+
+   bash scripts/test-all-platforms.sh
+
+This runs: web → Android → iOS phone → iOS tablet → Tauri, in order.
+
+Device Screenshot Capture
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-User Journeys
+For capturing device screenshots without running the full E2E suite:
+
+.. code:: bash
+
+   npm run test:screenshots:ios-phone
+   npm run test:screenshots:ios-tablet
+   npm run test:screenshots:android
+
+These use a separate WebDriverIO config
+(``wdio.config.device-screenshots.ts``) and Appium to launch the app
+on the target device and capture screenshots of each screen.
+
+Device Setup
+------------
+
+One-Time Machine Setup
+~~~~~~~~~~~~~~~~~~~~~~
+
+Prerequisites
 ^^^^^^^^^^^^^
 
-Test complete workflows from start to finish:
+.. list-table::
+   :header-rows: 1
 
-.. code:: gherkin
+   * - Tool
+     - Version
+     - Notes
+   * - Xcode
+     - 15+
+     - iOS simulators and ``xcrun simctl``
+   * - Android Studio
+     - Latest
+     - AVD manager and Android SDK
+   * - Rust + Cargo
+     - Latest stable
+     - ``tauri-driver``
+   * - Node.js
+     - 20+
+     - All npm scripts
+   * - Appium
+     - 2.x
+     - Global install; manages iOS and Android drivers
 
-   Scenario: Create profile and view monitors
-     Given I am on the app home page
-     When I click "Add Profile"
-     And I enter profile details
-     And I click "Save"
-     Then I should see the new profile in the list
-     When I select the profile
-     And I navigate to Monitors
-     Then I should see my monitors
+Android Setup
+^^^^^^^^^^^^^
 
-Navigation
-^^^^^^^^^^
+1. Open Android Studio → Virtual Device Manager → Create Device.
+2. Select **Pixel 7** as the hardware profile.
+3. Select system image: **API 34**, **arm64-v8a**,
+   ``google_apis`` image (required for Apple Silicon Macs).
+4. Name the AVD **``Pixel_7_API_34``** (default expected by config).
+5. Verify ``adb`` is on your PATH:
 
-Test that navigation works correctly:
+.. code:: bash
 
-.. code:: gherkin
+   adb version
+   # If not found, add $ANDROID_HOME/platform-tools to your shell PATH
 
-   Scenario: Navigate between pages
-     Given I am viewing a monitor
-     When I click the back button
-     Then I should be on the monitors page
-     When I navigate to Dashboard
-     Then I should be on the dashboard page
+iOS Setup
+^^^^^^^^^
 
-UI Interactions
-^^^^^^^^^^^^^^^
+1. Open Xcode → Settings → Platforms → click **+** to add a
+   platform.
+2. Install **iOS 17** simulator runtime.
+3. Verify the required simulators exist:
 
-Test that buttons, forms, dialogs work:
+.. code:: bash
 
-.. code:: gherkin
+   xcrun simctl list devices | grep -E "iPhone 15|iPad Air"
 
-   Scenario: Add widget to dashboard
-     Given I am on the dashboard page
-     When I click "Edit Dashboard"
-     And I click "Add Widget"
-     And I select "Monitor Widget"
-     And I select the first monitor
-     And I click "Add"
-     Then I should see the new widget on the dashboard
+You need both **iPhone 15** and **iPad Air 11-inch (M2)** listed. If
+missing, add them via Xcode → Window → Devices and Simulators.
 
-Error States
+Appium Setup
 ^^^^^^^^^^^^
 
-Test that errors are handled gracefully:
+.. code:: bash
 
-.. code:: gherkin
+   npm install -g appium
+   appium driver install xcuitest
+   appium driver install uiautomator2
 
-   Scenario: Handle network error
-     Given I am viewing monitors
-     When the network connection is lost
-     Then I should see an error message
-     And I should see a retry button
+   # Verify:
+   appium --version        # should be 2.x
+   appium driver list      # should show xcuitest and uiautomator2
 
-E2E Testing Best Practices
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Tauri Setup
+^^^^^^^^^^^
 
-1. **Use Background for common setup**
+.. code:: bash
 
-   .. code:: gherkin
+   cargo install tauri-driver
+   tauri-driver --version
 
-      Background:
-        Given I am logged in
-        And I have selected a profile
+Verify All Setup
+^^^^^^^^^^^^^^^^
 
-2. **One scenario = one user journey**
+.. code:: bash
 
-   - Keep scenarios focused and independent
-   - Don’t test multiple unrelated things in one scenario
+   cd app
+   npm run test:platform:setup
 
-3. **Use dynamic selectors**
+This checks Xcode, iOS runtime, simulators, Android SDK, AVD, adb,
+Appium drivers, tauri-driver, and port availability. Failing checks
+include fix instructions.
 
-   - ``.first()``, ``.last()``, ``.nth(n)`` for lists
-   - “at least N” instead of exact counts
-   - Never hardcode monitor names/IDs
+Platform Config
+~~~~~~~~~~~~~~~
 
-4. **Wait for elements**
+**Default config** ships in
+``tests/platforms.config.defaults.ts``:
 
-   .. code:: tsx
+- Android AVD: ``Pixel_7_API_34``, CDP port ``9222``
+- iOS phone: ``iPhone 15`` (iOS 17.5)
+- iOS tablet: ``iPad Air 11-inch (M2)`` (iOS 17.5)
+- Appium port: ``4723``
+- Tauri driver port: ``4444``
+- App launch timeout: ``30000`` ms
+- WebView switch timeout: ``10000`` ms
 
-      await page.waitForURL('**/monitors');
-      await expect(element).toBeVisible();
+**Local overrides**: Copy defaults to
+``platforms.config.local.ts`` (gitignored) and edit only the
+fields you need to change:
 
-5. **Test on mobile viewports too**
+.. code:: bash
 
-   .. code:: tsx
+   cp tests/platforms.config.defaults.ts tests/platforms.config.local.ts
 
-      // In playwright.config.ts
-      projects: [
-        { name: 'desktop', use: { viewport: { width: 1280, height: 720 } } },
-        { name: 'mobile', use: { viewport: { width: 375, height: 667 } } },
-      ]
+The config loader (``platforms.config.ts``) merges local over
+defaults at startup.
+
+**Finding your simulator names:**
+
+.. code:: bash
+
+   xcrun simctl list devices     # iOS
+   emulator -list-avds           # Android
+
+Server Credentials
+~~~~~~~~~~~~~~~~~~
+
+E2E tests connect to a real ZoneMinder server. Set credentials in
+``app/.env``:
+
+.. code:: bash
+
+   ZM_HOST_1=http://your-server:port
+   ZM_USER_1=admin
+   ZM_PASSWORD_1=password
+
+Visual Regression
+-----------------
+
+Scenarios tagged ``@visual`` capture screenshots and compare against
+per-platform baselines stored in ``tests/screenshots/<platform>/``.
+
+Threshold
+~~~~~~~~~
+
+The pixel diff threshold is **0.2%**. Differences within this
+threshold pass. Differences above it fail.
+
+Generating Baselines
+~~~~~~~~~~~~~~~~~~~~
+
+On first run for a platform, or after intentional UI changes:
+
+.. code:: bash
+
+   # Web baselines
+   npm run test:e2e:visual-update
+
+   # Device baselines (via test script with update flag)
+   bash scripts/test-android.sh --update-snapshots
+   bash scripts/test-ios.sh phone --update-snapshots
+
+Reviewing Failures
+~~~~~~~~~~~~~~~~~~
+
+When a visual test fails, a diff image is saved next to the baseline
+file showing the changed pixels. Inspect the diff to determine whether
+the change is intentional (update the baseline) or a regression (fix
+the code).
 
 Testing Workflow
 ----------------
 
 Test-Driven Development (TDD)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Recommended workflow:**
-
-1. **Write failing test** (or .feature file)
-
-   .. code:: gherkin
-
-      Scenario: Delete monitor
-        When I click delete on a monitor
-        Then the monitor should be removed from the list
-
-2. **Implement feature**
-
-   .. code:: tsx
-
-      const handleDelete = async () => {
-        await deleteMonitor(monitor.Id);
-        refetch();
-      };
-
-3. **Run tests - verify they pass**
-
-   .. code:: bash
-
-      npm test
-      npm run test:e2e -- monitors.feature
-
-4. **Refactor if needed**
-
-   - Improve code quality
-   - Tests ensure behavior stays correct
+1. **Write failing test** (feature file or unit test)
+2. **Implement the feature/fix**
+3. **Run tests** — verify they pass
+4. **Refactor** if needed — tests ensure behavior stays correct
 
 Pre-Commit Checklist
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 
-Before committing ANY code:
+All changes:
 
-- ☐ Write/update unit tests
-- ☐ Run ``npm test`` - all pass
-- ☐ Run ``npm run typecheck`` - no errors
-- ☐ Run ``npm run build`` - successful
-- ☐ If UI changes: write/update E2E tests
-- ☐ Run ``npm run test:e2e -- <feature>.feature`` - relevant tests pass
-- ☐ State in commit message: “Tests verified: npm test ✓, npm run
-  test:e2e – dashboard.feature ✓”
+- Run ``npm test`` — all pass
+- Run ``npx tsc --noEmit`` — no errors
+- Run ``npm run build`` — succeeds
 
-**Never commit if:** - ❌ Tests are failing - ❌ Tests don’t exist for
-new functionality - ❌ You haven’t run the tests - ❌ Build fails
+UI changes (additional):
+
+- ``data-testid`` added to new interactive elements
+- E2E scenarios updated in ``.feature`` file with platform tags
+- ``npm run test:e2e`` passes
+- Visual baselines updated if layout changed
+- All language files updated (en, de, es, fr, zh)
+
+Device E2E tests are manual-invoke-only — too slow for the automated
+dev workflow. Run them when you want to verify cross-platform behavior.
 
 Debugging Tests
 ---------------
@@ -789,103 +688,112 @@ Debugging Tests
 Unit Test Debugging
 ~~~~~~~~~~~~~~~~~~~
 
-**Add console.log:**
-
-.. code:: tsx
-
-   it('renders monitor', () => {
-     const { container } = render(<MonitorCard monitor={mockMonitor} />);
-     console.log(container.innerHTML);  // See rendered HTML
-     // ...
-   });
-
-**Use screen.debug():**
-
 .. code:: tsx
 
    it('renders monitor', () => {
      render(<MonitorCard monitor={mockMonitor} />);
      screen.debug();  // Pretty-prints DOM
-     // ...
    });
-
-**Run single test:**
 
 .. code:: bash
 
-   npm test -- MonitorCard.test.tsx
+   npm test -- MonitorCard.test.tsx   # Run single test file
 
 E2E Test Debugging
 ~~~~~~~~~~~~~~~~~~
 
-**Run in headed mode:**
-
 .. code:: bash
 
+   # See the browser
    npm run test:e2e -- --headed
 
-**Use debug mode:**
-
-.. code:: bash
-
+   # Playwright Inspector (pause + step through)
    npm run test:e2e -- --debug
-
-**Add pauses in steps:**
 
 .. code:: tsx
 
+   // Add pause in step definition
    When('I click on monitor', async ({ page }) => {
      await page.pause();  // Opens Playwright Inspector
      await page.click('[data-testid="monitor-card"]');
    });
 
-**Take screenshots:**
-
-.. code:: tsx
-
-   Then('I should see monitors', async ({ page }) => {
-     await page.screenshot({ path: 'debug-monitors.png' });
-     // ...
-   });
-
 Test Coverage
--------------
-
-Check test coverage to find untested code:
+~~~~~~~~~~~~~
 
 .. code:: bash
 
    npm test -- --coverage
 
-Output:
+Aim for: logic/utilities at 100%, UI components at 70%+, overall
+at 90%+.
 
-::
+Troubleshooting
+---------------
 
-   File                | % Stmts | % Branch | % Funcs | % Lines
-   --------------------|---------|----------|---------|--------
-   MonitorCard.tsx     |   92.5  |   85.7   |   90.0  |   92.5
-   utils.ts            |   100   |   100    |   100   |   100
+WebView context not found
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Aim for:** - Critical code: 90%+ coverage - UI components: 70%+
-coverage - Utilities: 100% coverage
+The app may not have finished loading when the test tried to switch
+context. Increase the ``webviewSwitch`` timeout in
+``platforms.config.local.ts``:
 
-Key Takeaways
--------------
+.. code:: typescript
 
-1.  **Two-tier strategy**: Unit tests for logic, E2E for workflows
-2.  **Co-locate tests**: Tests live next to code in :doc:``__tests__/``
-3.  **Mock dependencies**: Zustand stores, React Query, custom hooks
-4.  **Test behavior**: Not implementation details
-5.  **Gherkin for E2E**: Readable user journeys in .feature files
-6.  **Dynamic selectors**: ``.first()``, ``.last()``, “at least N”
-7.  **Never hardcode**: Monitor names, IDs, exact counts
-8.  **TDD workflow**: Write test → implement → verify → refactor
-9.  **Pre-commit tests**: Run and pass all tests before committing
-10. **Coverage tracking**: Use –coverage to find gaps
+   timeouts: {
+     webviewSwitch: 20000,  // increase from default 10000
+   }
+
+Appium can't find device
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The simulator or emulator name in config does not match what is
+installed. Check exact names:
+
+.. code:: bash
+
+   xcrun simctl list devices     # iOS
+   emulator -list-avds           # Android
+
+Update ``platforms.config.local.ts`` with the exact name shown.
+
+Port already in use
+~~~~~~~~~~~~~~~~~~~
+
+A previous test run left a process holding the port:
+
+.. code:: bash
+
+   lsof -ti :4723 | xargs kill   # Appium port
+   lsof -ti :4444 | xargs kill   # tauri-driver port
+   lsof -ti :9222 | xargs kill   # Android CDP port
+
+Or change the port in ``platforms.config.local.ts``.
+
+Emulator won't boot
+~~~~~~~~~~~~~~~~~~~~
+
+Check the AVD name matches exactly:
+
+.. code:: bash
+
+   emulator -list-avds
+
+If corrupted, delete and recreate in Android Studio Virtual Device
+Manager.
+
+iOS build fails
+~~~~~~~~~~~~~~~
+
+.. code:: bash
+
+   xcode-select --install
+   sudo xcodebuild -license accept
+   xcodebuild -showsdks | grep iphonesimulator
 
 Next Steps
 ----------
 
 Continue to `Chapter 7: API and Data
 Fetching <07-api-and-data-fetching>` to learn how the app
-interacts with ZoneMinder’s API.
+interacts with ZoneMinder's API.

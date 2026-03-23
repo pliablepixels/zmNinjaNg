@@ -8,7 +8,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 const testDir = defineBddConfig({
   features: ['tests/features/**/*.feature', '!tests/features/.archive/**', '!tests/features/.wip/**'],
-  steps: 'tests/steps.ts',
+  steps: 'tests/steps/**/*.steps.ts',
 });
 
 export default defineConfig({
@@ -42,35 +42,6 @@ export default defineConfig({
           ],
         },
       },
-    },
-    {
-      name: 'mobile-chrome',
-      use: {
-        ...devices['Pixel 5'],
-        // Mobile viewport testing (375x812 is iPhone 13 Mini-like)
-        launchOptions: {
-          args: [
-            '--disable-web-security',
-            '--disable-features=IsolateOrigins,site-per-process'
-          ],
-        },
-      },
-      // Only run tests tagged with @mobile
-      grep: /@mobile/,
-    },
-    {
-      name: 'mobile-safari',
-      use: {
-        ...devices['iPhone 13'],
-        launchOptions: {
-          args: [
-            '--disable-web-security',
-            '--disable-features=IsolateOrigins,site-per-process'
-          ],
-        },
-      },
-      // Only run tests tagged with @mobile
-      grep: /@mobile/,
     },
   ],
 

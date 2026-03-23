@@ -19,6 +19,11 @@
     "test:unit": "vitest run",
     "test:e2e": "bddgen && playwright test",
     "test:e2e:ui": "bddgen && playwright test --ui",
+    "test:e2e:visual-update": "bddgen && playwright test --update-snapshots",
+    "test:screenshots:ios-phone": "TEST_DEVICE=ios-phone npx wdio run wdio.config.device-screenshots.ts",
+    "test:screenshots:ios-tablet": "TEST_DEVICE=ios-tablet npx wdio run wdio.config.device-screenshots.ts",
+    "test:screenshots:android": "TEST_DEVICE=android npx wdio run wdio.config.device-screenshots.ts",
+    "test:platform:setup": "tsx ../scripts/verify-platform-setup.ts",
     "test:all": "npm run test:unit && npm run test:e2e",
     "analyze": "npm run build && open dist/stats.html",
     "android:sync": "node ../scripts/sync-version.js && npm run build && npx cap sync android",
@@ -123,6 +128,13 @@
     "@types/video.js": "^7.3.58",
     "@vitejs/plugin-react": "^5.1.1",
     "@vitest/coverage-v8": "^3.2.4",
+    "@wdio/appium-service": "^9.26.1",
+    "@wdio/cli": "^9.26.1",
+    "@wdio/globals": "^9.26.1",
+    "@wdio/local-runner": "^9.26.1",
+    "@wdio/mocha-framework": "^9.26.1",
+    "@wdio/spec-reporter": "^9.26.1",
+    "@wdio/types": "^9.26.1",
     "autoprefixer": "^10.4.22",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -142,6 +154,7 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "webdriverio": "^9.26.1"
   }
 }

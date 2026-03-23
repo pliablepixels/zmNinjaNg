@@ -116,53 +116,41 @@ Deploy web build (`dist/`) to: Netlify, Vercel, GitHub Pages, AWS S3, etc.
 
 ## Testing
 
-The project includes unit tests and end-to-end (E2E) tests to ensure code quality and reliability.
+The project includes unit tests and cross-platform E2E tests. All commands run from `app/`.
 
 ### Unit Tests
 
-Run unit tests with Vitest:
-
 ```bash
-cd zmNinjaNG/app
-
-# Run all unit tests
-npm run test:unit
-
-# Run tests in watch mode
-npm run test:unit -- --watch
-
-# Run with coverage report
-npm run test:coverage
-
-# Run specific test file
-npm run test:unit -- src/lib/__tests__/url-builder.test.ts
+npm run test:unit              # Run all unit tests
+npm run test:unit -- --watch   # Watch mode
+npm run test:coverage          # With coverage report
 ```
 
-Coverage reports are generated in `coverage/` directory.
+### Web E2E Tests
 
-### End-to-End Tests
-
-Run E2E tests with Playwright:
+Uses Playwright with Gherkin `.feature` files against a real ZoneMinder server. Configure credentials in `app/.env`.
 
 ```bash
-# Run E2E tests
-npm run test:e2e
-
-# Run with UI mode (visual debugging)
-npm run test:e2e:ui
-
-# Run specific test file
-npm run test:e2e -- tests/monitors.spec.ts
+npm run test:e2e                                    # All web E2E tests
+npm run test:e2e -- tests/features/dashboard.feature  # Single feature
+npm run test:e2e -- --headed                          # See the browser
+npm run test:e2e:visual-update                        # Regenerate visual baselines
+npm run test:all                                      # Unit + web E2E
 ```
 
-**Note:** E2E tests require a running ZoneMinder server. Configure test credentials in `.env` file (see `.env.example`).
+### Device E2E Tests
 
-### Run All Tests
+Tests run on real devices — Android emulator, iOS simulator (phone + tablet), and Tauri desktop. Each platform uses shell scripts that handle building, booting, and running tests.
 
 ```bash
-# Run both unit and E2E tests
-npm run test:all
+bash scripts/test-android.sh          # Android emulator (Playwright via CDP)
+bash scripts/test-ios.sh phone        # iPhone simulator (WebDriverIO + Appium)
+bash scripts/test-ios.sh tablet       # iPad simulator (WebDriverIO + Appium)
+bash scripts/test-tauri.sh            # Tauri desktop (WebDriverIO + tauri-driver)
+bash scripts/test-all-platforms.sh    # All 5 platforms sequentially
 ```
+
+Device tests require one-time setup (Xcode, Android Studio, Appium, etc.). Run `npm run test:platform:setup` to verify your machine is ready. See [app/tests/README.md](app/tests/README.md) for setup instructions and [docs/developer-guide/06-testing-strategy.rst](docs/developer-guide/06-testing-strategy.rst) for the full testing guide.
 
 ### Documentation
 
