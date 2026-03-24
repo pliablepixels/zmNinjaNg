@@ -209,38 +209,47 @@ export function VideoPlayer({
           log.videoPlayer('Video markers initialized', LogLevel.INFO, { count: markers.length });
         }
 
-        onReady && onReady(player);
-      });
+        // On native mobile, override fullscreen to use CSS instead of the
+        // native Fullscreen API, which shows an ugly capacitor:// URL banner on iOS.
+        if (Capacitor.isNativePlatform()) {
+          const wrapperEl = videoRef.current?.parentElement;
 
-      // On native mobile, override fullscreen to use CSS instead of the
-      // native Fullscreen API, which shows an ugly capacitor:// URL banner on iOS.
-      if (Capacitor.isNativePlatform()) {
-        const containerEl = videoRef.current;
-        player.requestFullscreen = function () {
-          if (containerEl) {
-            containerEl.style.position = 'fixed';
-            containerEl.style.inset = '0';
-            containerEl.style.zIndex = '9999';
-            containerEl.style.backgroundColor = '#000';
+          // Block native video fullscreen on iOS
+          try {
+            const videoEl = player.tech({ IWillNotUseThisInPlugins: true })?.el() as HTMLVideoElement;
+            if (videoEl?.webkitEnterFullscreen) {
+              videoEl.webkitEnterFullscreen = () => {};
+            }
+          } catch { /* tech not available yet — CSS override below still works */ }
+
+          player.requestFullscreen = function () {
+            if (wrapperEl) {
+              wrapperEl.style.position = 'fixed';
+              wrapperEl.style.inset = '0';
+              wrapperEl.style.zIndex = '9999';
+              wrapperEl.style.backgroundColor = '#000';
+            }
             player.addClass('vjs-fullscreen');
             player.isFullscreen(true);
             player.trigger('fullscreenchange');
-          }
-          return Promise.resolve();
-        };
-        player.exitFullscreen = function () {
-          if (containerEl) {
-            containerEl.style.position = '';
-            containerEl.style.inset = '';
-            containerEl.style.zIndex = '';
-            containerEl.style.backgroundColor = '';
+            return Promise.resolve();
+          };
+          player.exitFullscreen = function () {
+            if (wrapperEl) {
+              wrapperEl.style.position = '';
+              wrapperEl.style.inset = '';
+              wrapperEl.style.zIndex = '';
+              wrapperEl.style.backgroundColor = '';
+            }
             player.removeClass('vjs-fullscreen');
             player.isFullscreen(false);
             player.trigger('fullscreenchange');
-          }
-          return Promise.resolve();
-        };
-      }
+            return Promise.resolve();
+          };
+        }
+
+        onReady && onReady(player);
+      });
 
       // Handle errors
       player.on('error', () => {
