@@ -209,20 +209,13 @@ export function VideoPlayer({
           log.videoPlayer('Video markers initialized', LogLevel.INFO, { count: markers.length });
         }
 
-        // On native mobile, override fullscreen to use CSS instead of the
-        // native Fullscreen API, which shows an ugly capacitor:// URL banner on iOS.
+        // On native mobile, override the fullscreen button to use CSS
+        // fullscreen instead of the native Fullscreen API, which shows
+        // an ugly capacitor:// URL banner on iOS.
         if (Capacitor.isNativePlatform()) {
           const wrapperEl = videoRef.current?.parentElement;
 
-          // Block native video fullscreen on iOS
-          try {
-            const videoEl = player.tech({ IWillNotUseThisInPlugins: true })?.el() as HTMLVideoElement & { webkitEnterFullscreen?: () => void };
-            if (videoEl?.webkitEnterFullscreen) {
-              videoEl.webkitEnterFullscreen = () => {};
-            }
-          } catch { /* tech not available yet — CSS override below still works */ }
-
-          player.requestFullscreen = function () {
+          const enterCssFullscreen = () => {
             if (wrapperEl) {
               wrapperEl.style.position = 'fixed';
               wrapperEl.style.inset = '0';
@@ -232,9 +225,9 @@ export function VideoPlayer({
             player.addClass('vjs-fullscreen');
             player.isFullscreen(true);
             player.trigger('fullscreenchange');
-            return Promise.resolve();
           };
-          player.exitFullscreen = function () {
+
+          const exitCssFullscreen = () => {
             if (wrapperEl) {
               wrapperEl.style.position = '';
               wrapperEl.style.inset = '';
@@ -244,8 +237,19 @@ export function VideoPlayer({
             player.removeClass('vjs-fullscreen');
             player.isFullscreen(false);
             player.trigger('fullscreenchange');
-            return Promise.resolve();
           };
+
+          // Override the fullscreen toggle button's click handler directly
+          const fsToggle = (player as any).controlBar?.getChild('fullscreenToggle');
+          if (fsToggle) {
+            fsToggle.handleClick = () => {
+              if (player.isFullscreen()) {
+                exitCssFullscreen();
+              } else {
+                enterCssFullscreen();
+              }
+            };
+          }
         }
 
         onReady && onReady(player);

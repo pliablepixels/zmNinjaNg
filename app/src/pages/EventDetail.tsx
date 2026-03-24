@@ -247,17 +247,6 @@ export default function EventDetail() {
                   </Badge>
                 );
               })()}
-              {event.Event.Notes && event.Event.Notes.startsWith('detected:') && (() => {
-                const classList = event.Event.Notes.slice('detected:'.length).split('|')[0].trim();
-                if (!classList) return null;
-                const DetectIcon = getObjectClassIconFromList(classList);
-                return (
-                  <Badge variant="secondary" className="text-[10px] h-4 gap-1" data-testid="event-detail-detected-badge">
-                    <DetectIcon className="h-3 w-3 shrink-0" />
-                    <span className="truncate max-w-[120px] sm:max-w-none" title={classList}>{classList}</span>
-                  </Badge>
-                );
-              })()}
               {monitorData && (
                 <span className="hidden sm:inline">{monitorData.Monitor.Name}</span>
               )}
@@ -470,6 +459,20 @@ export default function EventDetail() {
                   <span className="text-sm text-muted-foreground">{t('event_detail.score')}</span>
                   <span className="text-sm font-medium">{event.Event.AvgScore} / {event.Event.MaxScore}</span>
                 </div>
+                {event.Event.Notes && event.Event.Notes.startsWith('detected:') && (() => {
+                  const classList = event.Event.Notes.slice('detected:'.length).split('|')[0].trim();
+                  if (!classList) return null;
+                  const DetectIcon = getObjectClassIconFromList(classList);
+                  return (
+                    <div className="flex justify-between items-center py-1 border-b border-border/50" data-testid="event-detail-detected-row">
+                      <span className="text-sm text-muted-foreground">{t('event_detail.detected')}</span>
+                      <span className="flex items-center gap-1.5 text-sm font-medium">
+                        <DetectIcon className="h-3.5 w-3.5 shrink-0" />
+                        {classList}
+                      </span>
+                    </div>
+                  );
+                })()}
                 <div className="flex justify-between py-1 border-b border-border/50">
                   <span className="text-sm text-muted-foreground">{t('event_detail.resolution')}</span>
                   <span className="text-sm font-medium">{orientedResolution}</span>

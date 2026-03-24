@@ -210,6 +210,7 @@
     "duration": "Duration",
     "frames": "Frames",
     "score": "Score",
+    "detected": "Detected",
     "alarm": "Alarm",
     "archive": "Archive",
     "delete": "Delete",
