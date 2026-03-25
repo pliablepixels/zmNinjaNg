@@ -491,7 +491,18 @@
     "capture_updated": "Capture settings updated",
     "capture_failed": "Failed to update capture settings",
     "enabled_updated": "Monitor enabled state updated",
-    "enabled_failed": "Failed to update enabled state"
+    "enabled_failed": "Failed to update enabled state",
+    "save_jpegs_label": "Save JPEGs",
+    "save_jpegs_disabled": "Disabled",
+    "save_jpegs_frames": "Frames only",
+    "save_jpegs_analysis": "Analysis images only",
+    "save_jpegs_both": "Frames + Analysis",
+    "video_writer_label": "Video Writer",
+    "video_writer_disabled": "Disabled",
+    "video_writer_encode": "Encode",
+    "video_writer_passthrough": "Camera Passthrough",
+    "storage_updated": "Storage settings updated",
+    "storage_failed": "Failed to update storage settings"
   },
   "montage": {
     "title": "Montage",

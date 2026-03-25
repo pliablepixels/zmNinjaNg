@@ -29,6 +29,10 @@ interface MonitorSettingsDialogProps {
   // Legacy mode (ZM < 1.38)
   onFunctionChange?: (value: MonitorFunction) => void;
   isModeUpdating?: boolean;
+  // Storage settings (both versions)
+  onSaveJPEGsChange?: (value: string) => void;
+  onVideoWriterChange?: (value: string) => void;
+  isStorageUpdating?: boolean;
   // Enabled toggle
   onEnabledChange?: (enabled: boolean) => void;
   isEnabledUpdating?: boolean;
@@ -73,6 +77,9 @@ export function MonitorSettingsDialog({
   isCaptureUpdating = false,
   onFunctionChange,
   isModeUpdating = false,
+  onSaveJPEGsChange,
+  onVideoWriterChange,
+  isStorageUpdating = false,
   onEnabledChange,
   isEnabledUpdating = false,
   cycleSeconds,
@@ -195,6 +202,45 @@ export function MonitorSettingsDialog({
                   disabled={isEnabledUpdating}
                   data-testid="settings-enabled-toggle"
                 />
+              </SettingsRow>
+            )}
+
+            {onSaveJPEGsChange && (
+              <SettingsRow label={t('monitor_detail.save_jpegs_label')} testId="settings-savejpegs-row">
+                <Select
+                  value={monitor.SaveJPEGs ?? '0'}
+                  onValueChange={onSaveJPEGsChange}
+                  disabled={isStorageUpdating}
+                >
+                  <SelectTrigger className="w-40 h-8" data-testid="settings-savejpegs-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">{t('monitor_detail.save_jpegs_disabled')}</SelectItem>
+                    <SelectItem value="1">{t('monitor_detail.save_jpegs_frames')}</SelectItem>
+                    <SelectItem value="2">{t('monitor_detail.save_jpegs_analysis')}</SelectItem>
+                    <SelectItem value="3">{t('monitor_detail.save_jpegs_both')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </SettingsRow>
+            )}
+
+            {onVideoWriterChange && (
+              <SettingsRow label={t('monitor_detail.video_writer_label')} testId="settings-videowriter-row">
+                <Select
+                  value={monitor.VideoWriter ?? '0'}
+                  onValueChange={onVideoWriterChange}
+                  disabled={isStorageUpdating}
+                >
+                  <SelectTrigger className="w-40 h-8" data-testid="settings-videowriter-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">{t('monitor_detail.video_writer_disabled')}</SelectItem>
+                    <SelectItem value="1">{t('monitor_detail.video_writer_encode')}</SelectItem>
+                    <SelectItem value="2">{t('monitor_detail.video_writer_passthrough')}</SelectItem>
+                  </SelectContent>
+                </Select>
               </SettingsRow>
             )}
 

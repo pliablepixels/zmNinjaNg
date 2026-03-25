@@ -7,7 +7,7 @@
 
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { getMonitor, getControl, updateMonitorCapture, setMonitorEnabled } from '../api/monitors';
+import { getMonitor, getControl, updateMonitor, updateMonitorCapture, setMonitorEnabled } from '../api/monitors';
 import { getZones } from '../api/zones';
 import { useCurrentProfile } from '../hooks/useCurrentProfile';
 import { useAuthStore } from '../stores/auth';
@@ -193,6 +193,39 @@ export default function MonitorDetail() {
       toast.error(t('monitor_detail.enabled_failed'));
     } finally {
       setIsEnabledUpdating(false);
+    }
+  }, [monitor?.Monitor.Id, refetch, t]);
+
+  // Storage settings mutation (SaveJPEGs, VideoWriter)
+  const [isStorageUpdating, setIsStorageUpdating] = useState(false);
+
+  const handleSaveJPEGsChange = useCallback(async (value: string) => {
+    if (!monitor?.Monitor.Id) return;
+    setIsStorageUpdating(true);
+    try {
+      await updateMonitor(monitor.Monitor.Id, { 'Monitor[SaveJPEGs]': value });
+      await refetch();
+      toast.success(t('monitor_detail.storage_updated'));
+    } catch (error) {
+      log.monitorDetail('SaveJPEGs update failed', LogLevel.ERROR, { error });
+      toast.error(t('monitor_detail.storage_failed'));
+    } finally {
+      setIsStorageUpdating(false);
+    }
+  }, [monitor?.Monitor.Id, refetch, t]);
+
+  const handleVideoWriterChange = useCallback(async (value: string) => {
+    if (!monitor?.Monitor.Id) return;
+    setIsStorageUpdating(true);
+    try {
+      await updateMonitor(monitor.Monitor.Id, { 'Monitor[VideoWriter]': value });
+      await refetch();
+      toast.success(t('monitor_detail.storage_updated'));
+    } catch (error) {
+      log.monitorDetail('VideoWriter update failed', LogLevel.ERROR, { error });
+      toast.error(t('monitor_detail.storage_failed'));
+    } finally {
+      setIsStorageUpdating(false);
     }
   }, [monitor?.Monitor.Id, refetch, t]);
 
@@ -581,6 +614,9 @@ export default function MonitorDetail() {
         isCaptureUpdating={isCaptureUpdating}
         onFunctionChange={handleModeChange}
         isModeUpdating={isModeUpdating}
+        onSaveJPEGsChange={handleSaveJPEGsChange}
+        onVideoWriterChange={handleVideoWriterChange}
+        isStorageUpdating={isStorageUpdating}
         onEnabledChange={handleEnabledChange}
         isEnabledUpdating={isEnabledUpdating}
         cycleSeconds={settings.monitorDetailCycleSeconds}

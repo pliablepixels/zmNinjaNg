@@ -494,7 +494,18 @@
     "capture_updated": "捕获设置已更新",
     "capture_failed": "更新捕获设置失败",
     "enabled_updated": "监视器状态已更新",
-    "enabled_failed": "更新监视器状态失败"
+    "enabled_failed": "更新监视器状态失败",
+    "save_jpegs_label": "保存JPEG",
+    "save_jpegs_disabled": "已禁用",
+    "save_jpegs_frames": "仅帧图像",
+    "save_jpegs_analysis": "仅分析图像",
+    "save_jpegs_both": "帧图像 + 分析图像",
+    "video_writer_label": "视频录制",
+    "video_writer_disabled": "已禁用",
+    "video_writer_encode": "编码",
+    "video_writer_passthrough": "摄像头直通",
+    "storage_updated": "存储设置已更新",
+    "storage_failed": "更新存储设置失败"
   },
   "montage": {
     "title": "蒙太奇",

@@ -494,7 +494,18 @@
     "capture_updated": "Ajustes de captura actualizados",
     "capture_failed": "Error al actualizar los ajustes de captura",
     "enabled_updated": "Estado del monitor actualizado",
-    "enabled_failed": "Error al actualizar el estado del monitor"
+    "enabled_failed": "Error al actualizar el estado del monitor",
+    "save_jpegs_label": "Guardar JPEGs",
+    "save_jpegs_disabled": "Deshabilitado",
+    "save_jpegs_frames": "Solo fotogramas",
+    "save_jpegs_analysis": "Solo imágenes de análisis",
+    "save_jpegs_both": "Fotogramas + Análisis",
+    "video_writer_label": "Escritor de video",
+    "video_writer_disabled": "Deshabilitado",
+    "video_writer_encode": "Codificar",
+    "video_writer_passthrough": "Paso directo de cámara",
+    "storage_updated": "Ajustes de almacenamiento actualizados",
+    "storage_failed": "Error al actualizar los ajustes de almacenamiento"
   },
   "montage": {
     "title": "Montaje",

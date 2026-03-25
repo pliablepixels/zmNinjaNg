@@ -494,7 +494,18 @@
     "capture_updated": "Aufnahme-Einstellungen aktualisiert",
     "capture_failed": "Fehler beim Aktualisieren der Aufnahme-Einstellungen",
     "enabled_updated": "Monitor-Status aktualisiert",
-    "enabled_failed": "Fehler beim Aktualisieren des Monitor-Status"
+    "enabled_failed": "Fehler beim Aktualisieren des Monitor-Status",
+    "save_jpegs_label": "JPEGs speichern",
+    "save_jpegs_disabled": "Deaktiviert",
+    "save_jpegs_frames": "Nur Einzelbilder",
+    "save_jpegs_analysis": "Nur Analysebilder",
+    "save_jpegs_both": "Einzelbilder + Analyse",
+    "video_writer_label": "Video-Aufnahme",
+    "video_writer_disabled": "Deaktiviert",
+    "video_writer_encode": "Kodieren",
+    "video_writer_passthrough": "Kamera-Durchleitung",
+    "storage_updated": "Speicher-Einstellungen aktualisiert",
+    "storage_failed": "Fehler beim Aktualisieren der Speicher-Einstellungen"
   },
   "montage": {
     "title": "Montage",

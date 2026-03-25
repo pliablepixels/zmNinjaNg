@@ -494,7 +494,18 @@
     "capture_updated": "Paramètres de capture mis à jour",
     "capture_failed": "Échec de la mise à jour des paramètres de capture",
     "enabled_updated": "État du moniteur mis à jour",
-    "enabled_failed": "Échec de la mise à jour de l'état du moniteur"
+    "enabled_failed": "Échec de la mise à jour de l'état du moniteur",
+    "save_jpegs_label": "Enregistrer JPEGs",
+    "save_jpegs_disabled": "Désactivé",
+    "save_jpegs_frames": "Images uniquement",
+    "save_jpegs_analysis": "Images d'analyse uniquement",
+    "save_jpegs_both": "Images + Analyse",
+    "video_writer_label": "Enregistrement vidéo",
+    "video_writer_disabled": "Désactivé",
+    "video_writer_encode": "Encoder",
+    "video_writer_passthrough": "Passage direct caméra",
+    "storage_updated": "Paramètres de stockage mis à jour",
+    "storage_failed": "Échec de la mise à jour des paramètres de stockage"
   },
   "montage": {
     "title": "Montage",
