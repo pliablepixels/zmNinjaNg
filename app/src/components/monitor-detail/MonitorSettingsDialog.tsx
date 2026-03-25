@@ -139,7 +139,7 @@ export function MonitorSettingsDialog({
                   <Select
                     value={monitor.Capturing ?? 'Always'}
                     onValueChange={(v) => onCapturingChange?.(v as 'None' | 'Ondemand' | 'Always')}
-                    disabled={isCaptureUpdating}
+                    disabled={isCaptureUpdating || !onCapturingChange}
                   >
                     <SelectTrigger className="w-32 h-8" data-testid="settings-capturing-select">
                       <SelectValue />
@@ -156,7 +156,7 @@ export function MonitorSettingsDialog({
                   <Select
                     value={monitor.Analysing ?? 'None'}
                     onValueChange={(v) => onAnalysingChange?.(v as 'None' | 'Always')}
-                    disabled={isCaptureUpdating}
+                    disabled={isCaptureUpdating || !onAnalysingChange}
                   >
                     <SelectTrigger className="w-32 h-8" data-testid="settings-analysing-select">
                       <SelectValue />
@@ -172,7 +172,7 @@ export function MonitorSettingsDialog({
                   <Select
                     value={monitor.Recording ?? 'None'}
                     onValueChange={(v) => onRecordingChange?.(v as 'None' | 'OnMotion' | 'Always')}
-                    disabled={isCaptureUpdating}
+                    disabled={isCaptureUpdating || !onRecordingChange}
                   >
                     <SelectTrigger className="w-32 h-8" data-testid="settings-recording-select">
                       <SelectValue />
@@ -190,7 +190,7 @@ export function MonitorSettingsDialog({
                 <Select
                   value={monitor.Function}
                   onValueChange={(v) => onFunctionChange?.(v as MonitorFunction)}
-                  disabled={isModeUpdating}
+                  disabled={isModeUpdating || !onFunctionChange}
                 >
                   <SelectTrigger className="w-32 h-8" data-testid="settings-function-select">
                     <SelectValue />
