@@ -15,6 +15,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import type { Monitor } from '../../api/types';
 import type { MonitorFunction } from '../../pages/hooks/useModeControl';
 
+/** Format raw Orientation value (e.g. ROTATE_270) for display. */
+function formatOrientation(orientation: string | null | undefined): string {
+  if (!orientation || orientation === 'ROTATE_0') return 'None';
+  const map: Record<string, string> = {
+    ROTATE_90: '90°',
+    ROTATE_180: '180°',
+    ROTATE_270: '270°',
+    FLIP_HORI: 'Flip Horizontal',
+    FLIP_VERT: 'Flip Vertical',
+  };
+  return map[orientation] ?? orientation;
+}
+
 interface MonitorSettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -297,11 +310,9 @@ export function MonitorSettingsDialog({
 
           {/* Tab 3: Display (read-only) */}
           <TabsContent value="display" className="mt-4 space-y-0">
-            {rotationStatus && (
-              <SettingsRow label={t('monitor_detail.rotation_label')} testId="monitor-rotation">
-                {rotationStatus}
-              </SettingsRow>
-            )}
+            <SettingsRow label={t('monitor_detail.rotation_label')} testId="monitor-rotation">
+              {rotationStatus || formatOrientation(monitor.Orientation)}
+            </SettingsRow>
             {feedFit && (
               <SettingsRow label={t('monitor_detail.feed_fit')}>
                 {t(`monitor_detail.fit_${feedFit.replace('-', '_')}`)}
