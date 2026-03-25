@@ -226,8 +226,8 @@ export function MonitorSettingsDialog({
               {monitor.AlarmMaxFPS || t('monitors.same_as_max_fps')}
             </SettingsRow>
             <SettingsRow label={t('monitors.controllable')}>
-              <Badge variant={monitor.Controllable === '1' ? 'secondary' : 'outline'}>
-                {monitor.Controllable === '1' ? t('common.yes') : t('common.no')}
+              <Badge variant={monitor.Controllable === '1' || monitor.Controllable === 'true' ? 'secondary' : 'outline'}>
+                {monitor.Controllable === '1' || monitor.Controllable === 'true' ? t('common.yes') : t('common.no')}
               </Badge>
             </SettingsRow>
           </TabsContent>

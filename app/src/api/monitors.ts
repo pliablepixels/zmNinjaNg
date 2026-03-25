@@ -155,9 +155,9 @@ export async function updateMonitorCapture(
   log.api('Updating monitor capture settings', LogLevel.INFO, { monitorId, settings });
 
   const params: Record<string, string> = {};
-  if (settings.Capturing) params['Monitor[Capturing]'] = settings.Capturing;
-  if (settings.Analysing) params['Monitor[Analysing]'] = settings.Analysing;
-  if (settings.Recording) params['Monitor[Recording]'] = settings.Recording;
+  if (settings.Capturing !== undefined) params['Monitor[Capturing]'] = settings.Capturing;
+  if (settings.Analysing !== undefined) params['Monitor[Analysing]'] = settings.Analysing;
+  if (settings.Recording !== undefined) params['Monitor[Recording]'] = settings.Recording;
   return updateMonitor(monitorId, params);
 }
 
