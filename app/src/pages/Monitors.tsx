@@ -218,7 +218,7 @@ export default function Monitors() {
                   <div>
                     <span className="text-muted-foreground">{t('common.enabled')}:</span>
                     <div className="font-medium">
-                      {selectedMonitor.Enabled === '1' ? t('common.yes') : t('common.no')}
+                      {selectedMonitor.Enabled === '1' || selectedMonitor.Enabled === 'true' ? t('common.yes') : t('common.no')}
                     </div>
                   </div>
                   <div>

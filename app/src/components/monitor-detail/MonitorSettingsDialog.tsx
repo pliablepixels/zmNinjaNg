@@ -81,7 +81,7 @@ export function MonitorSettingsDialog({
   rotationStatus,
 }: MonitorSettingsDialogProps) {
   const { t } = useTranslation();
-  const isEnabled = monitor.Enabled === '1';
+  const isEnabled = monitor.Enabled === '1' || monitor.Enabled === 'true';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
