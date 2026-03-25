@@ -14,25 +14,25 @@ Redesign the MonitorSettingsDialog from a read-only info popup to an interactive
 
 ### Dialog Layout
 
-Tabbed dialog with 3 tabs. Monitor name and ID shown in the dialog header.
+Tabbed dialog with 3 tabs. Dialog header shows the monitor name as the title (dynamic, e.g. "Front Porch") and "Monitor #5 · Ffmpeg" as the description (ID + Type).
 
 **Tab 1: Capture & Recording** (default)
 
 For ZM >= 1.38.0:
-| Row | Type | Options |
-|-----|------|---------|
-| Capturing | dropdown | None, Ondemand, Always |
-| Analysing | dropdown | None, Always |
-| Recording | dropdown | None, OnMotion, Always |
-| Enabled | toggle | on/off |
-| Auto-cycle | dropdown | Off, 5s, 10s, 15s, 30s, 60s |
+| Row | Type | Options | data-testid |
+|-----|------|---------|-------------|
+| Capturing | dropdown | None, Ondemand, Always | `settings-capturing-select` |
+| Analysing | dropdown | None, Always | `settings-analysing-select` |
+| Recording | dropdown | None, OnMotion, Always | `settings-recording-select` |
+| Enabled | toggle | on/off | `settings-enabled-toggle` |
+| Auto-cycle | dropdown | Off, 5s, 10s, 15s, 30s, 60s | `monitor-detail-cycle-select` (existing) |
 
 For ZM < 1.38.0:
-| Row | Type | Options |
-|-----|------|---------|
-| Function | dropdown | None, Monitor, Modect, Record, Mocord, Nodect |
-| Enabled | toggle | on/off |
-| Auto-cycle | dropdown | Off, 5s, 10s, 15s, 30s, 60s |
+| Row | Type | Options | data-testid |
+|-----|------|---------|-------------|
+| Function | dropdown | None, Monitor, Modect, Record, Mocord, Nodect | `settings-function-select` |
+| Enabled | toggle | on/off | `settings-enabled-toggle` |
+| Auto-cycle | dropdown | Off, 5s, 10s, 15s, 30s, 60s | `monitor-detail-cycle-select` (existing) |
 
 **Tab 2: Video** (read-only)
 | Row | Value |
@@ -41,12 +41,15 @@ For ZM < 1.38.0:
 | Colors | e.g. 4 |
 | Max FPS | value or "Unlimited" |
 | Alarm Max FPS | value or "Same as Max FPS" |
+| Controllable | Yes/No badge |
 
 **Tab 3: Display** (read-only)
 | Row | Value |
 |-----|-------|
 | Rotation | e.g. "None" or "90 CW" |
 | Feed fit | e.g. "Contain" |
+
+Tab trigger test IDs: `settings-tab-capture`, `settings-tab-video`, `settings-tab-display`.
 
 ### Visual Treatment
 
@@ -55,12 +58,20 @@ For ZM < 1.38.0:
 - Read-only rows: label on left, text value on right
 - Rows separated by subtle border-bottom
 - Tabs use the existing shadcn/ui `Tabs` component
-- Dialog header: monitor name as title, "Monitor #ID" as description
+- Dialog header: monitor name as title (dynamic), "Monitor #ID · Type" as description
 - Tab content has consistent vertical padding, no CardHeader/CardContent nesting
+
+### Mutation Behavior
+
+All editable controls follow the same pattern (matching existing `useModeControl` behavior):
+- Control is disabled while the update is in-flight
+- On success: toast notification, refetch monitor data
+- On error: toast error, no optimistic update (value stays at server state)
+- Each field sends its own API call (no batching)
 
 ### Version Detection
 
-Add `isZmVersionAtLeast(version: string | null, target: string): boolean` to `lib/zm-constants.ts`.
+Add `isZmVersionAtLeast(version: string | null, target: string): boolean` to a new file `lib/zm-version.ts` (version comparison is not a protocol constant).
 
 ```typescript
 export function isZmVersionAtLeast(version: string | null, target: string): boolean {
@@ -89,12 +100,11 @@ Add to the Monitor Zod schema:
 Capturing: z.enum(['None', 'Ondemand', 'Always']).optional(),
 Analysing: z.enum(['None', 'Always']).optional(),
 Recording: z.enum(['None', 'OnMotion', 'Always']).optional(),
-Decoding: z.enum(['None', 'Ondemand', 'KeyFrames', 'KeyFrames+Ondemand', 'Always']).optional(),
 ```
 
-These are `.optional()` because ZM < 1.38 servers won't return them.
+These are `.optional()` because ZM < 1.38 servers won't return them. `Decoding` is not included — it's a low-level setting users don't need to control from the app.
 
-#### New API Functions (api/monitors.ts)
+#### New API Function (api/monitors.ts)
 
 ```typescript
 export async function updateMonitorCapture(
@@ -115,38 +125,33 @@ export async function updateMonitorCapture(
 
 The existing `changeMonitorFunction()` stays for ZM < 1.38 servers.
 
-#### Enabled Toggle API
+#### Enabled Toggle
 
-```typescript
-export async function setMonitorEnabled(
-  monitorId: string,
-  enabled: boolean
-): Promise<MonitorData> {
-  return updateMonitor(monitorId, {
-    'Monitor[Enabled]': enabled ? '1' : '0',
-  });
-}
-```
+`setMonitorEnabled()` already exists in `api/monitors.ts` — reuse it.
 
 ### Component Changes
 
 #### MonitorSettingsDialog.tsx — rewrite
 
 - Replace 4-card grid with `Tabs` / `TabsList` / `TabsContent`
-- Accept new props: `hasNewApi`, `onCapturingChange`, `onAnalysingChange`, `onRecordingChange`, `onEnabledChange`
-- Keep existing `cycleSeconds` / `onCycleSecondsChange` props
-- For ZM < 1.38: render single `Function` dropdown in first tab (keep existing mode change logic)
-- For ZM >= 1.38: render three separate dropdowns
+- Accept new props: `hasNewApi`, capture/recording handlers, `onEnabledChange`, `onFunctionChange`
+- Retain existing props: `monitor`, `cycleSeconds`, `onCycleSecondsChange`, `feedFit`, `orientedResolution`, `rotationStatus`
+- For ZM < 1.38: render single `Function` dropdown in first tab
+- For ZM >= 1.38: render Capturing/Analysing/Recording dropdowns
+- Dialog title = `monitor.Name`, description = `Monitor #${monitor.Id} · ${monitor.Type}`
 
 #### MonitorDetail.tsx — updates
 
+- Compute `hasNewApi` from auth store version
 - Pass `hasNewApi` and new handler props to the dialog
-- Add mutation handlers for the new API fields
+- Add mutation handlers for the new API fields (follow `useModeControl` pattern)
 - Refetch monitor data on successful update
 
-#### MonitorControlsCard.tsx — no changes
+#### MonitorControlsCard.tsx — version-aware update
 
-Stays as-is below the video for quick alarm/mode access.
+- Accept `hasNewApi` prop
+- When `hasNewApi` is true: hide the mode dropdown (the legacy Function selector is not meaningful on 1.38+). Keep only the alarm status/toggle
+- When `hasNewApi` is false: show mode dropdown as-is (existing behavior)
 
 ### Internationalization
 
@@ -160,7 +165,7 @@ monitor_detail.capturing_label: "Capturing"
 monitor_detail.capturing_none: "None"
 monitor_detail.capturing_ondemand: "On Demand"
 monitor_detail.capturing_always: "Always"
-monitor_detail.analysing_label: "Analysing"
+monitor_detail.analysing_label: "Analysis"
 monitor_detail.analysing_none: "None"
 monitor_detail.analysing_always: "Always"
 monitor_detail.recording_label: "Recording"
@@ -168,11 +173,16 @@ monitor_detail.recording_none: "None"
 monitor_detail.recording_onmotion: "On Motion"
 monitor_detail.recording_always: "Always"
 monitor_detail.enabled_label: "Enabled"
+monitor_detail.capture_updated: "Capture settings updated"
+monitor_detail.capture_failed: "Failed to update capture settings"
+monitor_detail.enabled_updated: "Monitor enabled status updated"
+monitor_detail.enabled_failed: "Failed to update enabled status"
 ```
+
+Existing keys reused: `monitors.function` (for legacy dropdown label), `common.enabled`, `common.yes`, `common.no`, `monitors.controllable`, `monitor_detail.cycle_*` keys.
 
 ### What Does Not Change
 
-- MonitorControlsCard stays below the video (alarm toggle + mode selector)
 - Dialog trigger (settings gear icon) stays the same
 - Auto-cycle functionality stays the same, just moves into Tab 1
 
@@ -180,18 +190,68 @@ monitor_detail.enabled_label: "Enabled"
 
 | File | Change |
 |------|--------|
-| `lib/zm-constants.ts` | Add `isZmVersionAtLeast()` |
+| `lib/zm-version.ts` (new) | Add `isZmVersionAtLeast()` |
 | `api/types.ts` | Add Capturing/Analysing/Recording to Monitor schema |
-| `api/monitors.ts` | Add `updateMonitorCapture()`, `setMonitorEnabled()` |
-| `components/monitor-detail/MonitorSettingsDialog.tsx` | Rewrite: tabbed layout, editable controls |
-| `pages/MonitorDetail.tsx` | Pass new props, add mutation handlers |
+| `api/monitors.ts` | Add `updateMonitorCapture()` |
+| `components/monitor-detail/MonitorSettingsDialog.tsx` | Rewrite: tabbed layout, editable controls, version-aware |
+| `components/monitor-detail/MonitorControlsCard.tsx` | Hide mode dropdown when `hasNewApi` is true |
+| `pages/MonitorDetail.tsx` | Compute `hasNewApi`, pass new props, add mutation handlers |
 | `locales/{en,de,es,fr,zh}/translation.json` | Add new i18n keys |
-| `lib/__tests__/zm-constants.test.ts` | Tests for `isZmVersionAtLeast()` |
+| `lib/__tests__/zm-version.test.ts` (new) | Tests for `isZmVersionAtLeast()` |
 
 ## Testing
 
-- Unit test for `isZmVersionAtLeast()` with various version strings
-- Unit test for `updateMonitorCapture()` API call
-- Verify dialog renders tabs, editable controls appear on correct tab
-- Verify version < 1.38 shows legacy Function dropdown
-- Verify version >= 1.38 shows Capturing/Analysing/Recording dropdowns
+### Unit Tests
+
+- `isZmVersionAtLeast()`: null version, versions below/at/above target, multi-digit segments, missing patch versions
+- `updateMonitorCapture()`: sends correct API params for each field combination
+
+### E2E Tests
+
+File: `app/tests/features/monitor-settings.feature`
+
+```gherkin
+@all
+Scenario: Open settings dialog and verify tabs
+  Given I am logged into zmNinjaNG
+  When I navigate to a monitor detail page
+  And I open the settings dialog
+  Then I should see tabs "Capture & Recording", "Video", "Display"
+  And the "Capture & Recording" tab should be selected by default
+
+@all
+Scenario: Change capturing mode on ZM 1.38+ server
+  Given I am logged into zmNinjaNG
+  And the server is running ZoneMinder >= 1.38
+  When I navigate to a monitor detail page
+  And I open the settings dialog
+  And I change "Capturing" to "On Demand"
+  Then I should see a success toast
+  When I close and reopen the settings dialog
+  Then "Capturing" should show "On Demand"
+
+@all
+Scenario: Toggle monitor enabled state
+  Given I am logged into zmNinjaNG
+  When I navigate to a monitor detail page
+  And I open the settings dialog
+  And I toggle the enabled switch
+  Then I should see a success toast
+
+@all @visual
+Scenario: Settings dialog layout
+  Given I am logged into zmNinjaNG
+  When I navigate to a monitor detail page
+  And I open the settings dialog
+  Then the page should match the visual baseline
+
+@ios-phone @android
+Scenario: Settings dialog fits phone screen
+  Given I am logged into zmNinjaNG
+  When I navigate to a monitor detail page
+  And I open the settings dialog
+  Then the dialog should not overflow the screen width
+  And all tab content should be scrollable
+```
+
+Step definitions: `app/tests/steps/monitor-settings.steps.ts`
