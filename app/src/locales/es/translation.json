@@ -518,7 +518,10 @@
     "orientation_label": "Orientación",
     "linked_monitors": "Monitores vinculados",
     "event_start_cmd": "Cmd inicio evento",
-    "event_end_cmd": "Cmd fin evento"
+    "event_end_cmd": "Cmd fin evento",
+    "orientation_90": "Rotar derecha (90°)",
+    "orientation_180": "Invertido (180°)",
+    "orientation_270": "Rotar izquierda (270°)"
   },
   "montage": {
     "title": "Montaje",

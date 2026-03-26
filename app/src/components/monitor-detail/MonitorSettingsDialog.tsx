@@ -14,6 +14,7 @@ import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Switch } from '../ui/switch';
 import { Input } from '../ui/input';
+import { PasswordInput } from '../ui/password-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import type { Monitor } from '../../api/types';
 import type { MonitorFunction } from '../../pages/hooks/useModeControl';
@@ -90,6 +91,7 @@ export function MonitorSettingsDialog({
   const [localMethod, setLocalMethod] = useState(monitor.Method ?? 'rtpRtsp');
   const [localMaxFPS, setLocalMaxFPS] = useState(monitor.MaxFPS ?? '');
   const [localAlarmMaxFPS, setLocalAlarmMaxFPS] = useState(monitor.AlarmMaxFPS ?? '');
+  const [localOrientation, setLocalOrientation] = useState(monitor.Orientation ?? 'ROTATE_0');
   const [localEventStartCmd, setLocalEventStartCmd] = useState(monitor.EventStartCommand ?? '');
   const [localEventEndCmd, setLocalEventEndCmd] = useState(monitor.EventEndCommand ?? '');
 
@@ -110,6 +112,7 @@ export function MonitorSettingsDialog({
     setLocalMethod(monitor.Method ?? 'rtpRtsp');
     setLocalMaxFPS(monitor.MaxFPS ?? '');
     setLocalAlarmMaxFPS(monitor.AlarmMaxFPS ?? '');
+    setLocalOrientation(monitor.Orientation ?? 'ROTATE_0');
     setLocalEventStartCmd(monitor.EventStartCommand ?? '');
     setLocalEventEndCmd(monitor.EventEndCommand ?? '');
   }, [monitor]);
@@ -126,6 +129,7 @@ export function MonitorSettingsDialog({
     localMethod !== (monitor.Method ?? 'rtpRtsp') ||
     localMaxFPS !== (monitor.MaxFPS ?? '') ||
     localAlarmMaxFPS !== (monitor.AlarmMaxFPS ?? '') ||
+    localOrientation !== (monitor.Orientation ?? 'ROTATE_0') ||
     localEventStartCmd !== (monitor.EventStartCommand ?? '') ||
     localEventEndCmd !== (monitor.EventEndCommand ?? '');
 
@@ -164,6 +168,7 @@ export function MonitorSettingsDialog({
     if (localMethod !== (monitor.Method ?? 'rtpRtsp')) changes.Method = localMethod;
     if (localMaxFPS !== (monitor.MaxFPS ?? '')) changes.MaxFPS = localMaxFPS;
     if (localAlarmMaxFPS !== (monitor.AlarmMaxFPS ?? '')) changes.AlarmMaxFPS = localAlarmMaxFPS;
+    if (localOrientation !== (monitor.Orientation ?? 'ROTATE_0')) changes.Orientation = localOrientation;
     if (localEventStartCmd !== (monitor.EventStartCommand ?? '')) changes.EventStartCommand = localEventStartCmd;
     if (localEventEndCmd !== (monitor.EventEndCommand ?? '')) changes.EventEndCommand = localEventEndCmd;
 
@@ -173,7 +178,7 @@ export function MonitorSettingsDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-lg w-[calc(100%-1.5rem)] max-h-[90vh] overflow-y-auto"
+        className="max-w-lg w-[calc(100%-1.5rem)] max-h-[90vh] flex flex-col"
         data-testid="monitor-settings-dialog"
       >
         <DialogHeader>
@@ -183,8 +188,8 @@ export function MonitorSettingsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="video" className="mt-2">
-          <TabsList className="w-full">
+        <Tabs defaultValue="video" className="mt-2 flex flex-col min-h-0 flex-1">
+          <TabsList className="w-full shrink-0">
             <TabsTrigger value="video" className="flex-1" data-testid="settings-tab-video">
               {t('monitor_detail.tab_video')}
             </TabsTrigger>
@@ -194,7 +199,7 @@ export function MonitorSettingsDialog({
           </TabsList>
 
           {/* Tab: Capture & Recording */}
-          <TabsContent value="capture" className="mt-4 space-y-0">
+          <TabsContent value="capture" className="mt-4 space-y-0 overflow-y-auto">
             {is138Plus ? (
               <>
                 <SettingsRow label={t('monitor_detail.capturing_label')} testId="settings-capturing-row">
@@ -349,9 +354,9 @@ export function MonitorSettingsDialog({
           </TabsContent>
 
           {/* Tab: Video */}
-          <TabsContent value="video" className="mt-4 space-y-0">
+          <TabsContent value="video" className="mt-4 space-y-0 overflow-y-auto">
             {/* Source Path — stacked layout for long value */}
-            <div className="py-2.5 border-b border-border/40" data-testid="settings-source-row">
+            <div className="py-2.5 border-b border-border/40 " data-testid="settings-source-row">
               <span className="text-sm text-muted-foreground">{t('monitor_detail.source_path')}</span>
               <Input
                 value={localPath}
@@ -375,8 +380,7 @@ export function MonitorSettingsDialog({
 
             {/* Password */}
             <SettingsRow label={t('monitor_detail.password')} testId="settings-password-row">
-              <Input
-                type="password"
+              <PasswordInput
                 value={localPass}
                 onChange={(e) => setLocalPass(e.target.value)}
                 disabled={!editable || isSaving}
@@ -442,9 +446,25 @@ export function MonitorSettingsDialog({
               />
             </SettingsRow>
 
-            {/* Orientation — read-only, raw value */}
-            <SettingsRow label={t('monitor_detail.orientation_label')} testId="monitor-rotation">
-              {monitor.Orientation ?? 'ROTATE_0'}
+            {/* Orientation */}
+            <SettingsRow label={t('monitor_detail.orientation_label')} testId="monitor-orientation">
+              <Select
+                value={localOrientation}
+                onValueChange={setLocalOrientation}
+                disabled={!editable || isSaving}
+              >
+                <SelectTrigger className="w-40 h-8" data-testid="settings-orientation-select">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ROTATE_0">{t('monitor_detail.rotation_none')}</SelectItem>
+                  <SelectItem value="ROTATE_90">{t('monitor_detail.orientation_90')}</SelectItem>
+                  <SelectItem value="ROTATE_180">{t('monitor_detail.orientation_180')}</SelectItem>
+                  <SelectItem value="ROTATE_270">{t('monitor_detail.orientation_270')}</SelectItem>
+                  <SelectItem value="FLIP_HORI">{t('monitor_detail.rotation_flip_horizontal')}</SelectItem>
+                  <SelectItem value="FLIP_VERT">{t('monitor_detail.rotation_flip_vertical')}</SelectItem>
+                </SelectContent>
+              </Select>
             </SettingsRow>
 
             {/* Controllable — read-only badge */}
@@ -473,7 +493,7 @@ export function MonitorSettingsDialog({
             )}
 
             {/* Event Start Cmd — stacked layout */}
-            <div className="py-2.5 border-b border-border/40" data-testid="settings-event-start-cmd-row">
+            <div className="py-2.5 border-b border-border/40 " data-testid="settings-event-start-cmd-row">
               <span className="text-sm text-muted-foreground">{t('monitor_detail.event_start_cmd')}</span>
               <Input
                 value={localEventStartCmd}
@@ -485,7 +505,7 @@ export function MonitorSettingsDialog({
             </div>
 
             {/* Event End Cmd — stacked layout */}
-            <div className="py-2.5 border-b border-border/40" data-testid="settings-event-end-cmd-row">
+            <div className="py-2.5 border-b border-border/40 " data-testid="settings-event-end-cmd-row">
               <span className="text-sm text-muted-foreground">{t('monitor_detail.event_end_cmd')}</span>
               <Input
                 value={localEventEndCmd}
