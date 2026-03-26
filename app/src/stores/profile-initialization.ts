@@ -17,6 +17,10 @@ import { createApiClient, setApiClient } from '../api/client';
 import { log, LogLevel } from '../lib/logger';
 import { performBootstrap, type BootstrapContext } from './profile-bootstrap';
 
+function safeLog(message: string, level: LogLevel, details?: Record<string, unknown>) {
+  try { log.profileService(message, level, details); } catch { /* Logger may not be initialized in test env */ }
+}
+
 interface ProfileState {
   profiles: Profile[];
   currentProfileId: string | null;
@@ -178,67 +182,45 @@ export async function handleProfileRehydration(
 ): Promise<void> {
   const bootstrapStart = Date.now();
 
-  try {
-    log.profileService('onRehydrateStorage called', LogLevel.INFO, {
-      hasState: !!state,
-      currentProfileId: state?.currentProfileId,
-    });
-  } catch {
-    // Logger might not be initialized in test environment
-  }
+  safeLog('onRehydrateStorage called', LogLevel.INFO, {
+    hasState: !!state,
+    currentProfileId: state?.currentProfileId,
+  });
 
   // Case 1: No profile exists - just mark as initialized
   if (!state?.currentProfileId) {
-    try {
-      log.profileService('No current profile found on app load', LogLevel.INFO, {
-        state,
-      });
-    } catch {
-      // Logger might not be initialized in test environment
-    }
+    safeLog('No current profile found on app load', LogLevel.INFO, { state });
     setInitializationState(storeSet, false);
-    try {
-      log.profileService('isInitialized set to true (no profile)', LogLevel.INFO);
-    } catch {
-      // Logger might not be initialized in test environment
-    }
+    safeLog('isInitialized set to true (no profile)', LogLevel.INFO);
     return;
   }
 
   // Case 2: Profile ID exists but profile not found - error case
   const profile = state.profiles.find((p) => p.id === state.currentProfileId);
   if (!profile) {
-    try {
-      log.profileService('Current profile ID exists but profile not found', LogLevel.ERROR, {
-        profileId: state.currentProfileId,
-      });
-    } catch {
-      // Logger might not be initialized in test environment
-    }
-    // CRITICAL: Set isInitialized even on error to prevent hanging
+    safeLog('Current profile ID exists but profile not found', LogLevel.ERROR, {
+      profileId: state.currentProfileId,
+    });
+    // Set isInitialized even on error to prevent hanging
     setInitializationState(storeSet, false);
     return;
   }
 
-  try {
-    log.profileService('App loading with profile', LogLevel.INFO, {
-      name: profile.name,
-      id: profile.id,
-      portalUrl: profile.portalUrl,
-      apiUrl: profile.apiUrl,
-      cgiUrl: profile.cgiUrl,
-      username: profile.username || '(not set)',
-      hasPassword: !!profile.password,
-      passwordLength: profile.password?.length,
-      isDefault: profile.isDefault,
-      createdAt: new Date(profile.createdAt).toLocaleString(),
-      lastUsed: profile.lastUsed
-        ? new Date(profile.lastUsed).toLocaleString()
-        : 'never',
-    });
-  } catch {
-    // Logger might not be initialized in test environment
-  }
+  safeLog('App loading with profile', LogLevel.INFO, {
+    name: profile.name,
+    id: profile.id,
+    portalUrl: profile.portalUrl,
+    apiUrl: profile.apiUrl,
+    cgiUrl: profile.cgiUrl,
+    username: profile.username || '(not set)',
+    hasPassword: !!profile.password,
+    passwordLength: profile.password?.length,
+    isDefault: profile.isDefault,
+    createdAt: new Date(profile.createdAt).toLocaleString(),
+    lastUsed: profile.lastUsed
+      ? new Date(profile.lastUsed).toLocaleString()
+      : 'never',
+  });
 
   // Case 3: Valid profile - perform initialization and bootstrap
   try {

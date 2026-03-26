@@ -170,6 +170,7 @@ export default function Server() {
           onClick={handleRefreshAll}
           disabled={isRefreshing}
           className="flex items-center gap-2"
+          data-testid="server-refresh-button"
         >
           <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           <span className="hidden sm:inline">{t('common.refresh')}</span>
@@ -373,7 +374,7 @@ export default function Server() {
               </div>
               <div className="flex gap-2">
                 <Select value={selectedAction} onValueChange={setSelectedAction}>
-                  <SelectTrigger className="flex-1 [&>span]:!block [&>span]:!overflow-visible">
+                  <SelectTrigger className="flex-1 [&>span]:!block [&>span]:!overflow-visible" data-testid="server-state-select">
                     <SelectValue placeholder={t('server.select_state_or_action')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -413,6 +414,7 @@ export default function Server() {
                   onClick={handleApply}
                   disabled={!selectedAction || changeStateMutation.isPending}
                   className="flex items-center gap-2"
+                  data-testid="server-apply-button"
                 >
                   {changeStateMutation.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

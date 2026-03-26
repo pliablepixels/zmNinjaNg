@@ -376,6 +376,7 @@ export default function ProfileForm() {
               onChange={(e) => setProfileName(e.target.value)}
               disabled={testing}
               className="h-10 bg-background/50 border-input/50 focus:border-primary/50 transition-colors"
+              data-testid="setup-profile-name"
             />
           </div>
 
@@ -393,6 +394,7 @@ export default function ProfileForm() {
                 className="h-10 !pl-10 bg-background/50 border-input/50 focus:border-primary/50 transition-colors"
                 autoCapitalize="none"
                 autoCorrect="off"
+                data-testid="setup-portal-url"
               />
             </div>
             <p className="text-xs text-muted-foreground">
@@ -414,6 +416,7 @@ export default function ProfileForm() {
                 className="h-10 !pl-10 bg-background/50 border-input/50 focus:border-primary/50 transition-colors"
                 autoCapitalize="none"
                 autoCorrect="off"
+                data-testid="setup-username"
               />
             </div>
           </div>
@@ -432,6 +435,7 @@ export default function ProfileForm() {
                 autoCapitalize="none"
                 autoCorrect="off"
                 autoComplete="new-password"
+                data-testid="setup-password"
               />
               {password && (
                 <button
@@ -439,6 +443,7 @@ export default function ProfileForm() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors"
                   tabIndex={-1}
+                  data-testid="setup-password-toggle"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -467,6 +472,7 @@ export default function ProfileForm() {
               type="button"
               onClick={() => setShowManualUrls(!showManualUrls)}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              data-testid="setup-manual-urls-toggle"
             >
               {showManualUrls ? t('setup.use_auto_discovery') : t('setup.manual_urls')}
             </button>
@@ -486,6 +492,7 @@ export default function ProfileForm() {
                   className="h-10 bg-background/50 border-input/50 focus:border-primary/50 transition-colors font-mono text-sm"
                   autoCapitalize="none"
                   autoCorrect="off"
+                  data-testid="setup-api-url"
                 />
               </div>
 
@@ -501,6 +508,7 @@ export default function ProfileForm() {
                   className="h-10 bg-background/50 border-input/50 focus:border-primary/50 transition-colors font-mono text-sm"
                   autoCapitalize="none"
                   autoCorrect="off"
+                  data-testid="setup-cgi-url"
                 />
               </div>
             </div>
@@ -555,6 +563,7 @@ export default function ProfileForm() {
               onClick={() => navigate('/profiles')}
               disabled={testing}
               className="w-full"
+              data-testid="setup-back-button"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t('common.cancel')}

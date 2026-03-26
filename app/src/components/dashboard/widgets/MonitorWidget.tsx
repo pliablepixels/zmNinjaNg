@@ -12,22 +12,17 @@
  * - Hover overlay with monitor name
  */
 
-import { useEffect, useState, useRef, useMemo, memo } from 'react';
+import { useMemo, memo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { getMonitor, getMonitors, getStreamUrl } from '../../../api/monitors';
-import { useProfileStore } from '../../../stores/profile';
-import { useAuthStore } from '../../../stores/auth';
-import { useSettingsStore, type MonitorFeedFit } from '../../../stores/settings';
-import { useBandwidthSettings } from '../../../hooks/useBandwidthSettings';
-import { useStreamLifecycle } from '../../../hooks/useStreamLifecycle';
-import { useShallow } from 'zustand/react/shallow';
+import { getMonitor, getMonitors } from '../../../api/monitors';
+import type { MonitorFeedFit } from '../../../stores/settings';
+import { useMonitorStream } from '../../../hooks/useMonitorStream';
 import { AlertTriangle, VideoOff } from 'lucide-react';
 import { Skeleton } from '../../ui/skeleton';
 import { useTranslation } from 'react-i18next';
 import { calculateGridDimensions } from '../../../lib/grid-utils';
 import { filterEnabledMonitors } from '../../../lib/filters';
-import { log } from '../../../lib/logger';
 
 interface MonitorWidgetProps {
     /** Array of monitor IDs to display */
@@ -43,99 +38,19 @@ interface MonitorWidgetProps {
 function SingleMonitor({ monitorId, objectFit }: { monitorId: string; objectFit: MonitorFeedFit }) {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const bandwidth = useBandwidthSettings();
     const { data: monitor, isLoading, error } = useQuery({
         queryKey: ['monitor', monitorId],
         queryFn: () => getMonitor(monitorId),
         enabled: !!monitorId,
     });
 
-    const currentProfile = useProfileStore(
-        useShallow((state) => {
-            const { profiles, currentProfileId } = state;
-            return profiles.find((p) => p.id === currentProfileId) || null;
-        })
-    );
-    const accessToken = useAuthStore((state) => state.accessToken);
-    // Select raw profileSettings to avoid calling getProfileSettings() which creates new objects
-    const rawSettings = useSettingsStore(
-        useShallow((state) => state.profileSettings[currentProfile?.id || ''])
-    );
-    // Merge with defaults in render - only include settings actually used by this component
-    const settings = {
-        viewMode: rawSettings?.viewMode ?? 'snapshot',
-        streamMaxFps: rawSettings?.streamMaxFps ?? 10,
-    };
-
-    const [cacheBuster, setCacheBuster] = useState(Date.now());
-    const [displayedImageUrl, setDisplayedImageUrl] = useState<string>('');
-    const imgRef = useRef<HTMLImageElement>(null);
-
-    // Stream lifecycle: connKey generation, CMD_QUIT on regen/unmount, media abort
-    const { connKey } = useStreamLifecycle({
-        monitorId: monitor?.Monitor.Id,
-        monitorName: monitor?.Monitor.Name,
-        portalUrl: currentProfile?.portalUrl,
-        accessToken,
-        viewMode: settings.viewMode,
-        mediaRef: imgRef,
-        logFn: log.dashboard,
+    // Delegate all streaming logic (connKey, cacheBuster, URL construction,
+    // snapshot refresh interval, image preloading) to the shared hook.
+    // The hook is disabled until the monitor query has loaded.
+    const { displayedImageUrl, imgRef } = useMonitorStream({
+        monitorId,
+        enabled: !!monitor,
     });
-
-    // Reset cacheBuster when connKey changes (new connection)
-    useEffect(() => {
-        if (connKey !== 0) {
-            setCacheBuster(Date.now());
-        }
-    }, [connKey]);
-
-    // Snapshot mode: periodic refresh
-    useEffect(() => {
-        if (settings.viewMode !== 'snapshot') return;
-
-        const interval = setInterval(() => {
-            setCacheBuster(Date.now());
-        }, bandwidth.snapshotRefreshInterval * 1000);
-
-        return () => clearInterval(interval);
-    }, [settings.viewMode, bandwidth.snapshotRefreshInterval]);
-
-    const streamUrl = currentProfile && monitor && connKey !== 0
-        ? getStreamUrl(currentProfile.cgiUrl, monitor.Monitor.Id, {
-            mode: settings.viewMode === 'snapshot' ? 'single' : 'jpeg',
-            scale: bandwidth.imageScale,
-            maxfps: settings.viewMode === 'streaming' ? settings.streamMaxFps : undefined,
-            token: accessToken || undefined,
-            connkey: connKey,
-            // Only use cacheBuster in snapshot mode to force refresh; streaming mode uses only connkey
-            cacheBuster: settings.viewMode === 'snapshot' ? cacheBuster : undefined,
-            // Only use multi-port in streaming mode, not snapshot
-            minStreamingPort:
-                settings.viewMode === 'streaming'
-                    ? currentProfile.minStreamingPort
-                    : undefined,
-        })
-        : '';
-
-    // Preload images in snapshot mode to avoid flickering
-    useEffect(() => {
-        if (settings.viewMode !== 'snapshot' || !streamUrl) {
-            setDisplayedImageUrl(streamUrl);
-            return;
-        }
-
-        // Preload the new image
-        const img = new Image();
-        img.onload = () => {
-            // Only update the displayed URL when the new image is fully loaded
-            setDisplayedImageUrl(streamUrl);
-        };
-        img.onerror = () => {
-            // On error, still update to trigger the error handler
-            setDisplayedImageUrl(streamUrl);
-        };
-        img.src = streamUrl;
-    }, [streamUrl, settings.viewMode]);
 
     if (isLoading) {
         return <Skeleton className="w-full h-full" />;

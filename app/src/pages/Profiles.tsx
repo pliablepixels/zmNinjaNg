@@ -313,7 +313,7 @@ export default function Profiles() {
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button onClick={() => navigate('/profiles/new?returnTo=/profiles')} className="h-9 sm:h-10">
+                  <Button onClick={() => navigate('/profiles/new?returnTo=/profiles')} className="h-9 sm:h-10" data-testid="profiles-add-button">
                     <Plus className="h-4 w-4 sm:mr-2" />
                     <span className="hidden sm:inline">{t('profiles.add_profile')}</span>
                   </Button>
@@ -322,6 +322,7 @@ export default function Profiles() {
                       onClick={() => setIsDeleteAllDialogOpen(true)}
                       variant="destructive"
                       className="h-9 sm:h-10"
+                      data-testid="profiles-delete-all-button"
                     >
                       <Trash2 className="h-4 w-4 sm:mr-2" />
                       <span className="hidden sm:inline">{t('profiles.delete_all')}</span>
@@ -521,6 +522,7 @@ export default function Profiles() {
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
+                    data-testid="profile-edit-password-toggle"
                   >
                     {showPassword ? (
                       <Eye className="h-4 w-4 text-muted-foreground" />
@@ -570,7 +572,7 @@ export default function Profiles() {
 
       {/* Delete All Profiles Confirmation Dialog */}
       <AlertDialog open={isDeleteAllDialogOpen} onOpenChange={setIsDeleteAllDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent data-testid="profiles-delete-all-dialog">
           <AlertDialogHeader>
             <AlertDialogTitle>{t('profiles.delete_all_confirm_title')}</AlertDialogTitle>
             <AlertDialogDescription>
@@ -578,8 +580,8 @@ export default function Profiles() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteAllProfiles} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogCancel data-testid="profiles-delete-all-cancel">{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteAllProfiles} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" data-testid="profiles-delete-all-confirm">
               {t('profiles.delete_all_btn')}
             </AlertDialogAction>
           </AlertDialogFooter>

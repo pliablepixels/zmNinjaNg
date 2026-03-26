@@ -39,6 +39,7 @@ function LogCodeBlock({ content }: { content: string }) {
                 <button
                     onClick={() => setIsExpanded(!isExpanded)}
                     className="mt-1 text-[10px] text-primary hover:underline flex items-center gap-1"
+                    data-testid="logs-expand-toggle"
                 >
                     {isExpanded ? (
                         <>
