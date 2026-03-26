@@ -45,7 +45,6 @@ interface MonitorSettingsDialogProps {
   cycleSeconds?: number;
   onCycleSecondsChange?: (value: string) => void;
   // Read-only display (MonitorDetail only)
-  feedFit?: string;
   orientedResolution?: string;
   rotationStatus?: string;
 }
@@ -80,7 +79,6 @@ export function MonitorSettingsDialog({
   isSaving = false,
   cycleSeconds,
   onCycleSecondsChange,
-  feedFit,
   orientedResolution,
   rotationStatus,
 }: MonitorSettingsDialogProps) {
@@ -160,9 +158,6 @@ export function MonitorSettingsDialog({
             </TabsTrigger>
             <TabsTrigger value="capture" className="flex-1" data-testid="settings-tab-capture">
               {t('monitor_detail.tab_capture')}
-            </TabsTrigger>
-            <TabsTrigger value="display" className="flex-1" data-testid="settings-tab-display">
-              {t('monitor_detail.tab_display')}
             </TabsTrigger>
           </TabsList>
 
@@ -356,18 +351,9 @@ export function MonitorSettingsDialog({
                 <span className="font-mono text-xs">{monitor.ControlAddress}</span>
               </SettingsRow>
             )}
-          </TabsContent>
-
-          {/* Tab: Display (read-only) */}
-          <TabsContent value="display" className="mt-4 space-y-0">
             <SettingsRow label={t('monitor_detail.rotation_label')} testId="monitor-rotation">
               {rotationStatus || formatOrientation(monitor.Orientation)}
             </SettingsRow>
-            {feedFit && (
-              <SettingsRow label={t('monitor_detail.feed_fit')}>
-                {t(`monitor_detail.fit_${feedFit.replace('-', '_')}`)}
-              </SettingsRow>
-            )}
           </TabsContent>
         </Tabs>
       </DialogContent>

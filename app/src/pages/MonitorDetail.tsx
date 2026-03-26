@@ -540,7 +540,6 @@ export default function MonitorDetail() {
         isSaving={isSavingSettings}
         cycleSeconds={settings.monitorDetailCycleSeconds}
         onCycleSecondsChange={handleCycleSecondsChange}
-        feedFit={settings.monitorDetailFeedFit}
         orientedResolution={orientedResolution}
         rotationStatus={rotationStatus}
       />
