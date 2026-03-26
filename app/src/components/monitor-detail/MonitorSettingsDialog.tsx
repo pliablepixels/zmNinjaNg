@@ -17,6 +17,7 @@ import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import type { Monitor } from '../../api/types';
 import type { MonitorFunction } from '../../pages/hooks/useModeControl';
+import { isZmVersionAtLeast } from '../../lib/zm-version';
 
 /** Format raw Orientation value (e.g. ROTATE_270) for display. */
 function formatOrientation(orientation: string | null | undefined): string {
@@ -35,7 +36,8 @@ interface MonitorSettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   monitor: Monitor;
-  hasNewApi: boolean;
+  /** ZM server version string for feature detection. */
+  zmVersion: string | null;
   /** Called with only the fields that changed when Save is pressed. */
   onSave?: (changes: Record<string, string | undefined>) => Promise<void>;
   isSaving?: boolean;
@@ -73,7 +75,7 @@ export function MonitorSettingsDialog({
   open,
   onOpenChange,
   monitor,
-  hasNewApi,
+  zmVersion,
   onSave,
   isSaving = false,
   cycleSeconds,
@@ -84,6 +86,7 @@ export function MonitorSettingsDialog({
 }: MonitorSettingsDialogProps) {
   const { t } = useTranslation();
   const editable = !!onSave;
+  const is138Plus = isZmVersionAtLeast(zmVersion, '1.38.0');
 
   // Local state for editable fields — reset when monitor changes or dialog opens
   const [localCapturing, setLocalCapturing] = useState<string>(monitor.Capturing ?? 'Always');
@@ -106,12 +109,12 @@ export function MonitorSettingsDialog({
   }, [monitor]);
 
   // Check if anything changed from server state
+  // On ZM 1.38+, Enabled is vestigial — Capturing controls whether the monitor is active
   const serverEnabled = monitor.Enabled === '1' || monitor.Enabled === 'true';
-  const hasChanges = hasNewApi
+  const hasChanges = is138Plus
     ? (localCapturing !== (monitor.Capturing ?? 'Always') ||
        localAnalysing !== (monitor.Analysing ?? 'None') ||
        localRecording !== (monitor.Recording ?? 'None') ||
-       localEnabled !== serverEnabled ||
        localSaveJPEGs !== (monitor.SaveJPEGs ?? '0') ||
        localVideoWriter !== (monitor.VideoWriter ?? '0'))
     : (localFunction !== monitor.Function ||
@@ -123,14 +126,14 @@ export function MonitorSettingsDialog({
     if (!onSave) return;
     const changes: Record<string, string | undefined> = {};
 
-    if (hasNewApi) {
+    if (is138Plus) {
       if (localCapturing !== (monitor.Capturing ?? 'Always')) changes.Capturing = localCapturing;
       if (localAnalysing !== (monitor.Analysing ?? 'None')) changes.Analysing = localAnalysing;
       if (localRecording !== (monitor.Recording ?? 'None')) changes.Recording = localRecording;
     } else {
       if (localFunction !== monitor.Function) changes.Function = localFunction;
+      if (localEnabled !== serverEnabled) changes.Enabled = localEnabled ? '1' : '0';
     }
-    if (localEnabled !== serverEnabled) changes.Enabled = localEnabled ? '1' : '0';
     if (localSaveJPEGs !== (monitor.SaveJPEGs ?? '0')) changes.SaveJPEGs = localSaveJPEGs;
     if (localVideoWriter !== (monitor.VideoWriter ?? '0')) changes.VideoWriter = localVideoWriter;
 
@@ -165,7 +168,7 @@ export function MonitorSettingsDialog({
 
           {/* Tab: Capture & Recording */}
           <TabsContent value="capture" className="mt-4 space-y-0">
-            {hasNewApi ? (
+            {is138Plus ? (
               <>
                 <SettingsRow label={t('monitor_detail.capturing_label')} testId="settings-capturing-row">
                   <Select
@@ -239,14 +242,17 @@ export function MonitorSettingsDialog({
               </SettingsRow>
             )}
 
-            <SettingsRow label={t('monitor_detail.enabled_label')} testId="settings-enabled-row">
-              <Switch
-                checked={localEnabled}
-                onCheckedChange={setLocalEnabled}
-                disabled={!editable || isSaving}
-                data-testid="settings-enabled-toggle"
-              />
-            </SettingsRow>
+            {/* Enabled toggle only for ZM < 1.38 — on 1.38+ Capturing controls this */}
+            {!is138Plus && (
+              <SettingsRow label={t('monitor_detail.enabled_label')} testId="settings-enabled-row">
+                <Switch
+                  checked={localEnabled}
+                  onCheckedChange={setLocalEnabled}
+                  disabled={!editable || isSaving}
+                  data-testid="settings-enabled-toggle"
+                />
+              </SettingsRow>
+            )}
 
             <SettingsRow label={t('monitor_detail.save_jpegs_label')} testId="settings-savejpegs-row">
               <Select

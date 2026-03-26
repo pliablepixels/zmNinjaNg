@@ -10,6 +10,7 @@ import { Badge } from '../ui/badge';
 import { Label } from '../ui/label';
 import { Switch } from '../ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { isZmVersionAtLeast } from '../../lib/zm-version';
 import type { MonitorFunction } from '../../pages/hooks/useModeControl';
 
 interface MonitorControlsCardProps {
@@ -24,8 +25,8 @@ interface MonitorControlsCardProps {
   currentFunction: MonitorFunction;
   isModeUpdating: boolean;
   onModeChange: (mode: MonitorFunction) => void;
-  /** When true (ZM 1.38+), hide the legacy mode dropdown. */
-  hasNewApi: boolean;
+  /** ZM server version string for feature detection. */
+  zmVersion: string | null;
 }
 
 export function MonitorControlsCard({
@@ -38,7 +39,7 @@ export function MonitorControlsCard({
   currentFunction,
   isModeUpdating,
   onModeChange,
-  hasNewApi,
+  zmVersion,
 }: MonitorControlsCardProps) {
   const { t } = useTranslation();
 
@@ -66,7 +67,7 @@ export function MonitorControlsCard({
             data-testid="monitor-alarm-toggle"
           />
         </div>
-        {!hasNewApi && (
+        {!isZmVersionAtLeast(zmVersion, '1.38.0') && (
           <div className="space-y-2">
             <Label htmlFor="monitor-mode">{t('monitor_detail.mode_label')}</Label>
             <Select

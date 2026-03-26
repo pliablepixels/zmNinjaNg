@@ -179,10 +179,14 @@ function MonitorCardComponent({
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             <span className="text-sm font-medium text-muted-foreground">{t('monitors.function')}</span>
             <Badge
-              variant={monitor.Function === 'None' ? 'outline' : 'secondary'}
+              variant={
+                monitor.Capturing
+                  ? (monitor.Capturing === 'None' ? 'outline' : 'secondary')
+                  : (monitor.Function === 'None' ? 'outline' : 'secondary')
+              }
               className="font-mono text-xs"
             >
-              {monitor.Function}
+              {monitor.Capturing ?? monitor.Function}
             </Badge>
             {monitor.Controllable === '1' && (
               <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400">

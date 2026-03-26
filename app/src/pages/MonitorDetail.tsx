@@ -126,9 +126,9 @@ export default function MonitorDetail() {
     onSuccess: refetch,
   });
 
-  // Detect ZM 1.38+ API (Capturing/Analysing/Recording instead of Function)
+  // ZM version for feature detection
   const zmVersion = useAuthStore((s) => s.version);
-  const hasNewApi = isZmVersionAtLeast(zmVersion, '1.38.0');
+  const is138Plus = isZmVersionAtLeast(zmVersion, '1.38.0');
 
   // Settings dialog save handler — batches all changes into one or more API calls
   const [isSavingSettings, setIsSavingSettings] = useState(false);
@@ -280,13 +280,16 @@ export default function MonitorDetail() {
               <span
                 className={cn(
                   'w-1.5 h-1.5 rounded-full shrink-0',
-                  monitor.Monitor.Function !== 'None' ? 'bg-green-500' : 'bg-red-500'
+                  (is138Plus
+                    ? monitor.Monitor.Capturing !== 'None'
+                    : monitor.Monitor.Function !== 'None')
+                    ? 'bg-green-500' : 'bg-red-500'
                 )}
               />
               <h1 className="text-sm sm:text-base font-semibold">{monitor.Monitor.Name}</h1>
             </div>
             <div className="text-[10px] sm:text-xs text-muted-foreground ml-3">
-              {monitor.Monitor.Function}
+              {is138Plus ? monitor.Monitor.Capturing : monitor.Monitor.Function}
             </div>
           </div>
           <Button
@@ -512,7 +515,7 @@ export default function MonitorDetail() {
         {!isFullscreen && (
         <div className="w-full max-w-5xl mt-8">
           <MonitorControlsCard
-            hasNewApi={hasNewApi}
+            zmVersion={zmVersion}
             hasAlarmStatus={hasAlarmStatus}
             displayAlarmArmed={displayAlarmArmed}
             alarmStatusLabel={alarmStatusLabel}
@@ -532,7 +535,7 @@ export default function MonitorDetail() {
         open={showSettingsDialog}
         onOpenChange={setShowSettingsDialog}
         monitor={monitor.Monitor}
-        hasNewApi={hasNewApi}
+        zmVersion={zmVersion}
         onSave={handleSaveSettings}
         isSaving={isSavingSettings}
         cycleSeconds={settings.monitorDetailCycleSeconds}

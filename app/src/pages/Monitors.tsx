@@ -14,7 +14,6 @@ import { useCurrentProfile } from '../hooks/useCurrentProfile';
 import { useBandwidthSettings } from '../hooks/useBandwidthSettings';
 import { useAuthStore } from '../stores/auth';
 import { useSettingsStore } from '../stores/settings';
-import { isZmVersionAtLeast } from '../lib/zm-version';
 import { Button } from '../components/ui/button';
 import { RefreshCw, AlertCircle } from 'lucide-react';
 import { MonitorCard } from '../components/monitors/MonitorCard';
@@ -37,7 +36,6 @@ export default function Monitors() {
   const updateSettings = useSettingsStore((state) => state.updateProfileSettings);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const zmVersion = useAuthStore((s) => s.version);
-  const hasNewApi = isZmVersionAtLeast(zmVersion, '1.38.0');
   const { isFilterActive, filteredMonitorIds } = useGroupFilter();
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -204,7 +202,7 @@ export default function Monitors() {
           open={showPropertiesDialog}
           onOpenChange={setShowPropertiesDialog}
           monitor={selectedMonitor}
-          hasNewApi={hasNewApi}
+          zmVersion={zmVersion}
           onSave={handleSaveSettings}
           isSaving={isSavingSettings}
         />
