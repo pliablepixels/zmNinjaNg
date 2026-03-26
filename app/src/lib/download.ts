@@ -12,8 +12,6 @@
  * - Automatically saves media to device Photo/Video library on mobile
  */
 
-import { writeFile } from '@tauri-apps/plugin-fs';
-import { save } from '@tauri-apps/plugin-dialog';
 import { log, LogLevel } from './logger';
 import { Platform } from './platform';
 import { wrapWithImageProxyIfNeeded } from './proxy-utils';
@@ -126,6 +124,9 @@ export async function downloadFile(url: string, filename: string, options?: Down
  */
 async function downloadFileTauri(url: string, filename: string, options?: DownloadOptions): Promise<void> {
   log.download('[Download] Initiating native desktop download', LogLevel.INFO, { url, filename });
+
+  const { save } = await import('@tauri-apps/plugin-dialog');
+  const { writeFile } = await import('@tauri-apps/plugin-fs');
 
   // 1. Prompt user for save location
   const savePath = await save({
@@ -354,6 +355,9 @@ export async function downloadSnapshotFromElement(
  * Desktop (Tauri) data URL download implementation
  */
 async function downloadDataUrlTauri(dataUrl: string, filename: string): Promise<void> {
+  const { save } = await import('@tauri-apps/plugin-dialog');
+  const { writeFile } = await import('@tauri-apps/plugin-fs');
+
   const savePath = await save({
     defaultPath: filename,
     filters: [{ name: 'Image', extensions: ['jpg', 'png'] }]

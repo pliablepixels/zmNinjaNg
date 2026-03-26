@@ -214,8 +214,10 @@ export default function ProfileForm() {
 
         if (portalHasProtocol && apiHasProtocol && portalProtocol !== apiProtocol) {
           throw new Error(
-            `Protocol mismatch! Portal uses ${portalProtocol}:// but API uses ${apiProtocol}://. ` +
-            `Both must use the same protocol (either both HTTP or both HTTPS).`
+            t('profile.protocol_mismatch', {
+              portalProtocol,
+              apiProtocol,
+            })
           );
         }
 

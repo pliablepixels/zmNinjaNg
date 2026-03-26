@@ -311,7 +311,7 @@ export default function Logs() {
                         <NotificationBadge />
                     </div>
                     <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                        {logSource === 'zmng' ? t('logs.subtitle') : 'ZoneMinder Server Logs'}
+                        {logSource === 'zmng' ? t('logs.subtitle') : t('logs.zm_server_logs')}
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">

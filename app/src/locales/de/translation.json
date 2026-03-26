@@ -25,6 +25,7 @@
     "disabled": "Deaktiviert",
     "none": "Keine",
     "unknown": "Unbekannt",
+    "default": "Standard",
     "try_again": "Erneut versuchen",
     "events": "Ereignisse",
     "save_changes": "Änderungen speichern",
@@ -381,6 +382,7 @@
   "logs": {
     "title": "Protokolle",
     "subtitle": "Systemprotokolle",
+    "zm_server_logs": "ZoneMinder-Serverprotokolle",
     "clear_logs": "Löschen",
     "save": "Speichern",
     "share": "Teilen",
@@ -771,7 +773,8 @@
     "profile_name": "Profilname",
     "profile_name_placeholder": "Mein ZoneMinder",
     "api_url_hint": "https://server.com/zm/api",
-    "cgi_url_hint": "https://server.com/zm/cgi-bin"
+    "cgi_url_hint": "https://server.com/zm/cgi-bin",
+    "protocol_mismatch": "Protokollkonflikt! Portal verwendet {{portalProtocol}}://, aber API verwendet {{apiProtocol}}://. Beide müssen dasselbe Protokoll verwenden (entweder HTTP oder HTTPS)."
   },
   "languages": {
     "en": "English",

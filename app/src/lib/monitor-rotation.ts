@@ -40,6 +40,29 @@ export function parseMonitorRotation(orientation?: string | null): MonitorRotati
   return { kind: 'degrees', degrees };
 }
 
+export function getOrientedResolution(
+  width: string | number | undefined,
+  height: string | number | undefined,
+  orientation: string | undefined | null
+): string {
+  const w = Number(width);
+  const h = Number(height);
+
+  if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) {
+    return `${width ?? ''}${width ? 'x' : ''}${height ?? ''}`;
+  }
+
+  const rotation = parseMonitorRotation(orientation);
+  if (rotation.kind === 'degrees') {
+    const normalized = ((rotation.degrees % 360) + 360) % 360;
+    if (normalized === 90 || normalized === 270) {
+      return `${h}x${w}`;
+    }
+  }
+
+  return `${w}x${h}`;
+}
+
 export function getMonitorAspectRatio(
   width?: string | number | null,
   height?: string | number | null,

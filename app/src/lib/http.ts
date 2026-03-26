@@ -12,7 +12,6 @@
  * - Logging integration
  */
 
-import { fetch as tauriFetch } from '@tauri-apps/plugin-http';
 import { Platform } from './platform';
 import { log, LogLevel } from './logger';
 
@@ -439,6 +438,7 @@ async function tauriHttpRequest<T>(
     ? { danger: { acceptInvalidCerts: true, acceptInvalidHostnames: true } }
     : {};
 
+  const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
   const response = await tauriFetch(url, {
     method,
     headers,
