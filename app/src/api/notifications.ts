@@ -28,10 +28,6 @@ interface NotificationResponse {
   notification: { Notification: ZMNotification };
 }
 
-interface NotificationsListResponse {
-  notifications: { Notification: ZMNotification }[];
-}
-
 /**
  * Register or upsert an FCM token with the ZM server.
  * If the token already exists, updates the existing row.
@@ -102,15 +98,6 @@ export async function deleteNotification(id: number): Promise<void> {
 
   const client = getApiClient();
   await client.delete(`/notifications/${id}.json`);
-}
-
-/**
- * List all notification registrations for the current user.
- */
-export async function listNotifications(): Promise<ZMNotification[]> {
-  const client = getApiClient();
-  const resp = await client.get<NotificationsListResponse>('/notifications.json');
-  return resp.data.notifications.map(n => n.Notification);
 }
 
 /**

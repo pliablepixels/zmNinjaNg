@@ -292,6 +292,7 @@ export const TimelineWidget = memo(function TimelineWidget() {
     }, []);
 
     // Handle bar click - navigate to events with time filter
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- recharts onClick payload is untyped
     const handleBarClick = useCallback((data: any) => {
         if (data && data.intervalStart && data.intervalEnd) {
             const formatDateTime = (date: Date) => {

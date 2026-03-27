@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { log, LogLevel } from '../lib/logger';
+import type { EventFilters } from './events';
 
 // Authentication types
 export const LoginResponseSchema = z.object({
@@ -209,13 +210,6 @@ export type Monitor = z.infer<typeof MonitorSchema>;
 export type MonitorStatus = z.infer<typeof MonitorStatusSchema>;
 export type MonitorData = z.infer<typeof MonitorDataSchema>;
 export type MonitorsResponse = z.infer<typeof MonitorsResponseSchema>;
-
-// Monitor update response (for updateMonitor endpoint)
-export const MonitorUpdateResponseSchema = z.object({
-  monitor: MonitorDataSchema,
-});
-
-export type MonitorUpdateResponse = z.infer<typeof MonitorUpdateResponseSchema>;
 
 // Monitor alarm status response (for getAlarmStatus and alarm control endpoints)
 // ZM alarm() function returns different structures based on command and success/failure:
@@ -525,13 +519,6 @@ export interface Profile {
   go2rtcUrl?: string; // ZM_GO2RTC_PATH from server config (full URL)
 }
 
-// Error types
-export interface ApiError {
-  message: string;
-  code?: string;
-  status?: number;
-}
-
 // Stream options types
 export interface StreamOptions {
   mode?: 'jpeg' | 'single' | 'stream';
@@ -543,13 +530,6 @@ export interface StreamOptions {
   token?: string;
   connkey?: number;
   cacheBuster?: number;
-}
-
-// Image options types
-export interface ImageOptions {
-  token?: string;
-  width?: number;
-  height?: number;
 }
 
 // Component prop types
@@ -568,8 +548,7 @@ export interface EventCardProps {
   thumbnailWidth: number;
   thumbnailHeight: number;
   tags?: Tag[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  eventFilters?: any;
+  eventFilters?: EventFilters;
 }
 
 // Zone types

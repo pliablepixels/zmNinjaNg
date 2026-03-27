@@ -21,7 +21,7 @@ import {
 } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Plus, Video, Clock, ChartGantt, TrendingUp } from 'lucide-react';
-import type { WidgetType } from '../../stores/dashboard';
+import type { DashboardWidget, WidgetType } from '../../stores/dashboard';
 import type { MonitorFeedFit } from '../../stores/settings';
 import { useDashboardStore } from '../../stores/dashboard';
 import { useProfileStore } from '../../stores/profile';
@@ -107,7 +107,7 @@ export function DashboardConfig() {
      * Get widget settings based on type and monitor selection
      */
     const getWidgetSettings = (type: WidgetType, monitors: string[], fit: MonitorFeedFit) => {
-        const settings: any = {};
+        const settings: DashboardWidget['settings'] = {};
 
         if (type === 'monitor') {
             settings.monitorIds = monitors;

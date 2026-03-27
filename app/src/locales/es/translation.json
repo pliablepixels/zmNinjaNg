@@ -25,6 +25,7 @@
     "disabled": "Deshabilitado",
     "none": "Ninguno",
     "unknown": "Desconocido",
+    "default": "Predeterminado",
     "try_again": "Intentar de nuevo",
     "events": "Eventos",
     "save_changes": "Guardar Cambios",
@@ -381,6 +382,7 @@
   "logs": {
     "title": "Registros",
     "subtitle": "Registros del sistema",
+    "zm_server_logs": "Registros del servidor ZoneMinder",
     "clear_logs": "Borrar",
     "save": "Guardar",
     "share": "Compartir",
@@ -771,7 +773,8 @@
     "profile_name": "Nombre del Perfil",
     "profile_name_placeholder": "Mi ZoneMinder",
     "api_url_hint": "https://servidor.com/zm/api",
-    "cgi_url_hint": "https://servidor.com/zm/cgi-bin"
+    "cgi_url_hint": "https://servidor.com/zm/cgi-bin",
+    "protocol_mismatch": "¡Conflicto de protocolo! El portal usa {{portalProtocol}}:// pero la API usa {{apiProtocol}}://. Ambos deben usar el mismo protocolo (HTTP o HTTPS)."
   },
   "languages": {
     "en": "English",

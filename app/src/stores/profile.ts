@@ -414,11 +414,15 @@ export const useProfileStore = create<ProfileState>()(
             await handleProfileRehydration(state, storeSet, storeGet);
           } catch (error) {
             // CRITICAL: Catch any unexpected errors in onRehydrateStorage to prevent app from hanging
-            log.profileService(
-              'CRITICAL: Unexpected error in onRehydrateStorage - forcing initialization',
-              LogLevel.ERROR,
-              { error }
-            );
+            try {
+              log.profileService(
+                'CRITICAL: Unexpected error in onRehydrateStorage - forcing initialization',
+                LogLevel.ERROR,
+                { error }
+              );
+            } catch {
+              // Logger might not be initialized in test environment
+            }
             // Force initialization to prevent hanging
             if (storeSet) {
               storeSet({ isInitialized: true, isBootstrapping: false, bootstrapStep: null });

@@ -7,6 +7,7 @@
 
 import { format as dateFnsFormat } from 'date-fns';
 import type { DateFormatPreset, TimeFormatPreset } from '../stores/settings';
+import { log, LogLevel } from './logger';
 
 interface FormatSettings {
   dateFormat: DateFormatPreset;
@@ -37,7 +38,8 @@ function resolveTimePatternShort(s: FormatSettings): string {
 export function formatAppDate(date: Date, settings: FormatSettings): string {
   try {
     return dateFnsFormat(date, resolveDatePattern(settings));
-  } catch {
+  } catch (error) {
+    log.time('Format failed, using fallback', LogLevel.DEBUG, { error });
     return dateFnsFormat(date, 'MMM d');
   }
 }
@@ -46,7 +48,8 @@ export function formatAppDate(date: Date, settings: FormatSettings): string {
 export function formatAppTime(date: Date, settings: FormatSettings): string {
   try {
     return dateFnsFormat(date, resolveTimePattern(settings));
-  } catch {
+  } catch (error) {
+    log.time('Format failed, using fallback', LogLevel.DEBUG, { error });
     return dateFnsFormat(date, 'HH:mm:ss');
   }
 }
@@ -55,7 +58,8 @@ export function formatAppTime(date: Date, settings: FormatSettings): string {
 export function formatAppTimeShort(date: Date, settings: FormatSettings): string {
   try {
     return dateFnsFormat(date, resolveTimePatternShort(settings));
-  } catch {
+  } catch (error) {
+    log.time('Format failed, using fallback', LogLevel.DEBUG, { error });
     return dateFnsFormat(date, 'HH:mm');
   }
 }
@@ -66,7 +70,8 @@ export function formatAppDateTime(date: Date, settings: FormatSettings): string 
     const d = resolveDatePattern(settings);
     const t = resolveTimePattern(settings);
     return dateFnsFormat(date, `${d}, ${t}`);
-  } catch {
+  } catch (error) {
+    log.time('Format failed, using fallback', LogLevel.DEBUG, { error });
     return dateFnsFormat(date, 'MMM d, HH:mm:ss');
   }
 }
@@ -77,7 +82,8 @@ export function formatAppDateTimeShort(date: Date, settings: FormatSettings): st
     const d = resolveDatePattern(settings);
     const t = resolveTimePatternShort(settings);
     return dateFnsFormat(date, `${d}, ${t}`);
-  } catch {
+  } catch (error) {
+    log.time('Format failed, using fallback', LogLevel.DEBUG, { error });
     return dateFnsFormat(date, 'MMM d, HH:mm');
   }
 }
@@ -90,7 +96,8 @@ export function validateFormatString(pattern: string | undefined | null): string
   if (!pattern || !pattern.trim()) return null;
   try {
     return dateFnsFormat(new Date(), pattern);
-  } catch {
+  } catch (error) {
+    log.time('Format validation failed', LogLevel.DEBUG, { pattern, error });
     return null;
   }
 }

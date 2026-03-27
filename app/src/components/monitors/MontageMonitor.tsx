@@ -12,14 +12,11 @@
  * - Fullscreen mode: header slides in on hover from top edge
  */
 
-import { useState, useEffect, useRef, memo } from 'react';
+import { useState, useRef, memo } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import type { Monitor, MonitorStatus, Profile } from '../../api/types';
-import { getZmsControlUrl } from '../../lib/url-builder';
-import { ZMS_COMMANDS } from '../../lib/zm-constants';
-import { httpGet } from '../../lib/http';
-import { useMonitorStore } from '../../stores/monitors';
+import { useStreamLifecycle } from '../../hooks/useStreamLifecycle';
 import { useSettingsStore } from '../../stores/settings';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
@@ -30,7 +27,7 @@ import { cn } from '../../lib/utils';
 import { downloadSnapshotFromElement } from '../../lib/download';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { log, LogLevel } from '../../lib/logger';
+import { log } from '../../lib/logger';
 
 interface MontageMonitorProps {
   monitor: Monitor;
@@ -61,100 +58,32 @@ function MontageMonitorComponent({
 }: MontageMonitorProps) {
   const { t } = useTranslation();
   const isRunning = status?.Status === 'Connected';
-  const regenerateConnKey = useMonitorStore((state) => state.regenerateConnKey);
   const settings = useSettingsStore(
     useShallow((state) => state.getProfileSettings(currentProfile?.id || ''))
   );
-  const [connKey, setConnKey] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
   const mediaRef = useRef<HTMLImageElement | HTMLVideoElement>(null);
   const resolvedFit = objectFit ?? 'cover';
-  // Track previous connKey to send CMD_QUIT before regenerating
-  const prevConnKeyRef = useRef<number>(0);
-  const isInitialMountRef = useRef(true);
 
-  // Force regenerate connKey when component mounts or monitor ID changes
-  useEffect(() => {
-    const monitorId = monitor.Id;
+  // Stream lifecycle: connKey generation, CMD_QUIT on regen/unmount, media abort
+  const { connKey } = useStreamLifecycle({
+    monitorId: monitor.Id,
+    monitorName: monitor.Name,
+    portalUrl: currentProfile?.portalUrl,
+    accessToken,
+    viewMode: settings.viewMode,
+    mediaRef,
+    logFn: log.montageMonitor,
+  });
 
-    // Send CMD_QUIT for previous connKey before generating new one (skip on initial mount)
-    if (!isInitialMountRef.current && prevConnKeyRef.current !== 0 && settings.viewMode === 'streaming' && currentProfile) {
-      const controlUrl = getZmsControlUrl(
-        currentProfile.portalUrl,
-        ZMS_COMMANDS.cmdQuit,
-        prevConnKeyRef.current.toString(),
-        {
-          token: accessToken || undefined,
-        }
-      );
-
-      log.montageMonitor('Sending CMD_QUIT before regenerating connkey', LogLevel.DEBUG, {
-        monitorId,
-        monitorName: monitor.Name,
-        oldConnkey: prevConnKeyRef.current,
-      });
-
-      httpGet(controlUrl).catch(() => {
-        // Silently ignore errors - connection may already be closed
-      });
+  // Reset image loaded state when connKey changes (new stream connection)
+  const prevConnKeyForLoadRef = useRef(0);
+  if (connKey !== 0 && connKey !== prevConnKeyForLoadRef.current) {
+    prevConnKeyForLoadRef.current = connKey;
+    if (imageLoaded) {
+      setImageLoaded(false);
     }
-
-    isInitialMountRef.current = false;
-
-    // Generate new connKey
-    log.montageMonitor('Regenerating connkey', LogLevel.DEBUG, { monitorId });
-    setImageLoaded(false);
-    const newKey = regenerateConnKey(monitorId);
-    setConnKey(newKey);
-    prevConnKeyRef.current = newKey;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [monitor.Id]); // ONLY regenerate when monitor ID changes
-
-  // Store cleanup parameters in ref to access latest values on unmount
-  const cleanupParamsRef = useRef({ monitorId: '', monitorName: '', connKey: 0, profile: currentProfile, token: accessToken, viewMode: settings.viewMode });
-
-  // Update cleanup params whenever they change
-  useEffect(() => {
-    cleanupParamsRef.current = {
-      monitorId: monitor.Id,
-      monitorName: monitor.Name,
-      connKey,
-      profile: currentProfile,
-      token: accessToken,
-      viewMode: settings.viewMode,
-    };
-  }, [monitor.Id, monitor.Name, connKey, currentProfile, accessToken, settings.viewMode]);
-
-  // Cleanup: send CMD_QUIT and abort image loading on unmount ONLY
-  useEffect(() => {
-    return () => {
-      const params = cleanupParamsRef.current;
-
-      // Send CMD_QUIT to properly close the stream connection (only in streaming mode)
-      if (params.viewMode === 'streaming' && params.profile && params.connKey !== 0) {
-        const controlUrl = getZmsControlUrl(params.profile.portalUrl, ZMS_COMMANDS.cmdQuit, params.connKey.toString(), {
-          token: params.token || undefined,
-        });
-
-        log.montageMonitor('Sending CMD_QUIT on unmount', LogLevel.DEBUG, {
-          monitorId: params.monitorId,
-          monitorName: params.monitorName,
-          connkey: params.connKey,
-        });
-
-        // Send CMD_QUIT asynchronously, ignore errors (connection may already be closed)
-        httpGet(controlUrl).catch(() => {
-          // Silently ignore errors - server connection may already be closed
-        });
-      }
-
-      // Abort image loading to release browser connection
-      if (mediaRef.current) {
-        log.montageMonitor('Aborting image element', LogLevel.DEBUG, { monitorId: params.monitorId });
-        mediaRef.current.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-      }
-    };
-  }, []); // Empty deps = only run on unmount
+  }
 
   // Handle snapshot download
   const handleDownload = (e: React.MouseEvent) => {

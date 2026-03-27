@@ -20,12 +20,6 @@ import type { ProfileSettings } from '../../../stores/settings';
 /** Internal grid always uses 12 columns for fine-grained positioning. */
 export const INTERNAL_COLS = 12;
 
-export const getMaxColsForWidth = (width: number, minWidth: number, margin: number): number => {
-  if (width <= 0) return 1;
-  const maxCols = Math.floor((width + margin) / (minWidth + margin));
-  return Math.max(1, maxCols);
-};
-
 const parseAspectRatioValue = (monitor: Monitor): number => {
   const ratio = getMonitorAspectRatio(monitor.Width, monitor.Height, monitor.Orientation);
 
@@ -70,6 +64,7 @@ const calculateHeightUnits = (
  * Old layouts have small w values (1–5); new layouts use 12-col space.
  */
 const migrateLayout = (stored: Layout[], displayCols: number): Layout[] => {
+  if (stored.length === 0) return stored;
   const maxW = Math.max(...stored.map((item) => item.w));
   if (maxW <= 5) {
     const scale = Math.floor(INTERNAL_COLS / displayCols);
@@ -105,16 +100,12 @@ interface UseMontageGridOptions {
 interface UseMontageGridReturn {
   layout: Layout[];
   gridCols: number;
-  isScreenTooSmall: boolean;
-  monitorMap: Map<string, Monitor>;
   currentWidthRef: React.MutableRefObject<number>;
-  hasWidth: boolean;
   handleApplyGridLayout: (cols: number) => void;
   handleLoadSavedLayout: (savedLayout: Layout[], displayCols: number) => void;
   handleLayoutChange: (nextLayout: Layout[]) => void;
   handleResizeStop: (layout: Layout[], oldItem: Layout, newItem: Layout) => void;
   handleWidthChange: (width: number) => void;
-  setGridCols: React.Dispatch<React.SetStateAction<number>>;
   handleDragStop: (layout: Layout[], oldItem: Layout, newItem: Layout) => void;
   handleFillWidth: () => void;
   togglePinMonitor: (monitorId: string) => void;
@@ -133,7 +124,6 @@ export function useMontageGrid({
 
   // displayCols = user's chosen number of visible columns (1–5)
   const [displayCols, setDisplayCols] = useState<number>(settings.montageGridCols);
-  const [isScreenTooSmall, setIsScreenTooSmall] = useState(false);
   const [layout, setLayout] = useState<Layout[]>([]);
   const [hasWidth, setHasWidth] = useState(false);
   // Track whether initial layout has been built (prevent re-running on monitor refetch)
@@ -141,7 +131,6 @@ export function useMontageGrid({
   // Skip the restore effect when handleApplyGridLayout/handleLoadSavedLayout already set layout
   const skipRestoreRef = useRef(false);
 
-  const screenTooSmallRef = useRef(false);
   const currentWidthRef = useRef(0);
   // Width at which heights were last calculated — used to skip trivial changes
   const lastCalcWidthRef = useRef(0);
@@ -266,8 +255,6 @@ export function useMontageGrid({
 
       skipRestoreRef.current = true;
       setDisplayCols(cols);
-      setIsScreenTooSmall(false);
-      screenTooSmallRef.current = false;
       setLayout(nextLayout);
 
       const profileId = currentProfileRef.current.id;
@@ -368,7 +355,8 @@ export function useMontageGrid({
 
   // Proportionally scale the entire layout so it fills the full grid width
   const handleFillWidth = useCallback(() => {
-    if (!currentProfileRef.current) return;
+    const profileId = currentProfileRef.current?.id;
+    if (!profileId) return;
 
     setLayout((prev) => {
       // Find the rightmost edge of any item
@@ -386,7 +374,7 @@ export function useMontageGrid({
       // Recalculate heights for new widths
       const recalculated = recalcHeights(nextLayout, currentWidthRef.current);
 
-      saveMontageLayout(currentProfileRef.current!.id, {
+      saveMontageLayout(profileId, {
         ...settingsRef.current.montageLayouts,
         lg: recalculated,
       });
@@ -406,7 +394,7 @@ export function useMontageGrid({
       else next.add(monitorId);
       return next;
     });
-  }, [layout]);
+  }, []);
 
   const isMonitorPinned = useCallback((monitorId: string) => {
     return pinnedIds.has(monitorId);
@@ -415,10 +403,7 @@ export function useMontageGrid({
   return {
     layout,
     gridCols: displayCols,
-    isScreenTooSmall,
-    monitorMap,
     currentWidthRef,
-    hasWidth,
     handleApplyGridLayout,
     handleLoadSavedLayout,
     handleLayoutChange,
@@ -426,7 +411,6 @@ export function useMontageGrid({
     handleFillWidth,
     handleResizeStop,
     handleWidthChange,
-    setGridCols: setDisplayCols,
     togglePinMonitor,
     isMonitorPinned,
   };

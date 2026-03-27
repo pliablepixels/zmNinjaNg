@@ -8,6 +8,9 @@ const { When, Then } = createBdd();
 // Monitor Steps
 Then('I should see at least {int} monitor cards', async ({ page }, count: number) => {
   const monitorCards = page.getByTestId('monitor-card');
+  if (count > 0) {
+    await expect(monitorCards.first()).toBeVisible({ timeout: testConfig.timeouts.pageLoad });
+  }
   const actualCount = await monitorCards.count();
   expect(actualCount).toBeGreaterThanOrEqual(count);
   log.info('E2E monitors found', { component: 'e2e', action: 'monitors_count', count: actualCount });

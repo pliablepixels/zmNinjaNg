@@ -6,6 +6,7 @@ export interface PlatformTestConfig {
     cdpPort: number;
     appId: string;
     apkPath: string;
+    chromedriverPath?: string;
   };
   ios: {
     phone: {

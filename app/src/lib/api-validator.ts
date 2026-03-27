@@ -40,8 +40,8 @@ export function formatZodIssues(issues: z.ZodIssue[]): FormattedZodIssue[] {
     path: issue.path.length ? issue.path.join('.') : '(root)',
     message: issue.message,
     code: issue.code,
-    expected: (issue as any).expected,
-    received: (issue as any).received,
+    expected: 'expected' in issue ? (issue as { expected: unknown }).expected : undefined,
+    received: 'received' in issue ? (issue as { received: unknown }).received : undefined,
   }));
 }
 /**

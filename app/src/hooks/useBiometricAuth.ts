@@ -21,7 +21,8 @@ async function isTauriEnv(): Promise<boolean> {
   try {
     const { isTauri } = await import('@tauri-apps/api/core');
     return isTauri();
-  } catch {
+  } catch (error) {
+    log.secureStorage('Tauri env check failed', LogLevel.DEBUG, { error });
     return false;
   }
 }

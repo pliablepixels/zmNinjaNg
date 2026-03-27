@@ -5,8 +5,8 @@ cd "$(dirname "$0")/../app"
 DEVICE="${1:-phone}"
 
 echo "=== iOS E2E Tests ($DEVICE) ==="
-echo "Building iOS app for simulator..."
+echo "Syncing Capacitor..."
 npm run ios:sync
 
-echo "Running WebDriverIO tests via Appium..."
-npx wdio run "wdio.config.ios-${DEVICE}.ts" "${@:2}"
+echo "Running device tests via Appium ($DEVICE)..."
+TEST_DEVICE="ios-${DEVICE}" npx wdio run wdio.config.device-screenshots.ts "${@:2}"

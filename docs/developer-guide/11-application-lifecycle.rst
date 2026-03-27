@@ -133,7 +133,12 @@ the app alive.
    user-initiated disconnects stop reconnection; network drops always
    retry. On mobile, ``@capacitor/network`` triggers immediate reconnect
    when connectivity is restored. On desktop, a ``visibilitychange``
-   listener checks liveness when a tab becomes visible
+   listener checks liveness when a tab becomes visible.
+   ``NotificationHandler`` delegates this work to three focused hooks:
+   ``useNotificationAutoConnect`` (connection lifecycle and reconnection),
+   ``useNotificationPushSetup`` (FCM token initialization on mobile), and
+   ``useNotificationDelivered`` (cold start notification processing and
+   resume badge sync)
 6. **Daemon Status**: Server page checks ZoneMinder daemon health every
    30 seconds
 

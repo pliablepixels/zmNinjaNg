@@ -197,12 +197,3 @@ export async function getEventTags(
   }
 }
 
-/**
- * Check if tags are supported on the current ZoneMinder server.
- *
- * @returns Promise resolving to true if tags are supported, false otherwise
- */
-export async function checkTagsSupported(): Promise<boolean> {
-  const tags = await getTags();
-  return tags !== null;
-}

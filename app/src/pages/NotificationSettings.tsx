@@ -15,19 +15,13 @@ import { useAuthStore } from '../stores/auth';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Label } from '../components/ui/label';
-import { Input } from '../components/ui/input';
 import { Switch } from '../components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Badge } from '../components/ui/badge';
-import { Separator } from '../components/ui/separator';
 import {
   Bell,
   BellOff,
   History,
-  Wifi,
   WifiOff,
-  Server,
-  Shield,
   CheckCircle,
   XCircle,
   AlertCircle,
@@ -43,6 +37,9 @@ import { checkNotificationsApiSupport } from '../api/notifications';
 import { getEventPoller } from '../services/eventPoller';
 import type { NotificationMode } from '../types/notifications';
 import { NotificationBadge } from '../components/NotificationBadge';
+import { NotificationModeSection } from '../components/notifications/NotificationModeSection';
+import { ServerConfigSection } from '../components/notifications/ServerConfigSection';
+import { MonitorFilterSection } from '../components/notifications/MonitorFilterSection';
 
 export default function NotificationSettings() {
   const { t } = useTranslation();
@@ -76,7 +73,6 @@ export default function NotificationSettings() {
   const monitors = monitorsData?.monitors || [];
 
   const [isConnecting, setIsConnecting] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [directModeAvailable, setDirectModeAvailable] = useState<boolean | null>(null);
 
   // Feature detection: check if ZM server supports Notifications API
@@ -246,10 +242,18 @@ export default function NotificationSettings() {
     }
   };
 
+  const handlePollingIntervalRestart = () => {
+    if (!currentProfile) return;
+    const poller = getEventPoller();
+    if (poller.isRunning()) {
+      poller.start(currentProfile.id);
+    }
+  };
+
   const getConnectionBadge = () => {
     const mode = settings?.notificationMode || 'es';
 
-    // Direct mode doesn't use a WebSocket — show mode-specific status
+    // Direct mode doesn't use a WebSocket -- show mode-specific status
     if (mode === 'direct' && settings?.enabled) {
       return (
         <Badge variant="default" className="gap-1.5 bg-blue-500">
@@ -379,432 +383,40 @@ export default function NotificationSettings() {
           </CardContent>
         </Card>
 
-        {/* Notification Mode Selector */}
+        {/* Notification Mode Selector + Direct Mode Options */}
         {settings.enabled && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('notification_settings.mode_title')}</CardTitle>
-              <CardDescription>
-                {t('notification_settings.mode_desc')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* ES Mode */}
-                <button
-                  type="button"
-                  onClick={() => handleModeChange('es')}
-                  className={`p-3 rounded-lg border text-left transition-colors ${
-                    (settings.notificationMode || 'es') === 'es'
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-muted-foreground/50'
-                  }`}
-                  data-testid="notification-mode-es"
-                >
-                  <div className="font-semibold text-sm">{t('notification_settings.mode_es')}</div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t('notification_settings.mode_es_desc')}
-                  </p>
-                </button>
-
-                {/* Direct Mode */}
-                <button
-                  type="button"
-                  onClick={() => handleModeChange('direct')}
-                  disabled={directModeAvailable !== true}
-                  className={`p-3 rounded-lg border text-left transition-colors ${
-                    settings.notificationMode === 'direct'
-                      ? 'border-primary bg-primary/5'
-                      : directModeAvailable
-                        ? 'border-border hover:border-muted-foreground/50'
-                        : 'border-border opacity-50 cursor-not-allowed'
-                  }`}
-                  title={directModeAvailable === false ? t('notification_settings.mode_direct_unavailable') : undefined}
-                  data-testid="notification-mode-direct"
-                >
-                  <div className="font-semibold text-sm">{t('notification_settings.mode_direct')}</div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t('notification_settings.mode_direct_desc')}
-                  </p>
-                  {directModeAvailable === false && (
-                    <p className="text-xs text-destructive mt-1">
-                      {t('notification_settings.mode_direct_unavailable')}
-                    </p>
-                  )}
-                </button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Direct Mode Options */}
-        {settings.enabled && settings.notificationMode === 'direct' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('notification_settings.direct_options_title')}</CardTitle>
-              <CardDescription>
-                {t('notification_settings.direct_options_desc')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>{t('notification_settings.polling_interval')}</Label>
-                  <p className="text-xs text-muted-foreground">
-                    {t('notification_settings.polling_interval_desc')}
-                  </p>
-                </div>
-                <Select
-                  value={String(settings.pollingInterval || 30)}
-                  onValueChange={(value) => {
-                    updateProfileSettings(currentProfile.id, { pollingInterval: parseInt(value, 10) });
-                    // Restart poller with new interval
-                    const poller = getEventPoller();
-                    if (poller.isRunning()) {
-                      poller.start(currentProfile.id);
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-28" data-testid="polling-interval-select">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="10">10s</SelectItem>
-                    <SelectItem value="15">15s</SelectItem>
-                    <SelectItem value="30">30s</SelectItem>
-                    <SelectItem value="60">60s</SelectItem>
-                    <SelectItem value="120">120s</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="only-detected">{t('notification_settings.only_detected')}</Label>
-                  <p className="text-xs text-muted-foreground">
-                    {t('notification_settings.only_detected_desc')}
-                  </p>
-                </div>
-                <Switch
-                  id="only-detected"
-                  checked={settings.onlyDetectedEvents || false}
-                  onCheckedChange={(checked) =>
-                    updateProfileSettings(currentProfile.id, { onlyDetectedEvents: checked })
-                  }
-                  data-testid="only-detected-toggle"
-                />
-              </div>
-            </CardContent>
-          </Card>
+          <NotificationModeSection
+            settings={settings}
+            directModeAvailable={directModeAvailable}
+            profileId={currentProfile.id}
+            onModeChange={handleModeChange}
+            onUpdateSettings={updateProfileSettings}
+            onPollingIntervalRestart={handlePollingIntervalRestart}
+          />
         )}
 
         {/* Server Configuration (ES mode only) */}
         {settings.enabled && (settings.notificationMode || 'es') === 'es' && (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Server className="h-5 w-5 text-primary" />
-                <CardTitle>{t('notification_settings.server_config_title')}</CardTitle>
-              </div>
-              <CardDescription>
-                {t('notification_settings.server_config_desc')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Host */}
-              <div className="space-y-2">
-                <Label htmlFor="host" className="text-base font-semibold">
-                  {t('notification_settings.server_host')}
-                </Label>
-                <Input
-                  id="host"
-                  type="text"
-                  placeholder={t('notification_settings.host_placeholder')}
-                  value={settings.host}
-                  onChange={(e) => updateProfileSettings(currentProfile.id, { host: e.target.value })}
-                  disabled={isConnected}
-                  autoCapitalize="none"
-                  autoCorrect="off"
-                  data-testid="notification-host-input"
-                />
-                <p className="text-xs text-muted-foreground">
-                  {t('notification_settings.server_host_desc')}
-                </p>
-              </div>
-
-              {/* Advanced Settings */}
-              <div className="space-y-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowAdvanced(!showAdvanced)}
-                  data-testid="notification-advanced-toggle"
-                >
-                  {showAdvanced ? t('notification_settings.hide_advanced') : t('notification_settings.show_advanced')}
-                </Button>
-
-                {showAdvanced && (
-                  <div className="space-y-4 p-4 rounded-lg border bg-muted/50">
-                    {/* Port */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="port">{t('notification_settings.port')}</Label>
-                        <Input
-                          id="port"
-                          type="number"
-                          value={settings.port}
-                          onChange={(e) => updateProfileSettings(currentProfile.id, { port: Number(e.target.value) })}
-                          disabled={isConnected}
-                          data-testid="notification-port-input"
-                        />
-                        <p className="text-xs text-muted-foreground">{t('notification_settings.default_port')}</p>
-                      </div>
-
-                      {/* SSL */}
-                      <div className="space-y-2">
-                        <Label htmlFor="ssl" className="flex items-center gap-2">
-                          <Shield className="h-4 w-4" />
-                          {t('notification_settings.use_ssl')}
-                        </Label>
-                        <div className="flex items-center h-10">
-                          <Switch
-                            id="ssl"
-                            checked={settings.ssl}
-                            onCheckedChange={(checked) => updateProfileSettings(currentProfile.id, { ssl: checked })}
-                            disabled={isConnected}
-                            data-testid="notification-ssl-toggle"
-                          />
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {t('notification_settings.ssl_desc')}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Toast and Sound Settings */}
-                    <Separator />
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                          <Label htmlFor="show-toasts" className="text-sm">
-                            {t('notification_settings.show_toasts')}
-                          </Label>
-                          <p className="text-xs text-muted-foreground">
-                            {t('notification_settings.show_toasts_desc')}
-                          </p>
-                        </div>
-                        <Switch
-                          id="show-toasts"
-                          checked={settings.showToasts}
-                          onCheckedChange={(checked) => updateProfileSettings(currentProfile.id, { showToasts: checked })}
-                          data-testid="notification-show-toasts-toggle"
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                          <Label htmlFor="play-sound" className="text-sm">
-                            {t('notification_settings.play_sound')}
-                          </Label>
-                          <p className="text-xs text-muted-foreground">{t('notification_settings.play_sound_desc')}</p>
-                        </div>
-                        <Switch
-                          id="play-sound"
-                          checked={settings.playSound}
-                          onCheckedChange={(checked) => updateProfileSettings(currentProfile.id, { playSound: checked })}
-                          data-testid="notification-play-sound-toggle"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Connection Button */}
-              <div className="flex gap-2">
-                {isConnected ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      onClick={handleDisconnect}
-                      className="flex-1"
-                      data-testid="notification-disconnect-button"
-                    >
-                      <WifiOff className="h-4 w-4 mr-2" />
-                      {t('notification_settings.disconnect')}
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={handleConnect}
-                      disabled={isConnecting}
-                      className="flex-1"
-                      data-testid="notification-reconnect-button"
-                    >
-                      {isConnecting ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <Wifi className="h-4 w-4 mr-2" />
-                      )}
-                      {t('notification_settings.reconnect')}
-                    </Button>
-                  </>
-                ) : (
-                  <Button
-                    onClick={handleConnect}
-                    disabled={isConnecting || !settings.host}
-                    className="flex-1"
-                    data-testid="notification-connect-button"
-                  >
-                    {isConnecting ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Wifi className="h-4 w-4 mr-2" />
-                    )}
-                    {t('notification_settings.connect')}
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <ServerConfigSection
+            settings={settings}
+            profileId={currentProfile.id}
+            isConnected={isConnected}
+            isConnecting={isConnecting}
+            onUpdateSettings={updateProfileSettings}
+            onConnect={handleConnect}
+            onDisconnect={handleDisconnect}
+          />
         )}
 
         {/* Monitor Filters */}
         {settings.enabled && monitors.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('notification_settings.monitor_filters_title')}</CardTitle>
-              <CardDescription>
-                {t('notification_settings.monitor_filters_desc')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {/* All Monitors toggle */}
-              <div
-                className="flex items-center justify-between p-4 rounded-lg border bg-card"
-                data-testid="notification-all-monitors-card"
-              >
-                <div className="flex-1 space-y-1">
-                  <Label htmlFor="all-monitors" className="text-base font-semibold">
-                    {t('notification_settings.all_monitors')}
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    {t('notification_settings.all_monitors_desc')}
-                  </p>
-                </div>
-                <Switch
-                  id="all-monitors"
-                  checked={settings.allMonitors}
-                  onCheckedChange={handleAllMonitorsToggle}
-                  data-testid="notification-all-monitors-toggle"
-                />
-              </div>
-
-              {/* Individual monitor filters — only shown when allMonitors is off */}
-              {!settings.allMonitors && monitors.map((monitor) => {
-                const monitorData = monitor.Monitor;
-                const filter = settings.monitorFilters.find(
-                  (f) => f.monitorId === parseInt(monitorData.Id, 10)
-                );
-                const isEnabled = filter?.enabled || false;
-                const interval = filter?.checkInterval || 60;
-
-                return (
-                  <div
-                    key={monitorData.Id}
-                    className="flex flex-col gap-3 p-4 rounded-lg border bg-card"
-                    data-testid={`notification-monitor-card-${monitorData.Id}`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <Label
-                          htmlFor={`monitor-${monitorData.Id}`}
-                          className="text-base font-semibold"
-                        >
-                          {monitorData.Name}
-                        </Label>
-                        <p className="text-sm text-muted-foreground mt-0.5">
-                          {t('notification_settings.monitor_id', { id: monitorData.Id })} • {t('notification_settings.function')}: {monitorData.Function}
-                        </p>
-                      </div>
-                      <Switch
-                        id={`monitor-${monitorData.Id}`}
-                        checked={isEnabled}
-                        onCheckedChange={(checked) =>
-                          handleMonitorToggle(parseInt(monitorData.Id, 10), checked)
-                        }
-                        data-testid={`notification-monitor-toggle-${monitorData.Id}`}
-                      />
-                    </div>
-
-                    {isEnabled && (
-                      <div className="flex flex-col gap-2 ml-6 pt-2 border-t">
-                        <Label htmlFor={`interval-${monitorData.Id}`} className="text-sm">
-                          {t('notification_settings.check_interval')}:
-                        </Label>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Input
-                            id={`interval-${monitorData.Id}`}
-                            type="number"
-                            min="30"
-                            max="3600"
-                            step="30"
-                            value={interval}
-                            onChange={(e) =>
-                              handleIntervalChange(
-                                parseInt(monitorData.Id, 10),
-                                Number(e.target.value)
-                              )
-                            }
-                            className="w-24"
-                            data-testid={`notification-monitor-interval-${monitorData.Id}`}
-                          />
-                          <span className="text-sm text-muted-foreground">{t('notification_settings.seconds')}</span>
-                          <div className="flex gap-1">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                handleIntervalChange(parseInt(monitorData.Id, 10), 30)
-                              }
-                              data-testid={`notification-monitor-interval-30-${monitorData.Id}`}
-                            >
-                              {t('notification_settings.quick_interval_seconds', { value: 30 })}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                handleIntervalChange(parseInt(monitorData.Id, 10), 60)
-                              }
-                              data-testid={`notification-monitor-interval-60-${monitorData.Id}`}
-                            >
-                              {t('notification_settings.quick_interval_seconds', { value: 60 })}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                handleIntervalChange(parseInt(monitorData.Id, 10), 120)
-                              }
-                              data-testid={`notification-monitor-interval-120-${monitorData.Id}`}
-                            >
-                              {t('notification_settings.quick_interval_minutes', { value: 2 })}
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-
-              {monitors.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  {t('notification_settings.no_monitors')}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <MonitorFilterSection
+            settings={settings}
+            monitors={monitors}
+            onAllMonitorsToggle={handleAllMonitorsToggle}
+            onMonitorToggle={handleMonitorToggle}
+            onIntervalChange={handleIntervalChange}
+          />
         )}
       </div>
     </div>

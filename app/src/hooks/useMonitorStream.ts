@@ -1,10 +1,10 @@
 /**
  * Monitor Stream Hook
- * 
+ *
  * Manages the lifecycle of a ZoneMinder video stream or snapshot sequence.
  * Handles connection keys (connkey) to allow multiple simultaneous streams.
  * Implements cache busting and periodic refreshing for snapshot mode.
- * 
+ *
  * Features:
  * - Supports both 'streaming' (MJPEG) and 'snapshot' (JPEG refresh) modes
  * - Handles connection cleanup on unmount to prevent zombie streams on server
@@ -14,12 +14,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { getStreamUrl } from '../api/monitors';
-import { getZmsControlUrl } from '../lib/url-builder';
-import { ZMS_COMMANDS } from '../lib/zm-constants';
-import { httpGet } from '../lib/http';
-import { useMonitorStore } from '../stores/monitors';
 import { useCurrentProfile } from './useCurrentProfile';
 import { useBandwidthSettings } from './useBandwidthSettings';
+import { useStreamLifecycle } from './useStreamLifecycle';
 import { useAuthStore } from '../stores/auth';
 import { log, LogLevel } from '../lib/logger';
 import type { StreamOptions } from '../api/types';
@@ -39,7 +36,7 @@ interface UseMonitorStreamReturn {
 
 /**
  * Custom hook for managing monitor stream URLs and connections.
- * 
+ *
  * @param options - Configuration options
  * @param options.monitorId - The ID of the monitor to stream
  * @param options.streamOptions - Optional overrides for stream parameters
@@ -52,56 +49,28 @@ export function useMonitorStream({
   const { currentProfile, settings } = useCurrentProfile();
   const bandwidth = useBandwidthSettings();
   const accessToken = useAuthStore((state) => state.accessToken);
-  const regenerateConnKey = useMonitorStore((state) => state.regenerateConnKey);
 
-  const [connKey, setConnKey] = useState(0);
   const [cacheBuster, setCacheBuster] = useState(Date.now());
   const [displayedImageUrl, setDisplayedImageUrl] = useState<string>('');
   const imgRef = useRef<HTMLImageElement>(null);
 
-  // Track previous connKey to send CMD_QUIT before regenerating
-  const prevConnKeyRef = useRef<number>(0);
-  const isInitialMountRef = useRef(true);
+  // Stream lifecycle: connKey generation, CMD_QUIT on regen/unmount, media abort
+  const { connKey, forceRegenerate } = useStreamLifecycle({
+    monitorId,
+    portalUrl: currentProfile?.portalUrl,
+    accessToken,
+    viewMode: settings.viewMode,
+    mediaRef: imgRef,
+    logFn: log.monitor,
+    enabled,
+  });
 
-  // Regenerate connKey on mount, when monitor ID changes, or when enabled changes from false to true
+  // Reset cacheBuster when connKey changes (new connection)
   useEffect(() => {
-    if (!enabled) return;
-
-    // If we already have a connKey for this monitor, don't regenerate
-    // (only regenerate when first enabled or monitor changes)
-    if (connKey !== 0 && !isInitialMountRef.current) return;
-
-    // Send CMD_QUIT for previous connKey before generating new one (skip on initial mount)
-    if (!isInitialMountRef.current && prevConnKeyRef.current !== 0 && settings.viewMode === 'streaming' && currentProfile) {
-      const controlUrl = getZmsControlUrl(
-        currentProfile.portalUrl,
-        ZMS_COMMANDS.cmdQuit,
-        prevConnKeyRef.current.toString(),
-        {
-          token: accessToken || undefined,
-        }
-      );
-
-      log.monitor(`Sending CMD_QUIT before regenerating connkey for monitor ${monitorId}`, LogLevel.DEBUG, {
-        monitorId,
-        oldConnkey: prevConnKeyRef.current,
-      });
-
-      httpGet(controlUrl).catch(() => {
-        // Silently ignore errors - connection may already be closed
-      });
+    if (connKey !== 0) {
+      setCacheBuster(Date.now());
     }
-
-    isInitialMountRef.current = false;
-
-    // Generate new connKey
-    log.monitor(`Regenerating connkey for monitor ${monitorId}`, LogLevel.DEBUG);
-    const newKey = regenerateConnKey(monitorId);
-    setConnKey(newKey);
-    prevConnKeyRef.current = newKey;
-    setCacheBuster(Date.now());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [monitorId, enabled]); // Regenerate when monitor ID changes or when first enabled
+  }, [connKey]);
 
   // Snapshot mode: periodic refresh
   useEffect(() => {
@@ -113,52 +82,6 @@ export function useMonitorStream({
 
     return () => clearInterval(interval);
   }, [enabled, settings.viewMode, bandwidth.snapshotRefreshInterval]);
-
-  // Store cleanup parameters in ref to access latest values on unmount
-  const cleanupParamsRef = useRef({ monitorId, connKey: 0, profile: currentProfile, token: accessToken, viewMode: settings.viewMode });
-
-  // Update cleanup params whenever they change
-  useEffect(() => {
-    if (!enabled) return;
-    cleanupParamsRef.current = {
-      monitorId,
-      connKey,
-      profile: currentProfile,
-      token: accessToken,
-      viewMode: settings.viewMode,
-    };
-  }, [enabled, monitorId, connKey, currentProfile, accessToken, settings.viewMode]);
-
-  // Cleanup: send CMD_QUIT and abort image loading on unmount ONLY
-  useEffect(() => {
-    return () => {
-      const params = cleanupParamsRef.current;
-
-      // Send CMD_QUIT to properly close the stream connection (only in streaming mode)
-      if (params.viewMode === 'streaming' && params.profile && params.connKey !== 0) {
-        const controlUrl = getZmsControlUrl(params.profile.portalUrl, ZMS_COMMANDS.cmdQuit, params.connKey.toString(), {
-          token: params.token || undefined,
-        });
-
-        log.monitor(`Sending CMD_QUIT on unmount for monitor ${params.monitorId}`, LogLevel.DEBUG, {
-          monitorId: params.monitorId,
-          connkey: params.connKey,
-        });
-
-        // Send CMD_QUIT asynchronously, ignore errors (connection may already be closed)
-        httpGet(controlUrl).catch(() => {
-          // Silently ignore errors - server connection may already be closed
-        });
-      }
-
-      // Abort image loading to release browser connection
-      if (imgRef.current) {
-        log.monitor(`Aborting image element for monitor ${params.monitorId}`, LogLevel.DEBUG);
-        imgRef.current.src =
-          'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-      }
-    };
-  }, []); // Empty deps = only run on unmount
 
   // Build stream URL - ONLY when we have a valid connKey to prevent zombie streams
   const streamUrl = currentProfile && connKey !== 0
@@ -216,8 +139,7 @@ export function useMonitorStream({
 
   const regenerateConnection = () => {
     log.monitor(`Manually regenerating connection for monitor ${monitorId}`, LogLevel.WARN);
-    const newKey = regenerateConnKey(monitorId);
-    setConnKey(newKey);
+    forceRegenerate();
     setCacheBuster(Date.now());
   };
 

@@ -28,7 +28,7 @@ import { PTZControls } from '../components/monitors/PTZControls';
 import { VideoPlayer } from '../components/video/VideoPlayer';
 import { ZoneOverlay } from '../components/video/ZoneOverlay';
 import { log, LogLevel } from '../lib/logger';
-import { parseMonitorRotation } from '../lib/monitor-rotation';
+import { getOrientedResolution, parseMonitorRotation } from '../lib/monitor-rotation';
 import { isZmVersionAtLeast } from '../lib/zm-version';
 import { useZoomPan } from '../hooks/useZoomPan';
 
@@ -155,24 +155,10 @@ export default function MonitorDetail() {
   }, [monitor?.Monitor.Id, refetch, t]);
 
   // Computed values
-  const orientedResolution = useMemo(() => {
-    const width = Number(monitor?.Monitor.Width);
-    const height = Number(monitor?.Monitor.Height);
-
-    if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
-      return `${monitor?.Monitor.Width ?? ''}${monitor?.Monitor.Width ? 'x' : ''}${monitor?.Monitor.Height ?? ''}`;
-    }
-
-    const rotation = parseMonitorRotation(monitor?.Monitor.Orientation);
-    if (rotation.kind === 'degrees') {
-      const normalized = ((rotation.degrees % 360) + 360) % 360;
-      if (normalized === 90 || normalized === 270) {
-        return `${height}x${width}`;
-      }
-    }
-
-    return `${width}x${height}`;
-  }, [monitor?.Monitor.Height, monitor?.Monitor.Orientation, monitor?.Monitor.Width]);
+  const orientedResolution = useMemo(
+    () => getOrientedResolution(monitor?.Monitor.Width, monitor?.Monitor.Height, monitor?.Monitor.Orientation),
+    [monitor?.Monitor.Height, monitor?.Monitor.Orientation, monitor?.Monitor.Width]
+  );
 
   const handleToggleFullscreen = useCallback(() => {
     setIsFullscreen((prev) => !prev);

@@ -87,6 +87,27 @@ For personal use, you can use a free Apple Developer account to side-load the ap
 
 The pre-built binaries are built for specific distributions. Check the [GitHub Actions workflows](https://github.com/pliablepixels/zmNinjaNG/tree/main/.github/workflows) to see the build configuration and adjust for your system. You can also {doc}`build from source <installation>`.
 
+## Debugging the Desktop App
+
+### How do I open the developer console on the desktop app?
+
+The Tauri desktop app includes a built-in WebView inspector for debugging, similar to Chrome or Firefox DevTools.
+
+**To open it:**
+
+- **Right-click** anywhere in the app and choose **Inspect Element**
+- Or use keyboard shortcuts:
+  - **Linux / Windows**: `Ctrl + Shift + I`
+  - **macOS**: `Cmd + Option + I`
+
+The inspector is platform-specific: it renders the **webkit2gtk WebInspector** on Linux, **Safari's inspector** on macOS, and the **Microsoft Edge DevTools** on Windows.
+
+> **Note:** The inspector is only available in debug builds by default. If you installed a release build, you'll need to either:
+> - Build with `tauri build --debug` to create a debug build with the inspector enabled
+> - Or enable the `devtools` Cargo feature in `src-tauri/Cargo.toml` to include the inspector in production builds (note: this prevents App Store submission on macOS)
+
+For full details, see the [Tauri debugging guide](https://v2.tauri.app/develop/debug/#webview-console).
+
 ## Data & Privacy
 
 ### Does zmNinjaNG send data to third parties?

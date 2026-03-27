@@ -7,5 +7,4 @@
 export { usePTZControl } from './usePTZControl';
 export { useAlarmControl } from './useAlarmControl';
 export { useModeControl, type MonitorFunction } from './useModeControl';
-export { useStreamLifecycle } from './useStreamLifecycle';
 export { useMonitorNavigation } from './useMonitorNavigation';

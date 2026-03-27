@@ -20,14 +20,14 @@ import { Button } from '../ui/button';
 import { SecureImage } from '../ui/secure-image';
 import { downloadEventVideo } from '../../lib/download';
 import { getEventImageUrl, type EventFilters } from '../../api/events';
-import { calculateThumbnailDimensions } from '../../lib/event-utils';
+import { calculateThumbnailDimensions, getMonitorDimensions } from '../../lib/event-utils';
 import { ZM_INTEGRATION } from '../../lib/zmninja-ng-constants';
-import type { Monitor, Tag } from '../../api/types';
+import type { EventData, Monitor, Tag } from '../../api/types';
 import { Capacitor } from '@capacitor/core';
 import { TagChipList } from './TagChip';
 
 interface EventMontageViewProps {
-  events: any[];
+  events: EventData[];
   monitors: Array<{ Monitor: Monitor }>;
   gridCols: number;
   thumbnailFit: 'contain' | 'cover' | 'none' | 'scale-down';
@@ -94,9 +94,7 @@ export const EventMontageView = ({
           const monitorName = monitorData?.Name || `Camera ${event.MonitorId}`;
           const startTime = new Date(event.StartDateTime.replace(' ', 'T'));
 
-          // Get monitor dimensions (use event dimensions as fallback)
-          const monitorWidth = parseInt(monitorData?.Width || event.Width || '640', 10);
-          const monitorHeight = parseInt(monitorData?.Height || event.Height || '480', 10);
+          const { width: monitorWidth, height: monitorHeight } = getMonitorDimensions(monitorData, event.Width, event.Height);
 
           const { width: thumbnailWidth, height: thumbnailHeight } = calculateThumbnailDimensions(
             monitorWidth,

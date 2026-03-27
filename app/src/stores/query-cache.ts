@@ -23,13 +23,6 @@ export function setQueryClient(client: QueryClient) {
 }
 
 /**
- * Get the global query client instance.
- */
-export function getQueryClient(): QueryClient | null {
-  return queryClient;
-}
-
-/**
  * Clear all query cache.
  * 
  * Used when switching profiles to remove all cached data (monitors, events, etc.)

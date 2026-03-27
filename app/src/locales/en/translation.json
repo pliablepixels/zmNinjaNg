@@ -40,7 +40,8 @@
     "selected": "Selected",
     "unknown_error": "Unknown error",
     "auth_required": "Authentication required",
-    "done": "Done"
+    "done": "Done",
+    "default": "Default"
   },
   "app": {
     "name": "zmNinjaNG",
@@ -379,6 +380,7 @@
   "logs": {
     "title": "Logs",
     "subtitle": "System logs",
+    "zm_server_logs": "ZoneMinder Server Logs",
     "clear_logs": "Clear",
     "save": "Save",
     "share": "Share",
@@ -769,7 +771,8 @@
     "profile_name": "Profile Name",
     "profile_name_placeholder": "My ZoneMinder",
     "api_url_hint": "https://server.com/zm/api",
-    "cgi_url_hint": "https://server.com/zm/cgi-bin"
+    "cgi_url_hint": "https://server.com/zm/cgi-bin",
+    "protocol_mismatch": "Protocol mismatch! Portal uses {{portalProtocol}}:// but API uses {{apiProtocol}}://. Both must use the same protocol (either both HTTP or both HTTPS)."
   },
   "languages": {
     "en": "English",

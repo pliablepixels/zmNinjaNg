@@ -7,7 +7,6 @@
  */
 
 import { Capacitor } from '@capacitor/core';
-import { FirebaseMessaging } from '@capacitor-firebase/messaging';
 import type { Notification } from '@capacitor-firebase/messaging';
 import { log, LogLevel } from '../lib/logger';
 import { navigationService } from '../lib/navigation';
@@ -57,6 +56,7 @@ export class MobilePushService {
 
     try {
       // Request permission
+      const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
       const permissionResult = await FirebaseMessaging.requestPermissions();
 
       if (permissionResult.receive === 'granted') {
@@ -76,6 +76,7 @@ export class MobilePushService {
         // Get current FCM token
         log.push('Requesting FCM token via getToken()', LogLevel.INFO);
         try {
+          const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
           const result = await FirebaseMessaging.getToken();
           this.currentToken = result.token;
           this.hasRetried = false;
@@ -95,6 +96,7 @@ export class MobilePushService {
 
             setTimeout(async () => {
               try {
+                const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
                 const retryResult = await FirebaseMessaging.getToken();
                 this.currentToken = retryResult.token;
 
@@ -278,6 +280,7 @@ export class MobilePushService {
     log.push('Unregistering from push notifications locally', LogLevel.INFO);
 
     try {
+      const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
       // Remove all listeners
       await FirebaseMessaging.removeAllListeners();
 
@@ -305,6 +308,7 @@ export class MobilePushService {
    */
   private async _createNotificationChannel(): Promise<void> {
     try {
+      const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
       await FirebaseMessaging.createChannel({
         id: 'zmninja-ng',
         name: 'zmNinja Notifications',
@@ -318,7 +322,9 @@ export class MobilePushService {
     }
   }
 
-  private _setupListeners(): void {
+  private async _setupListeners(): Promise<void> {
+    const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
+
     // Called when FCM token is refreshed
     FirebaseMessaging.addListener('tokenReceived', ({ token }) => {
       log.push('FCM token refreshed', LogLevel.INFO, {

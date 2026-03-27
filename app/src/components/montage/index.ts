@@ -6,4 +6,4 @@
 
 export { GridLayoutControls } from './GridLayoutControls';
 export { FullscreenControls } from './FullscreenControls';
-export { useMontageGrid, useContainerResize, useFullscreenMode, getMaxColsForWidth } from './hooks';
+export { useMontageGrid, useContainerResize, useFullscreenMode } from './hooks';

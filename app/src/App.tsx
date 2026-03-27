@@ -289,7 +289,7 @@ function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme="light">
+        <ThemeProvider defaultTheme="slate">
           <PipProvider>
             <div
               className={isBootstrapping ? 'pointer-events-none select-none' : ''}

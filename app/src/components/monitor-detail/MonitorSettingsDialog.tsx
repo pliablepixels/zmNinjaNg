@@ -127,11 +127,11 @@ export function MonitorSettingsDialog({
   // On ZM 1.38+, Enabled is vestigial — Capturing controls whether the monitor is active
   const serverEnabled = monitor.Enabled === '1' || monitor.Enabled === 'true';
 
-  // Video-tab change flags (same for both ZM versions)
+  // Video-tab change flags — User/Pass only exist as separate fields on ZM 1.38+
   const videoHasChanges =
     localPath !== (monitor.Path ?? '') ||
-    localUser !== (monitor.User ?? '') ||
-    localPass !== (monitor.Pass ?? '') ||
+    (is138Plus && localUser !== (monitor.User ?? '')) ||
+    (is138Plus && localPass !== (monitor.Pass ?? '')) ||
     localMethod !== (monitor.Method ?? 'rtpRtsp') ||
     localMaxFPS !== (monitor.MaxFPS ?? '') ||
     localAlarmMaxFPS !== (monitor.AlarmMaxFPS ?? '') ||
@@ -169,8 +169,8 @@ export function MonitorSettingsDialog({
 
     // Video tab fields
     if (localPath !== (monitor.Path ?? '')) changes.Path = localPath;
-    if (localUser !== (monitor.User ?? '')) changes.User = localUser;
-    if (localPass !== (monitor.Pass ?? '')) changes.Pass = localPass;
+    if (is138Plus && localUser !== (monitor.User ?? '')) changes.User = localUser;
+    if (is138Plus && localPass !== (monitor.Pass ?? '')) changes.Pass = localPass;
     if (localMethod !== (monitor.Method ?? 'rtpRtsp')) changes.Method = localMethod;
     if (localMaxFPS !== (monitor.MaxFPS ?? '')) changes.MaxFPS = localMaxFPS;
     if (localAlarmMaxFPS !== (monitor.AlarmMaxFPS ?? '')) changes.AlarmMaxFPS = localAlarmMaxFPS;
@@ -373,27 +373,30 @@ export function MonitorSettingsDialog({
               />
             </div>
 
-            {/* Username */}
-            <SettingsRow label={t('monitor_detail.username')} testId="settings-username-row" editable>
-              <Input
-                value={localUser}
-                onChange={(e) => setLocalUser(e.target.value)}
-                disabled={!editable || isSaving}
-                className="w-40 h-8 text-xs"
-                data-testid="settings-username-input"
-              />
-            </SettingsRow>
+            {/* Username & Password — ZM 1.38+ only (older versions embed creds in the source URL) */}
+            {is138Plus && (
+              <>
+                <SettingsRow label={t('monitor_detail.username')} testId="settings-username-row" editable>
+                  <Input
+                    value={localUser}
+                    onChange={(e) => setLocalUser(e.target.value)}
+                    disabled={!editable || isSaving}
+                    className="w-40 h-8 text-xs"
+                    data-testid="settings-username-input"
+                  />
+                </SettingsRow>
 
-            {/* Password */}
-            <SettingsRow label={t('monitor_detail.password')} testId="settings-password-row" editable>
-              <PasswordInput
-                value={localPass}
-                onChange={(e) => setLocalPass(e.target.value)}
-                disabled={!editable || isSaving}
-                className="w-40 h-8 text-xs"
-                data-testid="settings-password-input"
-              />
-            </SettingsRow>
+                <SettingsRow label={t('monitor_detail.password')} testId="settings-password-row" editable>
+                  <PasswordInput
+                    value={localPass}
+                    onChange={(e) => setLocalPass(e.target.value)}
+                    disabled={!editable || isSaving}
+                    className="w-40 h-8 text-xs"
+                    data-testid="settings-password-input"
+                  />
+                </SettingsRow>
+              </>
+            )}
 
             {/* Method */}
             <SettingsRow label={t('monitor_detail.method_label')} testId="settings-method-row" editable>

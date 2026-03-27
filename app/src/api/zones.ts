@@ -32,22 +32,3 @@ export async function getZones(monitorId: string): Promise<Zone[]> {
   return validated.zones.map((z) => z.Zone);
 }
 
-/**
- * Get all zones for all monitors.
- *
- * @returns Promise resolving to array of Zone objects
- */
-export async function getAllZones(): Promise<Zone[]> {
-  log.api('Fetching all zones', LogLevel.INFO);
-
-  const client = getApiClient();
-  const response = await client.get<ZonesResponse>('/zones.json');
-
-  const validated = validateApiResponse(ZonesResponseSchema, response.data, {
-    endpoint: '/zones.json',
-    method: 'GET',
-  });
-
-  // Extract Zone objects from the wrapper
-  return validated.zones.map((z) => z.Zone);
-}

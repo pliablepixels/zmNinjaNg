@@ -37,5 +37,8 @@
     "icons:tauri": "npm --prefix app run icons:tauri",
     "icons:mobile": "npm --prefix app run icons:mobile",
     "icons": "npm --prefix app run icons"
+  },
+  "devDependencies": {
+    "@wdio/cli": "^9.26.1"
   }
 }

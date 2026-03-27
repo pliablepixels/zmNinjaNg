@@ -30,9 +30,13 @@ Key Directories Explained
 - **``hooks/``**: Reusable React logic.
 
   - ``useMonitorStream``: Manages video stream URLs and auth.
+  - ``useStreamLifecycle``: Shared connKey lifecycle (CMD_QUIT, cleanup, media abort). Used by ``useMonitorStream``, ``MontageMonitor``, and ``MonitorWidget``.
   - ``useTokenRefresh``: Handles background token renewal.
   - ``useKioskLock``: PIN setup and lock-activation flow for kiosk mode.
   - ``useBiometricAuth``: Dynamic-import wrapper for biometric authentication.
+  - ``useNotificationAutoConnect``: Auto-connects the notification WebSocket on profile load and network reconnection.
+  - ``useNotificationPushSetup``: FCM token initialization on mobile.
+  - ``useNotificationDelivered``: Processes delivered notifications on cold start and resume.
 
   Note: ``usePTZControl`` lives in ``pages/hooks/usePTZControl.ts``, not
   in ``src/hooks/``.
@@ -72,6 +76,10 @@ Components are organized by domain in ``src/components/``:
    ├── kiosk/            # Kiosk mode components
    │   ├── KioskOverlay.tsx
    │   └── PinPad.tsx
+   ├── layout/            # App shell layout components
+   │   ├── AppLayout.tsx         # Thin shell composing SidebarContent and LanguageSwitcher
+   │   ├── SidebarContent.tsx    # Navigation links, drag-reorder, user controls
+   │   └── LanguageSwitcher.tsx  # Self-contained language dropdown
    ├── monitors/          # Monitor-related components
    │   ├── MonitorCard.tsx
    │   ├── MontageMonitor.tsx
@@ -86,6 +94,16 @@ Components are organized by domain in ``src/components/``:
    ├── filters/          # Filter components
    │   ├── MonitorFilterPopover.tsx
    │   └── GroupFilterSelect.tsx  # Monitor group filtering
+   ├── settings/          # Settings page section components
+   │   ├── SettingsLayout.tsx    # Shared layout primitives (SectionHeader, SettingsCard, SettingsRow, RowLabel)
+   │   ├── AppearanceSection.tsx
+   │   ├── LiveStreamingSection.tsx
+   │   ├── PlaybackSection.tsx
+   │   └── AdvancedSection.tsx
+   ├── notifications/     # Notification settings sub-components
+   │   ├── NotificationModeSection.tsx
+   │   ├── ServerConfigSection.tsx
+   │   └── MonitorFilterSection.tsx
    ├── QRScanner.tsx     # QR code scanning for profile import
    └── ui/              # Reusable UI primitives
        ├── button.tsx
@@ -221,7 +239,7 @@ A simplified version of MonitorCard optimized for the montage grid.
 - Edit-mode indicator: yellow ring (``ring-2 ring-yellow-400/70``)
   when ``isEditing`` is true
 - Default ``objectFit`` is ``cover``; overridable via prop
-- Uses same ``useMonitorStream`` hook for stream URLs
+- Uses ``useStreamLifecycle`` directly for connKey management (CMD_QUIT, cleanup)
 
 **Props:**
 
@@ -373,7 +391,9 @@ All widgets follow the same pattern: they’re wrapped in
 
 **MonitorWidget**
 (``src/components/dashboard/widgets/MonitorWidget.tsx``): - Displays a
-single monitor stream - Configuration: monitor ID, object-fit mode
+single monitor stream - Configuration: monitor ID, object-fit mode -
+Uses ``useMonitorStream`` hook (which internally delegates connKey
+lifecycle to ``useStreamLifecycle``)
 
 **EventsWidget**
 (``src/components/dashboard/widgets/EventsWidget.tsx``): - Shows recent
@@ -1160,8 +1180,12 @@ REST API calls, WebSocket connections, and local state management.
 - **Notifications API**: ``src/api/notifications.ts`` (Direct mode
   token registration)
 - **Store**: ``src/stores/notifications.ts``
-- **Orchestrator**: ``src/components/NotificationHandler.tsx``
-- **UI**: ``src/pages/NotificationSettings.tsx``
+- **Orchestrator**: ``src/components/NotificationHandler.tsx`` (delegates to
+  ``useNotificationAutoConnect``, ``useNotificationPushSetup``, and
+  ``useNotificationDelivered``)
+- **UI**: ``src/pages/NotificationSettings.tsx`` (composes
+  ``NotificationModeSection``, ``ServerConfigSection``, and
+  ``MonitorFilterSection`` from ``components/notifications/``)
 
 **3. The Registration Flow**
 

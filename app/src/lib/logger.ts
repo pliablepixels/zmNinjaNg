@@ -236,7 +236,7 @@ type ComponentLoggers = Record<ComponentLoggerKey, (message: string, level?: Log
 // Generate component logger methods dynamically
 const generatedComponentLoggers = componentLoggers.reduce((acc, key) => {
   acc[key] = (message: string, level?: LogLevel, details?: unknown) =>
-    (logger as any)[key](message, level, details);
+    (logger as unknown as Record<string, (message: string, level?: LogLevel, details?: unknown) => void>)[key](message, level, details);
   return acc;
 }, {} as ComponentLoggers);
 

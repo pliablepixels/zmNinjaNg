@@ -28,10 +28,8 @@ export function wrapWithImageProxy(url: string): string {
   return `http://localhost:3001/image-proxy?url=${encodeURIComponent(url)}`;
 }
 
-/**
- * Check if a URL should be proxied (starts with http:// or https://)
- */
-export function shouldProxyUrl(url: string): boolean {
+// Check if a URL should be proxied (starts with http:// or https://)
+function shouldProxyUrl(url: string): boolean {
   return url.startsWith('http://') || url.startsWith('https://');
 }
 

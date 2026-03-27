@@ -36,8 +36,8 @@ import { Badge } from '../components/ui/badge';
 import type { Profile } from '../api/types';
 import { useToast } from '../hooks/use-toast';
 import { toast as sonnerToast } from 'sonner';
-import { createApiClient, setApiClient } from '../api/client';
-import { discoverZoneminder, DiscoveryError } from '../lib/discovery';
+import { setApiClient } from '../api/client';
+import { discoverUrls } from '../lib/discovery';
 import { useTranslation } from 'react-i18next';
 import { NotificationBadge } from '../components/NotificationBadge';
 
@@ -71,24 +71,6 @@ export default function Profiles() {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  // Check server connection and discover URLs
-  // If credentials are provided, also authenticates to fetch ZM_PATH_ZMS for accurate cgiUrl
-  const discoverUrls = async (portal: string, credentials?: { username: string; password: string }) => {
-    try {
-      const result = await discoverZoneminder(portal, credentials);
-
-      // Initialize client with found API
-      const client = createApiClient(result.apiUrl);
-      setApiClient(client);
-
-      return result;
-    } catch (e) {
-      if (e instanceof DiscoveryError) {
-        throw e;
-      }
-      throw new Error(t('setup.discovery_failed'));
-    }
-  };
 
   const handleOpenEditDialog = async (profile: Profile) => {
     setSelectedProfile(profile);
@@ -154,7 +136,12 @@ export default function Profiles() {
         const credentials = formData.username && formData.password
           ? { username: formData.username, password: formData.password }
           : undefined;
-        const discovered = await discoverUrls(portalUrl, credentials);
+        const discovered = await discoverUrls(portalUrl, {
+          credentials,
+          onClientCreated: (client) => {
+            setApiClient(client);
+          },
+        });
         apiUrl = discovered.apiUrl;
         cgiUrl = discovered.cgiUrl;
         // Update portalUrl to match the discovered confirmed one
@@ -326,7 +313,7 @@ export default function Profiles() {
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button onClick={() => navigate('/profiles/new?returnTo=/profiles')} className="h-9 sm:h-10">
+                  <Button onClick={() => navigate('/profiles/new?returnTo=/profiles')} className="h-9 sm:h-10" data-testid="profiles-add-button">
                     <Plus className="h-4 w-4 sm:mr-2" />
                     <span className="hidden sm:inline">{t('profiles.add_profile')}</span>
                   </Button>
@@ -335,6 +322,7 @@ export default function Profiles() {
                       onClick={() => setIsDeleteAllDialogOpen(true)}
                       variant="destructive"
                       className="h-9 sm:h-10"
+                      data-testid="profiles-delete-all-button"
                     >
                       <Trash2 className="h-4 w-4 sm:mr-2" />
                       <span className="hidden sm:inline">{t('profiles.delete_all')}</span>
@@ -534,6 +522,7 @@ export default function Profiles() {
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
+                    data-testid="profile-edit-password-toggle"
                   >
                     {showPassword ? (
                       <Eye className="h-4 w-4 text-muted-foreground" />
@@ -583,7 +572,7 @@ export default function Profiles() {
 
       {/* Delete All Profiles Confirmation Dialog */}
       <AlertDialog open={isDeleteAllDialogOpen} onOpenChange={setIsDeleteAllDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent data-testid="profiles-delete-all-dialog">
           <AlertDialogHeader>
             <AlertDialogTitle>{t('profiles.delete_all_confirm_title')}</AlertDialogTitle>
             <AlertDialogDescription>
@@ -591,8 +580,8 @@ export default function Profiles() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteAllProfiles} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogCancel data-testid="profiles-delete-all-cancel">{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteAllProfiles} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" data-testid="profiles-delete-all-confirm">
               {t('profiles.delete_all_btn')}
             </AlertDialogAction>
           </AlertDialogFooter>

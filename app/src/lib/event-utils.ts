@@ -5,6 +5,7 @@
  */
 
 import { parseMonitorRotation } from './monitor-rotation';
+import type { Monitor } from '../api/types';
 
 /**
  * Calculate maximum grid columns based on container width and minimum card width.
@@ -75,6 +76,30 @@ export const calculateThumbnailDimensions = (
   return {
     width: Math.round(thumbWidth * scale),
     height: Math.round(thumbHeight * scale),
+  };
+};
+
+/**
+ * Parse monitor dimensions from a Monitor record, falling back to provided
+ * strings (e.g. from an event record) and then to the given numeric defaults.
+ *
+ * @param monitor - Monitor record, or undefined if not found
+ * @param fallbackWidth - Width string to use when monitor record is absent (e.g. event.Width)
+ * @param fallbackHeight - Height string to use when monitor record is absent (e.g. event.Height)
+ * @param defaultWidth - Numeric fallback when neither monitor nor fallback string is available
+ * @param defaultHeight - Numeric fallback when neither monitor nor fallback string is available
+ * @returns Parsed integer width and height
+ */
+export const getMonitorDimensions = (
+  monitor: Monitor | undefined,
+  fallbackWidth = '',
+  fallbackHeight = '',
+  defaultWidth = 640,
+  defaultHeight = 480
+): { width: number; height: number } => {
+  return {
+    width: parseInt(monitor?.Width || fallbackWidth || String(defaultWidth), 10),
+    height: parseInt(monitor?.Height || fallbackHeight || String(defaultHeight), 10),
   };
 };
 

@@ -65,6 +65,7 @@ export default function Dashboard() {
                                 onClick={handleRefresh}
                                 disabled={isRefreshing}
                                 title={t('common.refresh')}
+                                data-testid="dashboard-refresh-button"
                             >
                                 <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                             </Button>
@@ -74,6 +75,7 @@ export default function Dashboard() {
                                 onClick={toggleEditMode}
                                 className={isEditing ? "bg-green-600 hover:bg-green-700" : ""}
                                 title={isEditing ? t('dashboard.done') : t('dashboard.edit_layout')}
+                                data-testid="dashboard-edit-toggle"
                             >
                                 {isEditing ? (
                                     <>

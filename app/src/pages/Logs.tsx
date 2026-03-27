@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { ScrollText, Trash2, Download, Share2, ChevronDown, ChevronUp, Server, Smartphone } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Capacitor } from '@capacitor/core';
-import { Share } from '@capacitor/share';
 import { useToast } from '../hooks/use-toast';
 import { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -40,6 +39,7 @@ function LogCodeBlock({ content }: { content: string }) {
                 <button
                     onClick={() => setIsExpanded(!isExpanded)}
                     className="mt-1 text-[10px] text-primary hover:underline flex items-center gap-1"
+                    data-testid="logs-expand-toggle"
                 >
                     {isExpanded ? (
                         <>
@@ -278,6 +278,7 @@ export default function Logs() {
         const logText = exportLogsAsText(filteredLogs);
 
         try {
+            const { Share } = await import('@capacitor/share');
             await Share.share({
                 title: t('logs.share_title'),
                 text: logText,
@@ -311,7 +312,7 @@ export default function Logs() {
                         <NotificationBadge />
                     </div>
                     <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                        {logSource === 'zmng' ? t('logs.subtitle') : 'ZoneMinder Server Logs'}
+                        {logSource === 'zmng' ? t('logs.subtitle') : t('logs.zm_server_logs')}
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">

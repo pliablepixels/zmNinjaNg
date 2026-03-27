@@ -2,23 +2,18 @@
  * Event List View
  *
  * List view of events with thumbnails and metadata.
- * Uses virtualization only for large lists (>100 items) to avoid complexity
- * with scroll margin calculations when there's content above the list.
  */
 
 import { useTranslation } from 'react-i18next';
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { useLayoutEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { EventCard } from './EventCard';
 import { getEventImageUrl, type EventFilters } from '../../api/events';
-import { calculateThumbnailDimensions, EVENT_GRID_CONSTANTS } from '../../lib/event-utils';
-// import { EVENT_LIST } from '../../lib/zmninja-ng-constants';
-import type { Monitor, Tag } from '../../api/types';
+import { calculateThumbnailDimensions, EVENT_GRID_CONSTANTS, getMonitorDimensions } from '../../lib/event-utils';
+import type { EventData, Monitor, Tag } from '../../api/types';
 
 interface EventListViewProps {
-  events: any[];
+  events: EventData[];
   monitors: Array<{ Monitor: Monitor }>;
   thumbnailFit: 'contain' | 'cover' | 'none' | 'scale-down';
   portalUrl: string;
@@ -28,8 +23,6 @@ interface EventListViewProps {
   isLoadingMore: boolean;
   isFetching?: boolean;
   onLoadMore: () => void;
-  parentRef: React.RefObject<HTMLDivElement | null>;
-  parentElement: HTMLDivElement | null;
   eventTagMap?: Map<string, Tag[]>;
   eventFilters?: EventFilters;
 }
@@ -44,7 +37,7 @@ const EventItem = ({
   eventTagMap,
   eventFilters,
 }: {
-  event: any;
+  event: EventData;
   monitors: Array<{ Monitor: Monitor }>;
   thumbnailFit: 'contain' | 'cover' | 'none' | 'scale-down';
   portalUrl: string;
@@ -55,8 +48,7 @@ const EventItem = ({
   const { Event } = event;
   const monitorData = monitors.find((m) => m.Monitor.Id === Event.MonitorId)?.Monitor;
 
-  const monitorWidth = parseInt(monitorData?.Width || Event.Width || '640', 10);
-  const monitorHeight = parseInt(monitorData?.Height || Event.Height || '480', 10);
+  const { width: monitorWidth, height: monitorHeight } = getMonitorDimensions(monitorData, Event.Width, Event.Height);
 
   const { width: thumbnailWidth, height: thumbnailHeight } = calculateThumbnailDimensions(
     monitorWidth,
@@ -100,108 +92,10 @@ export const EventListView = ({
   isLoadingMore,
   isFetching = false,
   onLoadMore,
-  parentRef,
-  parentElement,
   eventTagMap,
   eventFilters,
 }: EventListViewProps) => {
   const { t } = useTranslation();
-  const listContainerRef = useRef<HTMLDivElement>(null);
-  const [scrollMargin, setScrollMargin] = useState(0);
-  const [marginReady, setMarginReady] = useState(false);
-
-  // Disable virtualization - it's causing rendering issues in Tauri where new items
-  // don't appear until window resize. Non-virtualized rendering works fine even with
-  // large lists (tested with 500+ events) and is more reliable across platforms.
-  const shouldVirtualize = false;
-  // const shouldVirtualize = events.length > EVENT_LIST.virtualizationThreshold;
-
-  // Calculate scroll margin only when virtualizing
-  useLayoutEffect(() => {
-    if (!shouldVirtualize || !parentElement || !listContainerRef.current) {
-      setMarginReady(true);
-      return;
-    }
-
-    const calculateMargin = () => {
-      if (!listContainerRef.current || !parentElement) return;
-
-      let offset = 0;
-      let el: HTMLElement | null = listContainerRef.current;
-
-      while (el && el !== parentElement) {
-        offset += el.offsetTop;
-        el = el.offsetParent as HTMLElement | null;
-        if (el && el !== parentElement && el.scrollTop > 0) break;
-      }
-
-      setScrollMargin(offset);
-      setMarginReady(true);
-    };
-
-    const rafId = requestAnimationFrame(calculateMargin);
-
-    const resizeObserver = new ResizeObserver(() => {
-      requestAnimationFrame(calculateMargin);
-    });
-
-    resizeObserver.observe(parentElement);
-    Array.from(parentElement.children).forEach(child => {
-      resizeObserver.observe(child);
-    });
-
-    const mutationObserver = new MutationObserver(() => {
-      requestAnimationFrame(calculateMargin);
-    });
-    mutationObserver.observe(parentElement, { childList: true, subtree: true });
-
-    return () => {
-      cancelAnimationFrame(rafId);
-      resizeObserver.disconnect();
-      mutationObserver.disconnect();
-    };
-  }, [parentElement, shouldVirtualize, events.length]);
-
-  // Virtualizer hook - always call but only use when virtualizing
-  const rowVirtualizer = useVirtualizer({
-    count: events.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 140,
-    overscan: 5,
-    scrollMargin,
-  });
-
-  // Virtualization is currently disabled
-  // This effect would force recalculation when re-enabled
-  // useEffect(() => {
-  //   if (shouldVirtualize) {
-  //     requestAnimationFrame(() => {
-  //       rowVirtualizer.measure();
-  //     });
-  //   }
-  // }, [events.length, shouldVirtualize, rowVirtualizer]);
-
-  // Don't render content until we have a parent element
-  if (!parentElement) {
-    return (
-      <div className="min-h-0 p-4" data-testid="event-list-loading">
-        <div className="text-center text-muted-foreground">
-          {t('common.loading')}...
-        </div>
-      </div>
-    );
-  }
-
-  // For virtualized lists, wait for margin calculation
-  if (shouldVirtualize && !marginReady) {
-    return (
-      <div ref={listContainerRef} className="min-h-0 p-4" data-testid="event-list-loading">
-        <div className="text-center text-muted-foreground">
-          {t('common.loading')}...
-        </div>
-      </div>
-    );
-  }
 
   const isLoadingData = isLoadingMore || isFetching;
   const hasMore = totalCount !== undefined ? events.length < totalCount : false;
@@ -240,70 +134,21 @@ export const EventListView = ({
     </div>
   ) : null;
 
-  // Non-virtualized rendering for smaller lists
-  if (!shouldVirtualize) {
-    return (
-      <div className="min-h-0" data-testid="event-list">
-        {header}
-        {events.map((event) => (
-          <EventItem
-            key={event.Event.Id}
-            event={event}
-            monitors={monitors}
-            thumbnailFit={thumbnailFit}
-            portalUrl={portalUrl}
-            accessToken={accessToken}
-            eventTagMap={eventTagMap}
-            eventFilters={eventFilters}
-          />
-        ))}
-        {footer}
-      </div>
-    );
-  }
-
-  // Virtualized rendering for large lists
-  const virtualItems = rowVirtualizer.getVirtualItems();
-  const totalSize = rowVirtualizer.getTotalSize();
-
   return (
-    <div ref={listContainerRef} className="min-h-0" data-testid="event-list">
+    <div className="min-h-0" data-testid="event-list">
       {header}
-      <div
-        style={{
-          height: `${totalSize}px`,
-          width: '100%',
-          position: 'relative',
-        }}
-      >
-        {virtualItems.map((virtualRow) => {
-          const event = events[virtualRow.index];
-
-          return (
-            <div
-              key={event.Event.Id}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: `${virtualRow.size}px`,
-                transform: `translateY(${virtualRow.start - scrollMargin}px)`,
-              }}
-            >
-              <EventItem
-                event={event}
-                monitors={monitors}
-                thumbnailFit={thumbnailFit}
-                portalUrl={portalUrl}
-                accessToken={accessToken}
-                eventTagMap={eventTagMap}
-                eventFilters={eventFilters}
-              />
-            </div>
-          );
-        })}
-      </div>
+      {events.map((event) => (
+        <EventItem
+          key={event.Event.Id}
+          event={event}
+          monitors={monitors}
+          thumbnailFit={thumbnailFit}
+          portalUrl={portalUrl}
+          accessToken={accessToken}
+          eventTagMap={eventTagMap}
+          eventFilters={eventFilters}
+        />
+      ))}
       {footer}
     </div>
   );

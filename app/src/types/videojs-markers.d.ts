@@ -30,6 +30,7 @@ export interface MarkerConfig {
   /** CSS class for custom styling */
   class?: string;
   /** Custom data attached to marker */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- marker data is an extensible record with arbitrary user-defined fields
   [key: string]: any;
 }
 
@@ -58,6 +59,7 @@ export interface MarkersOptions {
 }
 
 declare module 'videojs-markers' {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- videojs-markers has no official TypeScript types
   const markers: any;
   export default markers;
 }

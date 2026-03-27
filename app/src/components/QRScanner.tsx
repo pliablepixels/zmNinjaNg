@@ -309,8 +309,8 @@ export function QRScanner({ open, onOpenChange, onScan }: QRScannerProps) {
           try {
             scannerRef.current.stop().catch(() => {});
             scannerRef.current.clear();
-          } catch {
-            // Ignore
+          } catch (error) {
+            log.profileForm('QR scanner cleanup failed', LogLevel.DEBUG, { error });
           }
           scannerRef.current = null;
         }

@@ -44,7 +44,7 @@ interface VideoPlayerProps {
   /** Callback when player is ready */
   onReady?: (player: Player) => void;
   /** Callback on error */
-  onError?: (error: any) => void;
+  onError?: (error: unknown) => void;
   /** Event ID for PiP persistence — when provided, enables PiP survival across navigation */
   eventId?: string;
 }
@@ -93,9 +93,11 @@ export function VideoPlayer({
     if (!player || player.isDisposed()) return;
 
     // Remove existing markers if the markers plugin is initialized
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- videojs-markers augments video.js Player interface but ReturnType<typeof videojs> does not pick up interface augmentation
     if (typeof (player as any).markers === 'function') {
       try {
         // Check if player has markers to remove
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- same reason as above
         (player as any).markers?.removeAll?.();
       } catch (err) {
         // Ignore - markers plugin might not be fully initialized
@@ -112,6 +114,7 @@ export function VideoPlayer({
         frameId: m.frameId,
       }));
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- same reason as above
       (player as any).markers({
         markerTip: {
           display: true,
@@ -245,7 +248,8 @@ export function VideoPlayer({
     let videoEl: HTMLVideoElement | null = null;
     try {
       videoEl = player.tech({ IWillNotUseThisInPlugins: true })?.el() as HTMLVideoElement;
-    } catch {
+    } catch (error) {
+      log.videoPlayer('Video tech access failed', LogLevel.DEBUG, { error });
       return;
     }
     if (!videoEl || !(videoEl instanceof HTMLVideoElement)) return;
@@ -270,7 +274,7 @@ export function VideoPlayer({
     Pip.isPipSupported().then(({ supported }) => {
       if (!supported || !player || player.isDisposed()) return;
 
-      const controlBar = (player as any).controlBar?.el() as HTMLElement | undefined;
+      const controlBar = (player as unknown as { controlBar?: { el(): HTMLElement | undefined } }).controlBar?.el();
       if (!controlBar) return;
 
       pipBtn = document.createElement('button');

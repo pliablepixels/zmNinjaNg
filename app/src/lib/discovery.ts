@@ -4,6 +4,16 @@ import type { HttpError } from './http';
 import { log, LogLevel } from './logger';
 
 /**
+ * Options for the discoverUrls helper used by UI pages.
+ */
+export interface DiscoverUrlsOptions {
+  credentials?: { username: string; password: string };
+  signal?: AbortSignal;
+  /** Called once an API client has been created for the discovered URL. */
+  onClientCreated?: (client: ReturnType<typeof createApiClient>) => void;
+}
+
+/**
  * Result of the discovery process
  */
 export interface DiscoveryResult {
@@ -303,4 +313,52 @@ export async function discoverZoneminder(inputUrl: string, options: DiscoveryOpt
         `Could not find ZoneMinder API. Tried /zm/api and /api at ${baseCandidates.join(', ')}`,
         'API_NOT_FOUND'
     );
+}
+
+/**
+ * Discover ZoneMinder URLs from a portal address, with iOS retry logic.
+ *
+ * Wraps `discoverZoneminder` with a single retry on network failure to handle
+ * the iOS local network permission dialog: the first request fails while the
+ * dialog is showing, but succeeds after the user grants access.
+ *
+ * Calls `onClientCreated` once an API client has been created for the found URL.
+ */
+export async function discoverUrls(
+    portal: string,
+    { credentials, signal, onClientCreated }: DiscoverUrlsOptions = {}
+): Promise<DiscoveryResult> {
+    const attempt = async () => {
+        const result = await discoverZoneminder(portal, { ...credentials, signal });
+        const client = createApiClient(result.apiUrl);
+        onClientCreated?.(client);
+        return result;
+    };
+
+    try {
+        return await attempt();
+    } catch (e) {
+        // On network-related failures, retry once after a delay.
+        // This handles the iOS local network permission dialog: the first request
+        // fails while the dialog is showing, but succeeds after the user grants access.
+        if (e instanceof DiscoveryError && (e.code === 'API_NOT_FOUND' || e.code === 'PORTAL_UNREACHABLE')) {
+            log.discovery('First discovery attempt failed, retrying in case of iOS permission dialog', LogLevel.INFO);
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+            if (signal?.aborted) {
+                throw new DiscoveryError('Discovery cancelled', 'CANCELLED');
+            }
+            try {
+                return await attempt();
+            } catch (retryError) {
+                if (retryError instanceof DiscoveryError) {
+                    throw retryError;
+                }
+                throw new DiscoveryError('Discovery failed', 'UNKNOWN');
+            }
+        }
+        if (e instanceof DiscoveryError) {
+            throw e;
+        }
+        throw new DiscoveryError('Discovery failed', 'UNKNOWN');
+    }
 }

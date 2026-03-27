@@ -233,8 +233,8 @@ Then('the video should exit fullscreen mode', async ({ page }) => {
 When('I open the monitor settings dialog', async ({ page }) => {
   const settingsBtn = page.getByTestId('monitor-detail-settings')
     .or(page.getByRole('button', { name: /settings/i }));
+  await expect(settingsBtn.first()).toBeVisible({ timeout: 10000 });
   await settingsBtn.first().click();
-  await page.waitForTimeout(300);
 });
 
 Then('I should see the monitor mode dropdown', async ({ page }) => {
@@ -435,23 +435,23 @@ Then('the movement should stop', async ({ page }) => {
 
 // Monitor Navigation
 Then('I should see navigation arrows if multiple monitors exist', async ({ page }) => {
-  const nextBtn = page.getByTestId('monitor-next').or(page.getByRole('button', { name: /next/i }));
-  const prevBtn = page.getByTestId('monitor-prev').or(page.getByRole('button', { name: /prev/i }));
+  const nextBtn = page.getByTestId('monitor-detail-next');
+  const prevBtn = page.getByTestId('monitor-detail-prev');
   const hasNav = await nextBtn.isVisible().catch(() => false) || await prevBtn.isVisible().catch(() => false);
   log.info('E2E: Monitor navigation arrows', { component: 'e2e', hasNav });
 });
 
 When('I click the next monitor button if visible', async ({ page }) => {
-  const nextBtn = page.getByTestId('monitor-next').or(page.getByRole('button', { name: /next/i }));
-  if (await nextBtn.isVisible().catch(() => false)) {
+  const nextBtn = page.getByTestId('monitor-detail-next');
+  if (await nextBtn.isVisible().catch(() => false) && await nextBtn.isEnabled().catch(() => false)) {
     await nextBtn.click();
     await page.waitForTimeout(500);
   }
 });
 
 When('I click the previous monitor button if visible', async ({ page }) => {
-  const prevBtn = page.getByTestId('monitor-prev').or(page.getByRole('button', { name: /prev/i }));
-  if (await prevBtn.isVisible().catch(() => false)) {
+  const prevBtn = page.getByTestId('monitor-detail-prev');
+  if (await prevBtn.isVisible().catch(() => false) && await prevBtn.isEnabled().catch(() => false)) {
     await prevBtn.click();
     await page.waitForTimeout(500);
   }
@@ -501,12 +501,13 @@ Then('the previous monitor should load if available', async ({ page }) => {
 // Settings Button & Dialog
 When('I click the settings button', async ({ page }) => {
   const settingsBtn = page.getByTestId('monitor-detail-settings');
+  await expect(settingsBtn).toBeVisible({ timeout: 10000 });
   await settingsBtn.click();
 });
 
 Then('I should see the monitor settings dialog', async ({ page }) => {
   const dialog = page.getByRole('dialog').or(page.locator('[data-testid="monitor-settings-dialog"]'));
-  await expect(dialog.first()).toBeVisible();
+  await expect(dialog.first()).toBeVisible({ timeout: 10000 });
 });
 
 // Rotation

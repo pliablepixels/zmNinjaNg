@@ -93,6 +93,7 @@ export class VideoRTC extends HTMLElement {
   ondata: ((data: ArrayBuffer) => void) | null;
 
   /** JSON message handlers */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- go2rtc vendor library message payload is untyped
   onmessage: Record<string, (message: any) => void> | null;
 
   // Setters
@@ -115,6 +116,7 @@ export class VideoRTC extends HTMLElement {
    * Send JSON message through WebSocket.
    * @param value - Object to send as JSON
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- go2rtc vendor library send accepts arbitrary JSON-serializable values
   send(value: any): void;
 
   /**

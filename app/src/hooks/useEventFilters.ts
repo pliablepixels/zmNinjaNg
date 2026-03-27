@@ -11,6 +11,7 @@ import { useSearchParams, useLocation } from 'react-router-dom';
 import { useCurrentProfile } from './useCurrentProfile';
 import { useSettingsStore } from '../stores/settings';
 import type { EventFilters } from '../api/events';
+import { log, LogLevel } from '../lib/logger';
 
 /** Sentinel value for the "All tagged events" filter option */
 export const ALL_TAGS_FILTER_ID = '__all_tags__';
@@ -47,7 +48,8 @@ function formatInputDate(isoString: string | null | undefined): string {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${year}-${month}-${day}T${hours}:${minutes}`;
-  } catch {
+  } catch (error) {
+    log.time('Date filter parse failed', LogLevel.DEBUG, { error });
     return isoString;
   }
 }

@@ -107,7 +107,6 @@ export default function Montage() {
   const {
     layout,
     gridCols,
-    isScreenTooSmall,
     currentWidthRef,
     handleApplyGridLayout,
     handleLoadSavedLayout,
@@ -267,7 +266,7 @@ export default function Montage() {
                   </SelectItem>
                 </SelectContent>
               </Select>
-              <Button onClick={() => refetch()} variant="outline" size="sm" className="h-8 sm:h-9">
+              <Button onClick={() => refetch()} variant="outline" size="sm" className="h-8 sm:h-9" data-testid="montage-refresh-button">
                 <RefreshCw className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">{t('common.refresh')}</span>
               </Button>
@@ -303,17 +302,13 @@ export default function Montage() {
                 size="sm"
                 className="h-8 sm:h-9"
                 title={t('montage.fullscreen')}
+                data-testid="montage-fullscreen-button"
               >
                 <Maximize className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">{t('montage.fullscreen')}</span>
               </Button>
               <NotificationBadge />
             </div>
-          )}
-          {isScreenTooSmall && (
-            <p className="text-xs text-destructive px-2 sm:px-3 pb-2">
-              {t('montage.screen_too_small')}
-            </p>
           )}
         </>
       )}

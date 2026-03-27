@@ -3,7 +3,6 @@ import {
   registerToken,
   updateNotification,
   deleteNotification,
-  listNotifications,
   checkNotificationsApiSupport,
 } from '../notifications';
 import { getApiClient } from '../client';
@@ -149,36 +148,6 @@ describe('Notifications API', () => {
       await deleteNotification(42);
 
       expect(mockDelete).toHaveBeenCalledWith('/notifications/42.json');
-    });
-  });
-
-  describe('listNotifications', () => {
-    it('returns an array of unwrapped notifications', async () => {
-      mockGet.mockResolvedValue({
-        data: {
-          notifications: [
-            { Notification: { ...sampleNotification, Id: 1 } },
-            { Notification: { ...sampleNotification, Id: 2 } },
-          ],
-        },
-      });
-
-      const result = await listNotifications();
-
-      expect(mockGet).toHaveBeenCalledWith('/notifications.json');
-      expect(result).toEqual([
-        { ...sampleNotification, Id: 1 },
-        { ...sampleNotification, Id: 2 },
-      ]);
-    });
-
-    it('returns an empty array when no notifications exist', async () => {
-      mockGet.mockResolvedValue({
-        data: { notifications: [] },
-      });
-
-      const result = await listNotifications();
-      expect(result).toEqual([]);
     });
   });
 

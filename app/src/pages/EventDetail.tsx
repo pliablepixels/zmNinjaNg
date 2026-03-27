@@ -23,7 +23,7 @@ import { getEventCauseIcon } from '../lib/event-icons';
 import { getObjectClassIconFromList } from '../lib/object-class-icons';
 import { useDateTimeFormat } from '../hooks/useDateTimeFormat';
 import { downloadEventVideo } from '../lib/download';
-import { parseMonitorRotation } from '../lib/monitor-rotation';
+import { getOrientedResolution } from '../lib/monitor-rotation';
 import { toast } from 'sonner';
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -80,9 +80,7 @@ export default function EventDetail() {
     enabled: !!id,
   });
 
-  const eventTags = useMemo(() => {
-    return id ? getTagsForEvent(id) : [];
-  }, [id, getTagsForEvent]);
+  const eventTags = id ? getTagsForEvent(id) : [];
 
   const handleFavoriteToggle = useCallback(() => {
     if (currentProfile && event) {
@@ -130,31 +128,21 @@ export default function EventDetail() {
   // Pinch-to-zoom and pan for event video/image
   const zoomPan = useZoomPan({ maxScale: 4 });
 
-  const orientedResolution = useMemo(() => {
-    const width = Number(event?.Event.Width ?? monitorData?.Monitor.Width);
-    const height = Number(event?.Event.Height ?? monitorData?.Monitor.Height);
-
-    if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
-      return `${event?.Event.Width ?? ''}${event?.Event.Width ? 'x' : ''}${event?.Event.Height ?? ''}`;
-    }
-
-    const rotation = parseMonitorRotation(event?.Event.Orientation ?? monitorData?.Monitor.Orientation);
-    if (rotation.kind === 'degrees') {
-      const normalized = ((rotation.degrees % 360) + 360) % 360;
-      if (normalized === 90 || normalized === 270) {
-        return `${height}x${width}`;
-      }
-    }
-
-    return `${width}x${height}`;
-  }, [
-    event?.Event.Height,
-    event?.Event.Orientation,
-    event?.Event.Width,
-    monitorData?.Monitor.Height,
-    monitorData?.Monitor.Orientation,
-    monitorData?.Monitor.Width,
-  ]);
+  const orientedResolution = useMemo(
+    () => getOrientedResolution(
+      event?.Event.Width ?? monitorData?.Monitor.Width,
+      event?.Event.Height ?? monitorData?.Monitor.Height,
+      event?.Event.Orientation ?? monitorData?.Monitor.Orientation
+    ),
+    [
+      event?.Event.Height,
+      event?.Event.Orientation,
+      event?.Event.Width,
+      monitorData?.Monitor.Height,
+      monitorData?.Monitor.Orientation,
+      monitorData?.Monitor.Width,
+    ]
+  );
 
   if (isLoading) {
     return (
@@ -487,14 +475,14 @@ export default function EventDetail() {
                   <HardDrive className="h-5 w-5 text-primary" />
                   <div>
                     <div className="text-sm font-medium">{t('event_detail.disk_usage')}</div>
-                    <div className="text-sm text-muted-foreground">{event.Event.DiskSpace || 'Unknown'}</div>
+                    <div className="text-sm text-muted-foreground">{event.Event.DiskSpace || t('common.unknown')}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <Archive className="h-5 w-5 text-primary" />
                   <div>
                     <div className="text-sm font-medium">{t('event_detail.storage_id')}</div>
-                    <div className="text-sm text-muted-foreground">{event.Event.StorageId || 'Default'}</div>
+                    <div className="text-sm text-muted-foreground">{event.Event.StorageId || t('common.default')}</div>
                   </div>
                 </div>
               </div>

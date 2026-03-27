@@ -10,9 +10,13 @@
  *   npx wdio run wdio.config.device-screenshots.ts -- --device=ios-phone
  */
 
+import dotenv from 'dotenv';
+import path from 'path';
 import type { Options } from '@wdio/types';
 import { platformConfig } from './tests/platforms.config';
 import { getAppiumCapabilities } from './tests/helpers/ios-launcher';
+
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 type DeviceProfile = 'ios-phone' | 'ios-tablet' | 'android';
 
@@ -43,6 +47,9 @@ function getCapabilities(dev: DeviceProfile): WebdriverIO.Capabilities {
         'appium:autoWebview': true,
         'appium:noReset': true,
         'appium:autoGrantPermissions': true,
+        ...(platformConfig.android.chromedriverPath
+          ? { 'appium:chromedriverExecutable': platformConfig.android.chromedriverPath }
+          : {}),
         maxInstances: 1,
       } as WebdriverIO.Capabilities;
     default:

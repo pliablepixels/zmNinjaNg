@@ -245,8 +245,24 @@ probed path - ``PORTAL_UNREACHABLE`` - Server completely unreachable -
 ``CANCELLED`` - Discovery was cancelled via AbortSignal - ``UNKNOWN`` -
 Unexpected error
 
-**Used By:** ``ProfileForm.tsx``, ``Profiles.tsx`` (profile
-creation/editing)
+A higher-level wrapper, ``discoverUrls``, bundles the common call pattern
+with iOS retry logic and an abort signal, so neither ``ProfileForm`` nor
+``Profiles`` need to duplicate that handling:
+
+.. code:: typescript
+
+   import { discoverUrls } from '../lib/discovery';
+
+   // Shared wrapper with iOS retry logic and abort signal
+   const result = await discoverUrls(portalUrl, {
+     credentials: { username, password },
+     signal: abortController.signal,
+     onClientCreated: (client) => setApiClient(client),
+   });
+   // Returns: { portalUrl, apiUrl, cgiUrl }
+
+**Used By:** ``ProfileForm.tsx``, ``Profiles.tsx`` (both call
+``discoverUrls`` for profile creation/editing)
 
 --------------
 
@@ -609,6 +625,66 @@ interface and the ``BANDWIDTH_SETTINGS`` constant map.
 
 **Used By:** Dashboard widgets, monitor views, event player, montage,
 any component that polls or auto-refreshes
+
+--------------
+
+Monitor Rotation (``lib/monitor-rotation.ts``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Utilities for handling monitor orientation and aspect ratio calculations.
+
+**Key Functions:**
+
+- ``parseMonitorRotation(orientation)``: Parses monitor orientation string to degrees
+- ``getMonitorAspectRatio(width, height, orientation)``: Returns aspect ratio string accounting for rotation
+- ``getOrientedResolution(width, height, orientation)``: Returns oriented ``WxH`` string (swaps dimensions for 90°/270° rotation)
+
+**Used By:** ``MonitorDetail.tsx``, ``EventDetail.tsx``, ``useMontageGrid.ts``
+
+--------------
+
+Event Utilities (``lib/event-utils.ts``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Shared helpers for event and monitor grid calculations.
+
+**Key Functions:**
+
+- ``getMaxColsForWidth(width, minWidth, margin)``: Calculate maximum grid columns for a given container width
+- ``getMonitorDimensions(monitor, fallbackWidth, fallbackHeight)``: Extract monitor dimensions with fallbacks
+
+**Used By:** ``EventListView.tsx``, ``EventMontageView.tsx``, ``useEventMontageGrid.ts``
+
+--------------
+
+Stream Lifecycle (``hooks/useStreamLifecycle.ts``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Shared hook for ZMS stream connection key management and cleanup.
+
+**Features:**
+
+- Generates unique connection keys per monitor
+- Sends CMD_QUIT before regenerating keys (prevents orphaned server streams)
+- Sends CMD_QUIT on component unmount
+- Aborts in-flight image loads on unmount
+- Accepts a logger function for component-specific logging
+
+**Implementation:**
+
+.. code:: typescript
+
+   import { useStreamLifecycle } from '../hooks/useStreamLifecycle';
+
+   const { connKey } = useStreamLifecycle({
+     monitorId: monitor.Id,
+     portalUrl: profile.portalUrl,
+     accessToken: auth.accessToken,
+     mediaRef: imgRef,
+     logFn: log.montageMonitor,
+   });
+
+**Used By:** ``useMonitorStream``, ``MontageMonitor.tsx``, ``MonitorWidget.tsx``
 
 --------------
 
@@ -991,10 +1067,14 @@ Sidebar Navigation Reorder
 Users can reorder sidebar menu items via an edit mode (pencil icon
 in the sidebar). Order is saved per profile in
 ``ProfileSettings.sidebarNavOrder`` (array of route paths). The
-``SidebarContent`` component in ``AppLayout.tsx`` sorts
-``navItems`` by saved order using a ``useMemo``. Reorder uses
-pointer events for drag-and-drop with live swap on midpoint
-crossing.
+``SidebarContent`` component (``components/layout/SidebarContent.tsx``)
+sorts ``navItems`` by saved order using a ``useMemo``. Reorder uses
+pointer events for drag-and-drop with live swap on midpoint crossing.
+
+``AppLayout.tsx`` is a thin shell that composes ``SidebarContent``
+(navigation, reorder, user controls) and ``LanguageSwitcher``
+(self-contained language dropdown). The bulk of sidebar logic lives in
+``SidebarContent.tsx``.
 
 --------------
 

@@ -14,7 +14,7 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
 import { useProfileStore } from '../stores/profile';
 import { createApiClient, setApiClient } from '../api/client';
-import { discoverZoneminder, DiscoveryError } from '../lib/discovery';
+import { discoverUrls, DiscoveryError } from '../lib/discovery';
 import { Switch } from '../components/ui/switch';
 import { Video, Server, ShieldCheck, ArrowRight, Loader2, Eye, EyeOff, ArrowLeft, QrCode, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -116,45 +116,6 @@ export default function ProfileForm() {
     toast.success(t('qr_scanner.import_success', { name: result.data.name }));
   };
 
-  // Discover API and CGI URLs from portal URL
-  // If credentials are provided, also authenticates to fetch ZM_PATH_ZMS for accurate cgiUrl
-  // Retries once on network failure to handle iOS local network permission dialog race condition
-  const discoverUrls = async (portal: string, credentials?: { username: string; password: string }, signal?: AbortSignal) => {
-    const attempt = async () => {
-      const result = await discoverZoneminder(portal, { ...credentials, signal });
-      const client = createApiClient(result.apiUrl);
-      setApiClient(client);
-      log.profileForm('Successfully connected', LogLevel.INFO, { apiUrl: result.apiUrl });
-      return result;
-    };
-
-    try {
-      return await attempt();
-    } catch (e) {
-      // On network-related failures, retry once after a delay.
-      // This handles the iOS local network permission dialog: the first request
-      // fails while the dialog is showing, but succeeds after the user grants access.
-      if (e instanceof DiscoveryError && (e.code === 'API_NOT_FOUND' || e.code === 'PORTAL_UNREACHABLE')) {
-        log.profileForm('First discovery attempt failed, retrying in case of iOS permission dialog', LogLevel.INFO);
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        if (signal?.aborted) {
-          throw new DiscoveryError('Discovery cancelled', 'CANCELLED');
-        }
-        try {
-          return await attempt();
-        } catch (retryError) {
-          if (retryError instanceof DiscoveryError) {
-            throw retryError;
-          }
-          throw new Error(t('setup.discovery_failed'));
-        }
-      }
-      if (e instanceof DiscoveryError) {
-        throw e;
-      }
-      throw new Error(t('setup.discovery_failed'));
-    }
-  };
 
   // Cancel ongoing discovery
   const handleCancelDiscovery = () => {
@@ -214,8 +175,10 @@ export default function ProfileForm() {
 
         if (portalHasProtocol && apiHasProtocol && portalProtocol !== apiProtocol) {
           throw new Error(
-            `Protocol mismatch! Portal uses ${portalProtocol}:// but API uses ${apiProtocol}://. ` +
-            `Both must use the same protocol (either both HTTP or both HTTPS).`
+            t('profile.protocol_mismatch', {
+              portalProtocol,
+              apiProtocol,
+            })
           );
         }
 
@@ -237,7 +200,14 @@ export default function ProfileForm() {
         // Pass credentials if provided to fetch accurate ZM_PATH_ZMS from server
         log.profileForm('Discovering URLs', LogLevel.INFO);
         const credentials = hasUsername && hasPassword ? { username: normalizedUsername, password } : undefined;
-        const discovered = await discoverUrls(portalUrl, credentials, signal);
+        const discovered = await discoverUrls(portalUrl, {
+          credentials,
+          signal,
+          onClientCreated: (client) => {
+            setApiClient(client);
+          },
+        });
+        log.profileForm('Successfully connected', LogLevel.INFO, { apiUrl: discovered.apiUrl });
         confirmedPortalUrl = discovered.portalUrl;
         apiUrl = discovered.apiUrl;
         cgiUrl = discovered.cgiUrl;
@@ -406,6 +376,7 @@ export default function ProfileForm() {
               onChange={(e) => setProfileName(e.target.value)}
               disabled={testing}
               className="h-10 bg-background/50 border-input/50 focus:border-primary/50 transition-colors"
+              data-testid="setup-profile-name"
             />
           </div>
 
@@ -423,6 +394,7 @@ export default function ProfileForm() {
                 className="h-10 !pl-10 bg-background/50 border-input/50 focus:border-primary/50 transition-colors"
                 autoCapitalize="none"
                 autoCorrect="off"
+                data-testid="setup-portal-url"
               />
             </div>
             <p className="text-xs text-muted-foreground">
@@ -444,6 +416,7 @@ export default function ProfileForm() {
                 className="h-10 !pl-10 bg-background/50 border-input/50 focus:border-primary/50 transition-colors"
                 autoCapitalize="none"
                 autoCorrect="off"
+                data-testid="setup-username"
               />
             </div>
           </div>
@@ -462,6 +435,7 @@ export default function ProfileForm() {
                 autoCapitalize="none"
                 autoCorrect="off"
                 autoComplete="new-password"
+                data-testid="setup-password"
               />
               {password && (
                 <button
@@ -469,6 +443,7 @@ export default function ProfileForm() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors"
                   tabIndex={-1}
+                  data-testid="setup-password-toggle"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -497,6 +472,7 @@ export default function ProfileForm() {
               type="button"
               onClick={() => setShowManualUrls(!showManualUrls)}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              data-testid="setup-manual-urls-toggle"
             >
               {showManualUrls ? t('setup.use_auto_discovery') : t('setup.manual_urls')}
             </button>
@@ -516,6 +492,7 @@ export default function ProfileForm() {
                   className="h-10 bg-background/50 border-input/50 focus:border-primary/50 transition-colors font-mono text-sm"
                   autoCapitalize="none"
                   autoCorrect="off"
+                  data-testid="setup-api-url"
                 />
               </div>
 
@@ -531,6 +508,7 @@ export default function ProfileForm() {
                   className="h-10 bg-background/50 border-input/50 focus:border-primary/50 transition-colors font-mono text-sm"
                   autoCapitalize="none"
                   autoCorrect="off"
+                  data-testid="setup-cgi-url"
                 />
               </div>
             </div>
@@ -585,6 +563,7 @@ export default function ProfileForm() {
               onClick={() => navigate('/profiles')}
               disabled={testing}
               className="w-full"
+              data-testid="setup-back-button"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t('common.cancel')}

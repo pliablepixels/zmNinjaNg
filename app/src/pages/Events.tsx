@@ -11,6 +11,7 @@ import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { getEvents } from '../api/events';
 import type { EventFilters } from '../api/events';
+import type { EventData } from '../api/types';
 import { getMonitors } from '../api/monitors';
 import { useCurrentProfile } from '../hooks/useCurrentProfile';
 import { useAuthStore } from '../stores/auth';
@@ -61,7 +62,6 @@ export default function Events() {
   );
 
   const parentRef = useRef<HTMLDivElement>(null);
-  const [parentElement, setParentElement] = useState<HTMLDivElement | null>(null);
   const { t } = useTranslation();
 
   // Check if user came from another page (navigation state tracking)
@@ -193,7 +193,7 @@ export default function Events() {
 
   // Get event IDs for tag fetching
   const eventIdsForTagFetch = useMemo(() =>
-    (eventsData?.events || []).map(({ Event }: any) => Event.Id),
+    (eventsData?.events || []).map(({ Event }: EventData) => Event.Id),
     [eventsData?.events]
   );
 
@@ -209,13 +209,13 @@ export default function Events() {
 
     // Apply favorites filter if enabled (client-side only - favorites stored locally)
     if (favoritesOnly) {
-      filtered = filtered.filter(({ Event }: any) => favoriteIds.includes(Event.Id));
+      filtered = filtered.filter(({ Event }: EventData) => favoriteIds.includes(Event.Id));
     }
 
     // Apply tag filter if tags are selected (client-side)
     if (selectedTagIds.length > 0 && eventTagMap.size > 0) {
       const isAllTagsFilter = selectedTagIds.includes(ALL_TAGS_FILTER_ID);
-      filtered = filtered.filter(({ Event }: any) => {
+      filtered = filtered.filter(({ Event }: EventData) => {
         const eventTags = eventTagMap.get(Event.Id) || [];
         if (isAllTagsFilter) {
           // "All" = show events that have at least one tag
@@ -312,7 +312,6 @@ export default function Events() {
         ref={(el) => {
           parentRef.current = el;
           pullToRefresh.containerRef.current = el;
-          setParentElement(el); // Trigger re-render when ref is set (iOS fix)
         }}
         {...pullToRefresh.bind()}
         className="h-full overflow-auto p-3 sm:p-4 md:p-6 relative touch-pan-y"
@@ -515,8 +514,6 @@ export default function Events() {
             isLoadingMore={isLoadingMore}
             isFetching={isFetching}
             onLoadMore={loadNextPage}
-            parentRef={parentRef}
-            parentElement={parentElement}
             eventTagMap={eventTagMap}
             eventFilters={serverFilters}
           />
