@@ -7,7 +7,7 @@ These are non-negotiable. Every rule applies to all communication: responses, co
 1. **No superlatives** — never use "comprehensive", "critical", "major", "robust", "powerful", "extensively", "thoroughly", "excellent", "amazing", "significant", etc. Plain, factual language only.
 2. **Issues first** — create a GitHub issue before implementing features or fixing bugs. Commit directly to main only for docs-only changes, refactors without behavior change, test additions for existing code, or dependency updates.
 3. **Test first, verify before commit** — write tests first, run `npm test` + `tsc --noEmit` + `npm run build` + relevant e2e tests before every commit. Build passing is not proof code works.
-4. **Update docs** — update `docs/developer-guide/` in the same session when adding new APIs, components, utilities, or hooks.
+4. **Update docs** — update `docs/developer-guide/` in the same session when adding new APIs, components, utilities, or hooks and/or `docs/user-gudie` for changed/updated or new functionality
 5. **i18n all languages** — never hardcode user-facing strings. Update ALL translation files: en, de, es, fr, zh.
 6. **Cross-platform** — test on iOS, Android, Desktop, phone portrait + landscape. Device e2e tests (`ios-phone`, `android`, etc.) are manual-invoke-only — only `npm run test:e2e` (web) runs in the automated workflow.
 7. **Profile-scoped settings** — read/write via `getProfileSettings`/`updateProfileSettings`. Never use global singletons.
