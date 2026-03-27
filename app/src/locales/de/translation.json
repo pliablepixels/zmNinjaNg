@@ -362,7 +362,13 @@
     "allow_self_signed_certs": "Selbstsignierte Zertifikate zulassen",
     "allow_self_signed_certs_desc": "Selbstsignierte SSL-Zertifikate akzeptieren",
     "allow_self_signed_certs_warning": "Verringert Sicherheit. Nur in vertrauenswürdigen Netzwerken verwenden.",
-    "self_signed_certs_desktop_note": "Auf dem Desktop fügen Sie Ihr Zertifikat zum System-Vertrauensspeicher hinzu."
+    "self_signed_certs_desktop_note": "Auf dem Desktop fügen Sie Ihr Zertifikat zum System-Vertrauensspeicher hinzu.",
+    "section_appearance": "Darstellung",
+    "appearance": {
+      "custom": "Benutzerdefiniert...",
+      "twelve_hour": "12-Stunden",
+      "twenty_four_hour": "24-Stunden"
+    }
   },
   "ssl": {
     "trust_dialog_title": "Nicht vertrauenswürdiges Zertifikat",
@@ -523,7 +529,8 @@
     "event_end_cmd": "Event-Ende-Befehl",
     "orientation_90": "Rechts drehen (90°)",
     "orientation_180": "Invertiert (180°)",
-    "orientation_270": "Links drehen (270°)"
+    "orientation_270": "Links drehen (270°)",
+    "settings_description": "Monitor #{{id}} · {{type}}"
   },
   "montage": {
     "title": "Montage",
@@ -561,6 +568,7 @@
     "fit_scale_down": "Verkleinern (nur schrumpfen)",
     "edit_layout": "Bearb.",
     "done_editing": "Fertig",
+    "fill_width": "Füllen",
     "pin_monitor": "Anheften — Position sperren",
     "unpin_monitor": "Lösen — Bewegung erlauben",
     "insomnia_enabled": "Bildschirm bleibt wach",

@@ -13,9 +13,11 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { PersistStorage, StorageValue } from 'zustand/middleware';
 import { login as apiLogin, refreshToken as apiRefreshToken } from '../api/auth';
 import type { LoginResponse } from '../api/types';
 import { log, LogLevel } from '../lib/logger';
+import { encrypt, decrypt, isCryptoAvailable } from '../lib/crypto';
 
 interface AuthState {
   accessToken: string | null;
@@ -32,6 +34,71 @@ interface AuthState {
   refreshAccessToken: () => Promise<void>;
   setTokens: (response: LoginResponse) => void;
 }
+
+interface PersistedAuthState {
+  refreshToken: string | null;
+  refreshTokenExpires: number | null;
+  version: string | null;
+  apiVersion: string | null;
+}
+
+/**
+ * Custom storage adapter that encrypts the refresh token before writing to localStorage
+ * and decrypts it on read. Falls back to plaintext if Web Crypto is unavailable.
+ * If decryption fails (e.g. key changed, corrupted data), clears the refresh token
+ * so the user will be prompted to re-login.
+ */
+function getStorage(): Storage | null {
+  try {
+    return typeof window !== 'undefined' ? window.localStorage : null;
+  } catch {
+    return null;
+  }
+}
+
+const encryptedAuthStorage: PersistStorage<PersistedAuthState> = {
+  getItem: async (name: string): Promise<StorageValue<PersistedAuthState> | null> => {
+    const storage = getStorage();
+    if (!storage) return null;
+    const raw = storage.getItem(name);
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw) as StorageValue<PersistedAuthState>;
+      if (parsed?.state?.refreshToken && isCryptoAvailable()) {
+        try {
+          parsed.state.refreshToken = await decrypt(parsed.state.refreshToken);
+        } catch {
+          try { log.auth('Failed to decrypt refresh token — clearing stored token', LogLevel.ERROR); } catch { /* */ }
+          parsed.state.refreshToken = null;
+        }
+      }
+      return parsed;
+    } catch {
+      return null;
+    }
+  },
+  setItem: async (name: string, value: StorageValue<PersistedAuthState>): Promise<void> => {
+    const storage = getStorage();
+    if (!storage) return;
+    try {
+      const toStore: StorageValue<PersistedAuthState> = {
+        ...value,
+        state: { ...value.state },
+      };
+      if (toStore.state.refreshToken && isCryptoAvailable()) {
+        toStore.state.refreshToken = await encrypt(toStore.state.refreshToken);
+      }
+      storage.setItem(name, JSON.stringify(toStore));
+    } catch {
+      try { log.auth('Failed to encrypt refresh token — storing plaintext fallback', LogLevel.ERROR); } catch { /* */ }
+      try { storage.setItem(name, JSON.stringify(value)); } catch { /* */ }
+    }
+  },
+  removeItem: (name: string): void => {
+    const storage = getStorage();
+    if (storage) storage.removeItem(name);
+  },
+};
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -135,6 +202,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'zmng-auth',
+      storage: encryptedAuthStorage,
       // Only persist refresh token and server version info
       // Access token is kept in memory for better security
       partialize: (state) => ({
@@ -144,19 +212,22 @@ export const useAuthStore = create<AuthState>()(
         apiVersion: state.apiVersion,
       }),
       onRehydrateStorage: () => (state) => {
-        if (state) {
-          log.auth('Auth store rehydrated from localStorage', LogLevel.INFO, {
-            hasRefreshToken: !!state.refreshToken,
-            refreshTokenExpires: state.refreshTokenExpires
-              ? new Date(state.refreshTokenExpires).toLocaleString()
-              : 'N/A',
-            version: state.version,
-            apiVersion: state.apiVersion,
-          });
-          log.auth('NOTE: These tokens may be from previous profile and will be cleared by profile initialization', LogLevel.INFO);
-        } else {
-          log.auth('No persisted auth state found');
-        } }, })
+        try {
+          if (state) {
+            log.auth('Auth store rehydrated from localStorage', LogLevel.INFO, {
+              hasRefreshToken: !!state.refreshToken,
+              refreshTokenExpires: state.refreshTokenExpires
+                ? new Date(state.refreshTokenExpires).toLocaleString()
+                : 'N/A',
+              version: state.version,
+              apiVersion: state.apiVersion,
+            });
+            log.auth('NOTE: These tokens may be from previous profile and will be cleared by profile initialization', LogLevel.INFO);
+          } else {
+            log.auth('No persisted auth state found');
+          }
+        } catch { /* log may be unavailable during test teardown */ }
+      }, })
 );
 
 // NOTE: Token auto-refresh is now handled by the useTokenRefresh hook

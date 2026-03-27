@@ -362,7 +362,13 @@
     "allow_self_signed_certs": "允许自签名证书",
     "allow_self_signed_certs_desc": "接受自签名 SSL 证书",
     "allow_self_signed_certs_warning": "降低安全性。仅在受信任的网络中使用。",
-    "self_signed_certs_desktop_note": "在桌面端，请将您的证书添加到系统信任存储。"
+    "self_signed_certs_desktop_note": "在桌面端，请将您的证书添加到系统信任存储。",
+    "section_appearance": "外观",
+    "appearance": {
+      "custom": "自定义...",
+      "twelve_hour": "12小时制",
+      "twenty_four_hour": "24小时制"
+    }
   },
   "ssl": {
     "trust_dialog_title": "不受信任的证书",
@@ -523,7 +529,8 @@
     "event_end_cmd": "事件结束命令",
     "orientation_90": "向右旋转 (90°)",
     "orientation_180": "翻转 (180°)",
-    "orientation_270": "向左旋转 (270°)"
+    "orientation_270": "向左旋转 (270°)",
+    "settings_description": "Monitor #{{id}} · {{type}}"
   },
   "montage": {
     "title": "蒙太奇",
@@ -561,6 +568,7 @@
     "fit_scale_down": "仅缩小",
     "edit_layout": "编辑",
     "done_editing": "完成",
+    "fill_width": "填充",
     "pin_monitor": "固定 — 锁定位置",
     "unpin_monitor": "取消固定 — 允许移动",
     "insomnia_enabled": "屏幕将保持唤醒",

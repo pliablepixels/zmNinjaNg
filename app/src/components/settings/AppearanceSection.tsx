@@ -19,19 +19,30 @@ import { validateFormatString } from '../../lib/format-date-time';
 import type { ProfileSettings, DateFormatPreset, TimeFormatPreset } from '../../stores/settings';
 
 // ---- Date/time preset config ----
-const DATE_PRESETS: { value: DateFormatPreset; label: string }[] = [
-  { value: 'MMM d, yyyy', label: 'MMM D, YYYY' },
-  { value: 'MMM d', label: 'MMM D' },
-  { value: 'dd/MM/yyyy', label: 'DD/MM/YYYY' },
-  { value: 'dd/MM', label: 'DD/MM' },
-  { value: 'custom', label: 'Custom...' },
+// Format pattern labels (e.g. 'MMM D, YYYY') are kept as-is since they are
+// locale-neutral format tokens, not user-facing prose. Only 'custom' / hour
+// mode labels are translated.
+const DATE_FORMAT_VALUES: { value: DateFormatPreset; labelKey: string | null }[] = [
+  { value: 'MMM d, yyyy', labelKey: null },
+  { value: 'MMM d', labelKey: null },
+  { value: 'dd/MM/yyyy', labelKey: null },
+  { value: 'dd/MM', labelKey: null },
+  { value: 'custom', labelKey: 'settings.appearance.custom' },
 ];
 
-const TIME_PRESETS: { value: TimeFormatPreset; label: string }[] = [
-  { value: '12h', label: '12-hour' },
-  { value: '24h', label: '24-hour' },
-  { value: 'custom', label: 'Custom...' },
+const TIME_FORMAT_VALUES: { value: TimeFormatPreset; labelKey: string | null }[] = [
+  { value: '12h', labelKey: 'settings.appearance.twelve_hour' },
+  { value: '24h', labelKey: 'settings.appearance.twenty_four_hour' },
+  { value: 'custom', labelKey: 'settings.appearance.custom' },
 ];
+
+// Display labels for format values that have no translation key (raw format tokens)
+const DATE_FORMAT_DISPLAY: Record<string, string> = {
+  'MMM d, yyyy': 'MMM D, YYYY',
+  'MMM d': 'MMM D',
+  'dd/MM/yyyy': 'DD/MM/YYYY',
+  'dd/MM': 'DD/MM',
+};
 
 const FORMAT_TOKENS =
   'yyyy=year, MM=month, dd=day, MMM=abbr month, EEE=weekday, HH=24h, hh=12h, mm=min, ss=sec, a=AM/PM';
@@ -101,8 +112,10 @@ export function AppearanceSection({ settings, update }: AppearanceSectionProps) 
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {DATE_PRESETS.map(({ value, label }) => (
-                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                  {DATE_FORMAT_VALUES.map(({ value, labelKey }) => (
+                    <SelectItem key={value} value={value}>
+                      {labelKey ? t(labelKey) : DATE_FORMAT_DISPLAY[value]}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -146,8 +159,10 @@ export function AppearanceSection({ settings, update }: AppearanceSectionProps) 
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {TIME_PRESETS.map(({ value, label }) => (
-                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                  {TIME_FORMAT_VALUES.map(({ value, labelKey }) => (
+                    <SelectItem key={value} value={value}>
+                      {labelKey ? t(labelKey) : value}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>

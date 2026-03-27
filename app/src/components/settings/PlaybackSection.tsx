@@ -73,7 +73,8 @@ export function PlaybackSection({
                   onClick={() =>
                     currentProfile &&
                     updateSettings(currentProfile.id, { defaultEventLimit: val })
-                  }>
+                  }
+                  data-testid={`events-per-page-preset-${val}`}>
                   {val}{val === 100 ? ` (${t('settings.default')})` : ''}
                 </Button>
               ))}
@@ -101,6 +102,7 @@ export function PlaybackSection({
                 updateSettings(currentProfile.id, { dashboardRefreshInterval: Number(e.target.value) })
               }
               className="w-24"
+              data-testid="dashboard-refresh-input"
             />
             <span className="text-xs text-muted-foreground">{t('settings.seconds')}</span>
             <div className="flex gap-1.5">
@@ -109,7 +111,8 @@ export function PlaybackSection({
                   onClick={() =>
                     currentProfile &&
                     updateSettings(currentProfile.id, { dashboardRefreshInterval: val })
-                  }>
+                  }
+                  data-testid={`dashboard-refresh-preset-${val}`}>
                   {val}{val === 30 ? ` (${t('settings.default')})` : ''}
                 </Button>
               ))}

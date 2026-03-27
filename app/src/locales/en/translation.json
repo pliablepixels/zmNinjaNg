@@ -41,7 +41,8 @@
     "unknown_error": "Unknown error",
     "auth_required": "Authentication required",
     "done": "Done",
-    "default": "Default"
+    "default": "Default",
+    "server": "Server"
   },
   "app": {
     "name": "zmNinjaNG",
@@ -260,6 +261,7 @@
     "tags": "Tags"
   },
   "settings": {
+    "server": "Server",
     "title": "Settings",
     "subtitle": "App configuration",
     "language": "Language",
@@ -360,7 +362,13 @@
     "allow_self_signed_certs": "Allow Self-Signed Certificates",
     "allow_self_signed_certs_desc": "Accept self-signed SSL certificates",
     "allow_self_signed_certs_warning": "Reduces security. Use only on trusted networks.",
-    "self_signed_certs_desktop_note": "On desktop, add your certificate to the system trust store."
+    "self_signed_certs_desktop_note": "On desktop, add your certificate to the system trust store.",
+    "section_appearance": "Appearance",
+    "appearance": {
+      "custom": "Custom...",
+      "twelve_hour": "12-hour",
+      "twenty_four_hour": "24-hour"
+    }
   },
   "ssl": {
     "trust_dialog_title": "Untrusted Certificate",
@@ -411,6 +419,7 @@
     "view_events": "Events",
     "timeline": "Timeline",
     "settings": "Settings",
+    "server": "Server",
     "ptz_controls": "PTZ Controls",
     "save_snapshot": "Save Snapshot",
     "snapshot_saved": "Snapshot saved",
@@ -520,7 +529,8 @@
     "event_end_cmd": "Event End Cmd",
     "orientation_90": "Rotate Right (90°)",
     "orientation_180": "Inverted (180°)",
-    "orientation_270": "Rotate Left (270°)"
+    "orientation_270": "Rotate Left (270°)",
+    "settings_description": "Monitor #{{id}} · {{type}}"
   },
   "montage": {
     "title": "Montage",

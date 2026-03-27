@@ -41,12 +41,6 @@ export const ZM_INTEGRATION = {
   eventMontageImageWidth: 300, // Event montage tile width
   eventMontageImageHeight: 200, // Event montage tile height
 
-  // Polling and status intervals
-  eventCheckTime: 30000, // 30 sec - how often to check for new events
-  streamQueryStatusTime: 10000, // 10 sec - stream status polling
-  alarmStatusTime: 10000, // 10 sec - alarm status polling
-  streamReconnectDelay: 5000, // 5 sec - wait before allowing stream reconnect
-
   // Token management
   accessTokenLeewayMin: 5, // Minutes before token expiry to refresh
   refreshTokenLeewayMin: 10, // Minutes before refresh token expiry
@@ -248,6 +242,10 @@ export interface BandwidthSettings {
   streamMaxFps: number;
   /** ZMS playback status polling interval (ms) */
   zmsStatusInterval: number;
+  /** Event poller interval for direct notification mode (ms) */
+  eventPollerInterval: number;
+  /** WebSocket keepalive ping interval (ms) */
+  wsKeepaliveInterval: number;
 }
 
 /**
@@ -269,6 +267,8 @@ export const BANDWIDTH_SETTINGS: Record<BandwidthMode, BandwidthSettings> = {
     imageQuality: 100, // 100%
     streamMaxFps: 10, // 10 FPS
     zmsStatusInterval: 3000, // 3 sec
+    eventPollerInterval: 30000, // 30 sec
+    wsKeepaliveInterval: 60000, // 60 sec
   },
   low: {
     monitorStatusInterval: 40000, // 40 sec
@@ -282,6 +282,8 @@ export const BANDWIDTH_SETTINGS: Record<BandwidthMode, BandwidthSettings> = {
     imageQuality: 50, // 50%
     streamMaxFps: 5, // 5 FPS
     zmsStatusInterval: 5000, // 5 sec
+    eventPollerInterval: 60000, // 60 sec (2x slower)
+    wsKeepaliveInterval: 120000, // 120 sec (2x slower)
   },
 } as const;
 

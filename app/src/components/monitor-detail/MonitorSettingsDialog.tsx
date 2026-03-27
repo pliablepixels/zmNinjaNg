@@ -190,7 +190,7 @@ export function MonitorSettingsDialog({
         <DialogHeader>
           <DialogTitle>{monitor.Name}</DialogTitle>
           <DialogDescription>
-            Monitor #{monitor.Id} · {monitor.Type}
+            {t('monitor_detail.settings_description', { id: monitor.Id, type: monitor.Type })}
           </DialogDescription>
         </DialogHeader>
 

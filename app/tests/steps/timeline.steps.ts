@@ -5,6 +5,7 @@ import { log } from '../../src/lib/logger';
 
 const { Given, When, Then } = createBdd();
 
+
 // Timeline interface elements
 Then('I should see timeline interface elements', async ({ page }) => {
   const hasButtons = await page.locator('button').count() > 0;
@@ -47,15 +48,27 @@ Then('I should see quick date range options', async ({ page }) => {
 });
 
 When('I click a quick date range option', async ({ page }) => {
-  const quickBtn = page.getByRole('button', { name: /24h|48h/i }).first();
-  await quickBtn.click();
+  // Try to click a range that differs from the current one.
+  // Look for all quick range buttons and click the second one (e.g., 48h) to
+  // avoid clicking whatever range is already active (usually the first/default).
+  const quickBtns = page.getByRole('button', { name: /24h|48h|1wk|2wk|1mo/i });
+  const count = await quickBtns.count();
+  const btnIndex = count > 1 ? 1 : 0;
+  await quickBtns.nth(btnIndex).click();
+  await page.waitForTimeout(300);
 });
 
 Then('the date filters should update', async ({ page }) => {
-  // Date inputs should have valid values (may be type="date" or type="datetime-local")
+  // Date inputs should have valid, non-empty values after clicking a quick range
   const dateInputs = page.locator('input[type="date"], input[type="datetime-local"]');
   const count = await dateInputs.count();
   expect(count).toBeGreaterThanOrEqual(2);
+
+  // Both start and end date inputs should be populated with valid dates
+  const startValue = await dateInputs.nth(0).inputValue().catch(() => '');
+  const endValue = await dateInputs.nth(1).inputValue().catch(() => '');
+  expect(startValue).not.toBe('');
+  expect(endValue).not.toBe('');
 });
 
 // Refresh / Reset
@@ -73,8 +86,15 @@ When('I click the refresh button', async ({ page }) => {
 });
 
 Then('the timeline should reload', async ({ page }) => {
-  // Wait for loading to complete
-  await page.waitForTimeout(500);
+  // After refresh, timeline should show content or empty state (the reload completed)
+  const content = page.getByTestId('timeline-content');
+  const emptyState = page.getByTestId('timeline-empty-state');
+
+  await expect.poll(async () => {
+    const hasContent = await content.isVisible().catch(() => false);
+    const hasEmpty = await emptyState.isVisible().catch(() => false);
+    return hasContent || hasEmpty;
+  }, { timeout: testConfig.timeouts.pageLoad }).toBeTruthy();
 });
 
 // Timeline Container & Visualization
@@ -179,8 +199,16 @@ When('I select a monitor from the filter', async ({ page }) => {
 });
 
 Then("the timeline should show only that monitor's events", async ({ page }) => {
-  // Timeline will reload with filtered events
-  await page.waitForTimeout(500);
+  // Wait for timeline to reload after filter change
+  const content = page.getByTestId('timeline-content');
+  const emptyState = page.getByTestId('timeline-empty-state');
+
+  // Timeline should show content or empty state after filtering
+  await expect.poll(async () => {
+    const hasContent = await content.isVisible().catch(() => false);
+    const hasEmpty = await emptyState.isVisible().catch(() => false);
+    return hasContent || hasEmpty;
+  }, { timeout: testConfig.timeouts.pageLoad }).toBeTruthy();
 });
 
 // Mobile Responsive

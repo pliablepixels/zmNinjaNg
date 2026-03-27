@@ -166,6 +166,7 @@ export function LiveStreamingSection({
               type="button"
               className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground w-full"
               onClick={() => setProtocolsExpanded(!protocolsExpanded)}
+              data-testid="go2rtc-protocol-toggle"
             >
               <ChevronDown className={cn("h-3 w-3 transition-transform", !protocolsExpanded && "-rotate-90")} />
               {t('settings.webrtc_protocols')}
@@ -272,12 +273,14 @@ export function LiveStreamingSection({
               value={settings.streamScale}
               onChange={(e) => update('streamScale', Number(e.target.value))}
               className="w-20"
+              data-testid="stream-scale-input"
             />
             <span className="text-xs text-muted-foreground">%</span>
             <div className="flex gap-1.5">
               {[25, 50, 75, 100].map((val) => (
                 <Button key={val} variant="outline" size="sm" className="h-7 text-xs px-2"
-                  onClick={() => update('streamScale', val)}>
+                  onClick={() => update('streamScale', val)}
+                  data-testid={`stream-scale-preset-${val}`}>
                   {val}%{val === 50 ? ` (${t('settings.default')})` : ''}
                 </Button>
               ))}

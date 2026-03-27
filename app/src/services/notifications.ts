@@ -9,6 +9,9 @@
 
 import { log, LogLevel } from '../lib/logger';
 import { useAuthStore } from '../stores/auth';
+import { useProfileStore } from '../stores/profile';
+import { useSettingsStore } from '../stores/settings';
+import { getBandwidthSettings } from '../lib/zmninja-ng-constants';
 
 import type {
   ZMEventServerConfig,
@@ -566,13 +569,17 @@ export class ZMNotificationService {
     if (this.pingInterval) {
       clearInterval(this.pingInterval);
     }
-    // Send periodic pings to keep connection alive (every 60 seconds)
+    const profileId = useProfileStore.getState().currentProfileId;
+    const profileSettings = profileId
+      ? useSettingsStore.getState().getProfileSettings(profileId)
+      : null;
+    const bandwidth = getBandwidthSettings(profileSettings?.bandwidthMode ?? 'normal');
     this.pingInterval = setInterval(() => {
       if (this._isConnected()) {
         log.notifications('Sending keepalive ping', LogLevel.DEBUG);
         this._send({ event: 'control', data: { type: 'version' } });
       }
-    }, 60000);
+    }, bandwidth.wsKeepaliveInterval);
   }
 
   private _send(message: unknown): void {

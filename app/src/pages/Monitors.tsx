@@ -167,7 +167,7 @@ export default function Monitors() {
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={() => refetch()} variant="outline" size="sm" className="gap-2 h-8 sm:h-9">
+          <Button onClick={() => refetch()} variant="outline" size="sm" className="gap-2 h-8 sm:h-9" data-testid="monitors-refresh-button">
             <RefreshCw className="h-4 w-4 sm:mr-0" />
             <span className="hidden sm:inline">{t('common.refresh')}</span>
           </Button>

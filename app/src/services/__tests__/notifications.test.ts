@@ -72,6 +72,21 @@ vi.mock('../../lib/logger', () => ({
 vi.mock('../../stores/auth', () => ({
   useAuthStore: {
     getState: () => ({ accessToken: 'test-token' }),
+    subscribe: vi.fn(() => vi.fn()),
+  },
+}));
+
+vi.mock('../../stores/profile', () => ({
+  useProfileStore: {
+    getState: () => ({ currentProfileId: 'test-profile' }),
+  },
+}));
+
+vi.mock('../../stores/settings', () => ({
+  useSettingsStore: {
+    getState: () => ({
+      getProfileSettings: () => ({ bandwidthMode: 'normal' }),
+    }),
   },
 }));
 

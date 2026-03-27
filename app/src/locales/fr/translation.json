@@ -362,7 +362,13 @@
     "allow_self_signed_certs": "Autoriser les certificats auto-signés",
     "allow_self_signed_certs_desc": "Accepter les certificats SSL auto-signés",
     "allow_self_signed_certs_warning": "Réduit la sécurité. Utilisez uniquement sur des réseaux de confiance.",
-    "self_signed_certs_desktop_note": "Sur bureau, ajoutez votre certificat au magasin de confiance du système."
+    "self_signed_certs_desktop_note": "Sur bureau, ajoutez votre certificat au magasin de confiance du système.",
+    "section_appearance": "Apparence",
+    "appearance": {
+      "custom": "Personnalisé...",
+      "twelve_hour": "12 heures",
+      "twenty_four_hour": "24 heures"
+    }
   },
   "ssl": {
     "trust_dialog_title": "Certificat non fiable",
@@ -523,7 +529,8 @@
     "event_end_cmd": "Cmd fin événement",
     "orientation_90": "Rotation droite (90°)",
     "orientation_180": "Inversé (180°)",
-    "orientation_270": "Rotation gauche (270°)"
+    "orientation_270": "Rotation gauche (270°)",
+    "settings_description": "Moniteur #{{id}} · {{type}}"
   },
   "montage": {
     "title": "Montage",
@@ -561,6 +568,7 @@
     "fit_scale_down": "Réduire (rétrécir seulement)",
     "edit_layout": "Éditer",
     "done_editing": "Fini",
+    "fill_width": "Remplir",
     "pin_monitor": "Épingler — verrouiller la position",
     "unpin_monitor": "Détacher — autoriser le déplacement",
     "insomnia_enabled": "L'écran restera actif",

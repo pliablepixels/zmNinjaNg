@@ -268,15 +268,15 @@ export default function EventDetail() {
             <Star className={isFav ? "h-4 w-4 fill-current" : "h-4 w-4"} />
             <span className="hidden sm:inline">{isFav ? t('events.favorited') : t('events.favorite')}</span>
           </Button>
-          <Button variant="outline" size="sm" className="gap-2 h-8 sm:h-9" onClick={() => navigate(`/monitors/${event.Event.MonitorId}`)} title={t('event_detail.view_camera')}>
+          <Button variant="outline" size="sm" className="gap-2 h-8 sm:h-9" onClick={() => navigate(`/monitors/${event.Event.MonitorId}`)} title={t('event_detail.view_camera')} data-testid="event-detail-view-camera">
             <Video className="h-4 w-4" />
             <span className="hidden sm:inline">{t('event_detail.view_camera')}</span>
           </Button>
-          <Button variant="outline" size="sm" className="gap-2 h-8 sm:h-9" onClick={() => navigate(`/events?monitorId=${event.Event.MonitorId}`)} title={t('event_detail.all_events')}>
+          <Button variant="outline" size="sm" className="gap-2 h-8 sm:h-9" onClick={() => navigate(`/events?monitorId=${event.Event.MonitorId}`)} title={t('event_detail.all_events')} data-testid="event-detail-all-events">
             <Clock className="h-4 w-4" />
             <span className="hidden sm:inline">{t('event_detail.all_events')}</span>
           </Button>
-          <Button variant="outline" size="sm" className="gap-2 h-8 sm:h-9" title={t('event_detail.archive')}>
+          <Button variant="outline" size="sm" className="gap-2 h-8 sm:h-9" title={t('event_detail.archive')} data-testid="event-detail-archive">
             <Archive className="h-4 w-4" />
             <span className="hidden sm:inline">{t('event_detail.archive')}</span>
           </Button>

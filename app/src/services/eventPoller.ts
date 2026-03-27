@@ -12,6 +12,8 @@ import { getMonitors } from '../api/monitors';
 import { useNotificationStore } from '../stores/notifications';
 import { useProfileStore } from '../stores/profile';
 import { useAuthStore } from '../stores/auth';
+import { useSettingsStore } from '../stores/settings';
+import { getBandwidthSettings } from '../lib/zmninja-ng-constants';
 import { log, LogLevel } from '../lib/logger';
 
 function parseEventId(id: string | number): number {
@@ -85,8 +87,9 @@ class EventPollerService {
 
   private _getIntervalMs(): number {
     if (!this.profileId) return 30000;
-    const settings = useNotificationStore.getState().getProfileSettings(this.profileId);
-    return (settings.pollingInterval || 30) * 1000;
+    const profileSettings = useSettingsStore.getState().getProfileSettings(this.profileId);
+    const bandwidth = getBandwidthSettings(profileSettings.bandwidthMode);
+    return bandwidth.eventPollerInterval;
   }
 
   private _pollAndSchedule(): void {

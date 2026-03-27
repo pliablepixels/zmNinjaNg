@@ -86,6 +86,7 @@ export default function States() {
                 disabled={state.IsActive === '1' || changeMutation.isPending}
                 className="w-full"
                 variant={state.IsActive === '1' ? 'secondary' : 'default'}
+                data-testid={`activate-state-${state.Id}`}
               >
                 {state.IsActive === '1' ? t('states.active') : t('states.activate')}
               </Button>

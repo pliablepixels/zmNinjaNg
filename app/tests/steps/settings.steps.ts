@@ -6,6 +6,8 @@ import { log } from '../../src/lib/logger';
 const { When, Then } = createBdd();
 
 let previousBgColor = '';
+let postToggleBgColor = '';
+let previousSettingsHeading = '';
 let notificationToggleState = false;
 
 // Settings Steps
@@ -53,34 +55,58 @@ When('I toggle the theme', async ({ page }) => {
   await themeToggle.click();
   await page.waitForTimeout(500);
 
-  // If it's a dropdown, click the first option that isn't current
-  const themeOption = page.getByRole('option').or(page.locator('[data-testid*="theme-option"]'));
-  if (await themeOption.first().isVisible({ timeout: 1000 }).catch(() => false)) {
-    await themeOption.first().click();
-    await page.waitForTimeout(300);
+  // If it's a dropdown/select, pick an option that differs from the current theme.
+  // Try to find options and click one that is not already selected.
+  const themeOptions = page.getByRole('option').or(page.locator('[data-testid*="theme-option"]'));
+  const optionCount = await themeOptions.count().catch(() => 0);
+  if (optionCount > 0) {
+    // Try each option until we find one that changes the background
+    for (let i = 0; i < optionCount; i++) {
+      const option = themeOptions.nth(i);
+      if (await option.isVisible({ timeout: 500 }).catch(() => false)) {
+        const ariaSelected = await option.getAttribute('aria-selected').catch(() => null);
+        // Skip the currently selected option
+        if (ariaSelected === 'true') continue;
+        await option.click();
+        await page.waitForTimeout(300);
+        break;
+      }
+    }
   }
 });
 
 Then('the app background color should change', async ({ page }) => {
-  const currentBgColor = await page.evaluate(() => {
+  // Wait briefly for theme transition to complete
+  await page.waitForTimeout(300);
+  postToggleBgColor = await page.evaluate(() => {
     return window.getComputedStyle(document.body).backgroundColor;
   });
-  // The background color should have changed after toggling theme
-  log.info('E2E: Theme toggle result', { component: 'e2e', previousBgColor, currentBgColor });
-  // Note: If same theme was reselected, this may not change; we log and continue
+  log.info('E2E: Theme toggle result', { component: 'e2e', previousBgColor, postToggleBgColor });
+
+  // Verify the theme changed: check background color or the class/attribute on <html>
+  const themeChanged = postToggleBgColor !== previousBgColor;
+  const htmlClass = await page.evaluate(() => document.documentElement.className);
+  const hasThemeClass = htmlClass.includes('dark') || htmlClass.includes('light');
+
+  // At least one indicator of theme change must be present
+  expect(themeChanged || hasThemeClass).toBeTruthy();
 });
 
 Then('the theme selection should persist', async ({ page }) => {
-  // After navigating away and back, the theme should still be applied
+  // After navigating away and back, the theme should still match the post-toggle state
   const currentBgColor = await page.evaluate(() => {
     return window.getComputedStyle(document.body).backgroundColor;
   });
-  log.info('E2E: Theme persistence check', { component: 'e2e', currentBgColor });
-  // Theme is persisted if the page loads without errors
-  await expect(page.locator('body')).toBeVisible();
+  log.info('E2E: Theme persistence check', { component: 'e2e', previousBgColor, postToggleBgColor, currentBgColor });
+  // The background color should match what it was right after toggling (theme persisted)
+  expect(currentBgColor).toBe(postToggleBgColor);
 });
 
 When('I change the language to a different option', async ({ page }) => {
+  // Capture the current settings heading text before changing language
+  const heading = page.getByRole('heading', { name: /settings/i });
+  previousSettingsHeading = await heading.textContent().catch(() => '') ?? '';
+
   const langSelector = page.getByTestId('language-select')
     .or(page.getByRole('combobox', { name: /language/i }))
     .or(page.locator('[data-testid*="language"]').first());
@@ -97,9 +123,18 @@ When('I change the language to a different option', async ({ page }) => {
 });
 
 Then('a visible menu item should change to the selected language', async ({ page }) => {
-  // Verify that the page content has updated
-  await expect(page.locator('body')).toBeVisible();
-  log.info('E2E: Language change applied', { component: 'e2e' });
+  // After a language change, visible UI text should be translated.
+  // Verify the settings page heading text has changed from the pre-change value.
+  if (previousSettingsHeading !== '') {
+    const heading = page.getByRole('heading').first();
+    const currentHeading = await heading.textContent().catch(() => '') ?? '';
+    log.info('E2E: Language change heading check', { component: 'e2e', previousSettingsHeading, currentHeading });
+    expect(currentHeading).not.toBe(previousSettingsHeading);
+  } else {
+    // If we couldn't capture a heading before, fall back to verifying the page loaded
+    await expect(page.locator('body')).toBeVisible();
+    log.info('E2E: Language change applied (no prior heading captured)', { component: 'e2e' });
+  }
 });
 
 When('I toggle a notification setting', async ({ page }) => {
