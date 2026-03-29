@@ -14,14 +14,17 @@
 
 A modern web and mobile application for ZoneMinder, providing a clean, intuitive interface for viewing live camera feeds, reviewing events, and managing multiple server profiles. It is a ground-up rewrite of the original [zmNinja](https://zmninja.zoneminder.com/) application, using modern web technologies and a more intuitive user interface. 
 
-Watch a video of the demo [HERE](https://youtu.be/ces_2ap-htc)
+### Demo
+
+https://pliablepixels.github.io/zmNinjaNG/demo.mp4
 
 ### Important Notes:
 - zmNinjaNG supports self-signed certificates on mobile (iOS/Android). Enable it in Settings > Connection. On desktop, add your CA to the system trust store. Using proper certificates (e.g. [LetsEncrypt](https://letsencrypt.org/)) is still recommended.
-- zmNinjaNG has been tested with [ES7+](https://zmeventnotificationv7.readthedocs.io/en/latest/) - I'd recommend you switch to this new ecosystem 
+- zmNinjaNG has been tested with [ES7+](https://zmeventnotificationv7.readthedocs.io/en/latest/) - I'd recommend you switch to this new ecosystem
 
-### Screenshots
-<sub><sup>frames courtesy [appleframer](https://appleframer.com/)</sup></sub>
+<details>
+<summary>Screenshots</summary>
+<sub><sup>frames courtesy <a href="https://appleframer.com/">appleframer</a></sup></sub>
 
 <p align="center">
   <img src="images/1.png" width="32%" />
@@ -38,6 +41,7 @@ Watch a video of the demo [HERE](https://youtu.be/ces_2ap-htc)
   <img src="images/8.png" width="32%" />
   <img src="images/9.png" width="32%" />
 </p>
+</details>
 
 
 ### Agentic AI, you and me
