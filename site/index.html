@@ -427,89 +427,6 @@
     .features-nav.prev { left: 16px; }
     .features-nav.next { right: 16px; }
 
-    /* === Gallery === */
-    .gallery-container { position: relative; overflow: hidden; }
-
-    .gallery-track {
-      display: flex;
-      gap: 24px;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      padding: 20px 0;
-    }
-
-    .gallery-track::-webkit-scrollbar { display: none; }
-
-    .gallery-track img {
-      flex-shrink: 0;
-      height: 420px;
-      width: auto;
-      border-radius: 12px;
-      scroll-snap-align: center;
-      cursor: pointer;
-      transition: transform 0.2s;
-      filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.4));
-    }
-
-    .gallery-track img:hover { transform: scale(1.03); }
-
-    .gallery-nav {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 44px;
-      height: 44px;
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid var(--border);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--fg);
-      transition: background 0.2s;
-      z-index: 2;
-    }
-
-    .gallery-nav:hover { background: rgba(0, 0, 0, 0.8); }
-    .gallery-nav.prev { left: 16px; }
-    .gallery-nav.next { right: 16px; }
-
-    /* === Lightbox === */
-    .lightbox {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.9);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      cursor: pointer;
-    }
-
-    .lightbox.active { display: flex; }
-
-    .lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 12px; }
-
-    .lightbox-close {
-      position: absolute;
-      top: 24px;
-      right: 24px;
-      width: 40px;
-      height: 40px;
-      background: rgba(255,255,255,0.1);
-      border: none;
-      border-radius: 50%;
-      color: white;
-      font-size: 24px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
     /* === Platforms === */
     .platforms-grid {
       display: flex;
@@ -604,9 +521,6 @@
       .feature-card .feature-image img { height: 280px; }
       .features-nav { display: none; }
 
-      .gallery-track img { height: 300px; }
-      .gallery-nav { display: none; }
-
       .platforms-grid { gap: 24px; }
       .platform-icon { width: 48px; height: 48px; }
       .platform-icon svg { width: 22px; height: 22px; }
@@ -637,7 +551,7 @@
           <img src="logo.png" alt="zmNinjaNG" class="hero-logo">
           <h1 class="hero-title">Monitor smarter,<br>not harder.</h1>
         </div>
-        <p class="hero-subtitle">zmNinjaNG: The modern ZoneMinder client that runs on every platform.</p>
+        <p class="hero-subtitle">zmNinjaNG: The modern ZoneMinder client that runs on every platform</p>
         <a href="https://zmeventnotificationv7.readthedocs.io/en/latest/" class="zmes-callout" target="_blank" rel="noopener">
           <img src="zmES7plus.png" alt="zmES7+" class="zmes-logo">
           <span>Pair with <strong>zmES7+</strong> for AI-powered object detection, face recognition, license plate reading, bird song recognition, and more.</span>
@@ -665,7 +579,7 @@
     <div class="section-inner" style="text-align: center;">
       <p class="section-label">Platforms</p>
       <h2 class="section-title">Runs everywhere</h2>
-      <p class="section-desc" style="margin: 0 auto;">One app for all your devices. Desktop builds available now.</p>
+      <p class="section-desc" style="margin: 0 auto;">One app for all your devices — desktop builds available now</p>
 
       <div class="platforms-grid">
         <div class="platform-item">
@@ -723,7 +637,7 @@
     <div class="features-header">
       <p class="section-label">Features</p>
       <h2 class="section-title">Everything you need</h2>
-      <p class="section-desc">A full-featured ZoneMinder client, built from the ground up.</p>
+      <p class="section-desc">A full-featured ZoneMinder client, built from the ground up</p>
     </div>
     <div class="features-container">
       <button class="features-nav prev" onclick="scrollFeatures(-1)" aria-label="Previous feature">
@@ -737,7 +651,7 @@
           <div class="feature-content">
             <div class="feature-icon"><i data-lucide="video"></i></div>
             <h3 class="feature-title">Live Monitoring</h3>
-            <p class="feature-desc">Watch all your cameras in real-time with adaptive streaming. See live status, FPS, resolution, and function mode at a glance.</p>
+            <p class="feature-desc">Watch all your cameras in real-time with adaptive streaming — see live status, FPS, resolution, and function mode at a glance</p>
           </div>
         </div>
         <div class="feature-card">
@@ -747,7 +661,7 @@
           <div class="feature-content">
             <div class="feature-icon"><i data-lucide="clock"></i></div>
             <h3 class="feature-title">Event Playback</h3>
-            <p class="feature-desc">Review recorded events with video playback, frame counts, alarm scores, and storage details. Scrub through footage with precision.</p>
+            <p class="feature-desc">Review recorded events with video playback, frame counts, alarm scores, and storage details — scrub through footage with precision</p>
           </div>
         </div>
         <div class="feature-card">
@@ -757,7 +671,7 @@
           <div class="feature-content">
             <div class="feature-icon"><i data-lucide="layout-grid"></i></div>
             <h3 class="feature-title">Montage View</h3>
-            <p class="feature-desc">Multi-camera grid with customizable layouts. View all your cameras simultaneously with live streaming and per-monitor controls.</p>
+            <p class="feature-desc">Multi-camera grid with customizable layouts — view all your cameras simultaneously with live streaming and per-monitor controls</p>
           </div>
         </div>
         <div class="feature-card">
@@ -767,7 +681,7 @@
           <div class="feature-content">
             <div class="feature-icon"><i data-lucide="gantt-chart"></i></div>
             <h3 class="feature-title">Event Timeline</h3>
-            <p class="feature-desc">Visual timeline of events across all monitors. Filter by date range, monitor, or detected objects. Pan and zoom to find what matters.</p>
+            <p class="feature-desc">Visual timeline of events across all monitors — filter by date range, monitor, or detected objects and pan and zoom to find what matters</p>
           </div>
         </div>
         <div class="feature-card">
@@ -777,7 +691,7 @@
           <div class="feature-content">
             <div class="feature-icon"><i data-lucide="bell"></i></div>
             <h3 class="feature-title">Push Notifications</h3>
-            <p class="feature-desc">Get instant alerts on motion detection events. Supports Event Server and direct polling modes with per-monitor filtering.</p>
+            <p class="feature-desc">Get instant alerts on motion detection events — supports Event Server and direct polling modes with per-monitor filtering</p>
           </div>
         </div>
         <div class="feature-card">
@@ -787,7 +701,7 @@
           <div class="feature-content">
             <div class="feature-icon"><i data-lucide="palette"></i></div>
             <h3 class="feature-title">Themes & Languages</h3>
-            <p class="feature-desc">Five built-in themes including light, cream, dark, slate, and amber. Available in multiple languages.</p>
+            <p class="feature-desc">Five built-in themes including light, cream, dark, slate, and amber — available in multiple languages</p>
           </div>
         </div>
       </div>
@@ -796,44 +710,6 @@
       </button>
     </div>
   </section>
-
-  <!-- Gallery -->
-  <section class="section section-alt">
-    <div class="section-inner">
-      <p class="section-label">Screenshots</p>
-      <h2 class="section-title">See it in action</h2>
-      <p class="section-desc">zmNinjaNG on iPhone — framed with care.</p>
-    </div>
-    <div class="gallery-container" style="margin-top: 40px;">
-      <button class="gallery-nav prev" onclick="scrollGallery(-1)" aria-label="Previous">
-        <i data-lucide="chevron-left"></i>
-      </button>
-      <div class="gallery-track" id="galleryTrack">
-        <img src="images/1.png" alt="zmNinjaNG sidebar with theme picker" onclick="openLightbox(this.src)">
-        <img src="images/2.png" alt="zmNinjaNG dashboard with event heatmap" onclick="openLightbox(this.src)">
-        <img src="images/3.png" alt="zmNinjaNG montage expanded view" onclick="openLightbox(this.src)">
-        <img src="images/4.png" alt="zmNinjaNG monitors list" onclick="openLightbox(this.src)">
-        <img src="images/5.png" alt="zmNinjaNG QR code profile import" onclick="openLightbox(this.src)">
-        <img src="images/6.png" alt="zmNinjaNG notification settings" onclick="openLightbox(this.src)">
-        <img src="images/7.png" alt="zmNinjaNG montage grid" onclick="openLightbox(this.src)">
-        <img src="images/8.png" alt="zmNinjaNG streaming settings" onclick="openLightbox(this.src)">
-        <img src="images/9.png" alt="zmNinjaNG kiosk PIN lock" onclick="openLightbox(this.src)">
-        <img src="images/10.png" alt="zmNinjaNG server status" onclick="openLightbox(this.src)">
-        <img src="images/11.png" alt="zmNinjaNG event timeline" onclick="openLightbox(this.src)">
-        <img src="images/12.png" alt="zmNinjaNG event detail playback" onclick="openLightbox(this.src)">
-        <img src="images/13.png" alt="zmNinjaNG events grid" onclick="openLightbox(this.src)">
-      </div>
-      <button class="gallery-nav next" onclick="scrollGallery(1)" aria-label="Next">
-        <i data-lucide="chevron-right"></i>
-      </button>
-    </div>
-  </section>
-
-  <!-- Lightbox -->
-  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
-    <button class="lightbox-close" aria-label="Close">&times;</button>
-    <img id="lightboxImg" src="" alt="Enlarged screenshot">
-  </div>
 
   <!-- Scroll hint -->
   <div class="scroll-hint" id="scrollHint" onclick="window.scrollBy({top: window.innerHeight * 0.8, behavior: 'smooth'})">
@@ -844,7 +720,7 @@
   <footer>
     <div class="footer-inner">
       <img src="logo.png" alt="zmNinjaNG" class="footer-logo">
-      <p class="footer-copy">&copy; 2026 zmNinjaNG. A modern client for ZoneMinder.</p>
+      <p class="footer-copy">&copy; 2026 zmNinjaNG — a modern client for ZoneMinder</p>
     </div>
   </footer>
 
@@ -863,30 +739,6 @@
       var scrollAmount = track.clientWidth * 0.6;
       track.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
     }
-
-    function scrollGallery(direction) {
-      var track = document.getElementById('galleryTrack');
-      var scrollAmount = track.clientWidth * 0.6;
-      track.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
-    }
-
-    function openLightbox(src) {
-      var lightbox = document.getElementById('lightbox');
-      var img = document.getElementById('lightboxImg');
-      img.src = src;
-      lightbox.classList.add('active');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeLightbox() {
-      var lightbox = document.getElementById('lightbox');
-      lightbox.classList.remove('active');
-      document.body.style.overflow = '';
-    }
-
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') closeLightbox();
-    });
 
     var scrollHint = document.getElementById('scrollHint');
     window.addEventListener('scroll', function() {
