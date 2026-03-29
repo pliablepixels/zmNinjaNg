@@ -235,6 +235,23 @@
       display: block;
     }
 
+    .phone-screen .loader {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--ring);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
     .play-overlay {
       position: absolute;
       top: 50%;
@@ -631,7 +648,8 @@
         <div class="phone-frame-wrap">
           <img src="iphone-frame.png" alt="" class="phone-frame-img">
           <div class="phone-screen" id="phoneScreen">
-            <video id="heroVideo" preload="metadata" playsinline muted src="demo.mp4#t=0.1"></video>
+            <div class="loader" id="videoLoader"></div>
+            <video id="heroVideo" preload="metadata" playsinline muted src="demo.mp4#t=0.1" onloadeddata="document.getElementById('videoLoader').style.display='none'"></video>
           </div>
           <button class="play-overlay" id="playBtn" aria-label="Play demo video" onclick="playDemo()">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="5,3 19,12 5,21"></polygon></svg>
