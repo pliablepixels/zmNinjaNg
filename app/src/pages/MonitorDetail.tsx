@@ -17,7 +17,7 @@ import { Card } from '../components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Switch } from '../components/ui/switch';
 import { Label } from '../components/ui/label';
-import { ArrowLeft, Settings, Maximize2, Minimize2, Clock, AlertTriangle, Download, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Layers } from 'lucide-react';
+import { ArrowLeft, Settings, Maximize2, Minimize2, Clock, AlertTriangle, Download, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Layers, Video, Eye, Disc } from 'lucide-react';
 import { useState, useRef, useMemo, useCallback } from 'react';
 import { cn } from '../lib/utils';
 import { toast } from 'sonner';
@@ -257,8 +257,16 @@ export default function MonitorDetail() {
               />
               <h1 className="text-sm sm:text-base font-semibold">{monitor.Monitor.Name}</h1>
             </div>
-            <div className="text-[10px] sm:text-xs text-muted-foreground ml-3">
-              {is138Plus ? monitor.Monitor.Capturing : monitor.Monitor.Function}
+            <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground ml-3">
+              {is138Plus ? (
+                <>
+                  <span className="flex items-center gap-0.5" title={t('monitors.capturing')}><Video className="h-2.5 w-2.5" />{monitor.Monitor.Capturing}</span>
+                  <span className="flex items-center gap-0.5" title={t('monitors.analysing')}><Eye className="h-2.5 w-2.5" />{monitor.Monitor.Analysing}</span>
+                  <span className="flex items-center gap-0.5" title={t('monitors.recording')}><Disc className="h-2.5 w-2.5" />{monitor.Monitor.Recording}</span>
+                </>
+              ) : (
+                <span className="flex items-center gap-0.5" title={t('monitors.function')}><Video className="h-2.5 w-2.5" />{monitor.Monitor.Function}</span>
+              )}
             </div>
           </div>
           <Button
