@@ -8,6 +8,7 @@ export type ViewMode = 'snapshot' | 'streaming';
 export type DisplayMode = 'normal' | 'compact';
 export type MonitorFeedFit = 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
 export type MonitorsLayoutMode = MonitorFeedFit | 'flex';
+export type MonitorsViewMode = 'list' | 'grid';
 export type EventsViewMode = 'list' | 'montage';
 export type ThemePreference = 'amber' | 'cream' | 'dark' | 'light' | 'slate' | 'system';
 export type StreamingMethod = 'auto' | 'mjpeg';
@@ -35,6 +36,7 @@ export interface ProfileSettings {
   montageShowToolbar: boolean; // Show/hide montage toolbar row
   eventsViewMode: EventsViewMode; // List vs montage view for Events page
   monitorsFeedFit: MonitorsLayoutMode; // Layout mode for monitor list
+  monitorsViewMode: MonitorsViewMode; // List or grid view
   monitorDetailFeedFit: MonitorFeedFit; // Object-fit for monitor detail feed
   eventsThumbnailFit: MonitorFeedFit; // Object-fit for event thumbnails
   monitorDetailCycleSeconds: number; // Auto-cycle interval for single monitor view (0 = off)
@@ -141,6 +143,7 @@ export const DEFAULT_SETTINGS: ProfileSettings = {
   montageShowToolbar: true,
   eventsViewMode: 'list',
   monitorsFeedFit: 'contain',
+  monitorsViewMode: 'list' as const,
   monitorDetailFeedFit: 'contain',
   eventsThumbnailFit: 'contain',
   monitorDetailCycleSeconds: 0,

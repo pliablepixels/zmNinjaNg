@@ -43,6 +43,7 @@ function MonitorCardComponent({
   eventCount,
   onShowSettings,
   objectFit,
+  compact,
 }: MonitorCardComponentProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -106,6 +107,131 @@ function MonitorCardComponent({
     e.stopPropagation();
     onShowSettings(monitor);
   };
+
+  if (compact) {
+    return (
+      <Card
+        className="group overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300 bg-card ring-1 ring-border/50 hover:ring-primary/50"
+        data-testid="monitor-card"
+      >
+        <div
+          className="relative bg-card cursor-pointer"
+          style={{ aspectRatio: aspectRatio ?? '16 / 9' }}
+          onClick={() => navigate(`/monitors/${monitor.Id}`, { state: { from: '/monitors' } })}
+        >
+          {(displayedImageUrl || streamUrl) && (
+            <img
+              ref={imgRef}
+              src={displayedImageUrl || streamUrl}
+              alt={monitor.Name}
+              className="w-full h-full"
+              style={{ objectFit: resolvedFit }}
+              onError={handleImageError}
+              data-testid="monitor-player"
+            />
+          )}
+          <div className="absolute top-1.5 left-1.5 z-10">
+            <Badge
+              variant={isRunning ? 'default' : 'destructive'}
+              className={cn(
+                'text-[10px] px-1.5 py-0 shadow-sm',
+                isRunning ? 'bg-green-500/90 hover:bg-green-500' : 'bg-red-500/90 hover:bg-red-500'
+              )}
+            >
+              {isRunning ? t('monitors.live') : t('monitors.offline')}
+            </Badge>
+          </div>
+        </div>
+        <div className="p-2 space-y-1.5">
+          <div className="flex items-center gap-1.5">
+            <div className="text-xs font-semibold truncate flex-1" title={monitor.Name}>{monitor.Name}</div>
+            <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 shrink-0">
+              {monitor.Id}
+            </Badge>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
+            <span>{status?.CaptureFPS || '0'} FPS</span>
+            <span>&middot;</span>
+            <span>{monitor.Width}x{monitor.Height}</span>
+            {monitor.Controllable === '1' && (
+              <>
+                <span>&middot;</span>
+                <span className="text-blue-600 dark:text-blue-400">PTZ</span>
+              </>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
+            {monitor.Capturing !== undefined ? (
+              <>
+                <span className="flex items-center gap-0.5" title={t('monitors.capturing')}>
+                  <Video className="h-2.5 w-2.5" />
+                  <Badge variant={monitor.Capturing === 'None' ? 'outline' : 'secondary'} className="font-mono text-[9px] px-1 py-0 h-4">
+                    {monitor.Capturing}
+                  </Badge>
+                </span>
+                <span className="flex items-center gap-0.5" title={t('monitors.analysing')}>
+                  <Eye className="h-2.5 w-2.5" />
+                  <Badge variant={monitor.Analysing === 'None' ? 'outline' : 'secondary'} className="font-mono text-[9px] px-1 py-0 h-4">
+                    {monitor.Analysing}
+                  </Badge>
+                </span>
+                <span className="flex items-center gap-0.5" title={t('monitors.recording')}>
+                  <Disc className="h-2.5 w-2.5" />
+                  <Badge variant={monitor.Recording === 'None' ? 'outline' : 'secondary'} className="font-mono text-[9px] px-1 py-0 h-4">
+                    {monitor.Recording}
+                  </Badge>
+                </span>
+              </>
+            ) : (
+              <span className="flex items-center gap-0.5" title={t('monitors.function')}>
+                <Video className="h-2.5 w-2.5" />
+                <Badge variant={monitor.Function === 'None' ? 'outline' : 'secondary'} className="font-mono text-[9px] px-1 py-0 h-4">
+                  {monitor.Function}
+                </Badge>
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1 pt-0.5">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-[10px] h-6 px-2 relative flex-1"
+              onClick={() => navigate(`/events?monitorId=${monitor.Id}`, { state: { from: '/monitors' } })}
+              data-testid="monitor-events-button"
+            >
+              <Clock className="h-2.5 w-2.5 mr-0.5" />
+              {t('sidebar.events')}
+              {eventCount !== undefined && eventCount > 0 && (
+                <Badge variant="secondary" className="ml-0.5 px-0.5 py-0 text-[8px] h-3 min-w-3 bg-blue-500/15 text-blue-400 border-blue-500/20">
+                  {formatEventCount(eventCount)}
+                </Badge>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-[10px] h-6 px-2 flex-1"
+              onClick={handleShowSettings}
+              data-testid="monitor-settings-button"
+            >
+              <Settings className="h-2.5 w-2.5 mr-0.5" />
+              {t('sidebar.settings')}
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-6 w-6 shrink-0"
+              onClick={handleDownloadSnapshot}
+              title={t('monitors.download_snapshot')}
+              data-testid="monitor-download-button"
+            >
+              <Download className="h-2.5 w-2.5" />
+            </Button>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="group overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300 bg-card ring-1 ring-border/50 hover:ring-primary/50" data-testid="monitor-card">
@@ -172,7 +298,12 @@ function MonitorCardComponent({
               <span>
                 {monitor.Width}x{monitor.Height}
               </span>
-              <span>{monitor.Type}</span>
+              {monitor.Controllable === '1' && (
+                <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
+                  <Activity className="h-3 w-3" />
+                  {t('monitors.ptz_capable')}
+                </span>
+              )}
             </div>
           </div>
 
@@ -204,12 +335,6 @@ function MonitorCardComponent({
                 <Badge variant={monitor.Function === 'None' ? 'outline' : 'secondary'} className="font-mono text-xs">
                   {monitor.Function}
                 </Badge>
-              </div>
-            )}
-            {monitor.Controllable === '1' && (
-              <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400">
-                <Activity className="h-3 w-3" />
-                <span>{t('monitors.ptz_capable')}</span>
               </div>
             )}
           </div>

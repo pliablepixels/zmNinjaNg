@@ -15,7 +15,7 @@ import { useBandwidthSettings } from '../hooks/useBandwidthSettings';
 import { useAuthStore } from '../stores/auth';
 import { useSettingsStore } from '../stores/settings';
 import { Button } from '../components/ui/button';
-import { RefreshCw, AlertCircle } from 'lucide-react';
+import { RefreshCw, AlertCircle, LayoutGrid, List } from 'lucide-react';
 import { MonitorCard } from '../components/monitors/MonitorCard';
 import { MonitorSettingsDialog } from '../components/monitor-detail/MonitorSettingsDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
@@ -151,22 +151,33 @@ export default function Monitors() {
         </div>
         <div className="flex items-center gap-2">
           <GroupFilterSelect />
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground hidden md:inline">{t('monitors.feed_fit')}</span>
-            <Select value={settings.monitorsFeedFit} onValueChange={handleFeedFitChange}>
-              <SelectTrigger className="h-8 sm:h-9 w-24" data-testid="monitors-fit-select">
-                <SelectValue placeholder={t('monitors.feed_fit')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="contain" data-testid="monitors-fit-contain">
-                  {t('montage.fit_fit')}
-                </SelectItem>
-                <SelectItem value="cover" data-testid="monitors-fit-cover">
-                  {t('montage.fit_crop')}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 sm:h-9 w-8 sm:w-9"
+            onClick={() => {
+              if (!currentProfile) return;
+              const next = settings.monitorsViewMode === 'list' ? 'grid' : 'list';
+              updateSettings(currentProfile.id, { monitorsViewMode: next });
+            }}
+            aria-label={settings.monitorsViewMode === 'list' ? t('events.view_montage') : t('events.view_list')}
+            data-testid="monitors-view-toggle"
+          >
+            {settings.monitorsViewMode === 'list' ? <LayoutGrid className="h-4 w-4" /> : <List className="h-4 w-4" />}
+          </Button>
+          <Select value={settings.monitorsFeedFit} onValueChange={handleFeedFitChange}>
+            <SelectTrigger className="h-8 sm:h-9 w-24" data-testid="monitors-fit-select">
+              <SelectValue placeholder={t('monitors.feed_fit')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="contain" data-testid="monitors-fit-contain">
+                {t('montage.fit_fit')}
+              </SelectItem>
+              <SelectItem value="cover" data-testid="monitors-fit-cover">
+                {t('montage.fit_crop')}
+              </SelectItem>
+            </SelectContent>
+          </Select>
           <Button onClick={() => refetch()} variant="outline" size="sm" className="gap-2 h-8 sm:h-9" data-testid="monitors-refresh-button">
             <RefreshCw className="h-4 w-4 sm:mr-0" />
             <span className="hidden sm:inline">{t('common.refresh')}</span>
@@ -180,20 +191,34 @@ export default function Monitors() {
           <div className="p-8 text-center border rounded-lg bg-muted/20 text-muted-foreground" data-testid="monitors-empty-state">
             {t('monitors.no_cameras')}
           </div>
-        ) : (
-          <div className="space-y-4" data-testid="monitor-grid">
-            {allMonitors.map(({ Monitor, Monitor_Status }) => (
-              <MonitorCard
-                key={Monitor.Id}
-                monitor={Monitor}
-                status={Monitor_Status}
-                eventCount={eventCounts?.[Monitor.Id]}
-                onShowSettings={handleShowSettings}
-                objectFit={settings.monitorsFeedFit}
-              />
-            ))}
-          </div>
-        )}
+        ) : settings.monitorsViewMode === 'grid' ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3" data-testid="monitor-grid">
+              {allMonitors.map(({ Monitor, Monitor_Status }) => (
+                <MonitorCard
+                  key={Monitor.Id}
+                  monitor={Monitor}
+                  status={Monitor_Status}
+                  eventCount={eventCounts?.[Monitor.Id]}
+                  onShowSettings={handleShowSettings}
+                  objectFit={settings.monitorsFeedFit}
+                  compact
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4" data-testid="monitor-grid">
+              {allMonitors.map(({ Monitor, Monitor_Status }) => (
+                <MonitorCard
+                  key={Monitor.Id}
+                  monitor={Monitor}
+                  status={Monitor_Status}
+                  eventCount={eventCounts?.[Monitor.Id]}
+                  onShowSettings={handleShowSettings}
+                  objectFit={settings.monitorsFeedFit}
+                />
+              ))}
+            </div>
+          )}
       </div>
 
       {/* Monitor Settings Dialog */}
