@@ -7,6 +7,7 @@ import type { BandwidthMode } from '../lib/zmninja-ng-constants';
 export type ViewMode = 'snapshot' | 'streaming';
 export type DisplayMode = 'normal' | 'compact';
 export type MonitorFeedFit = 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
+export type MonitorsLayoutMode = MonitorFeedFit | 'flex';
 export type EventsViewMode = 'list' | 'montage';
 export type ThemePreference = 'amber' | 'cream' | 'dark' | 'light' | 'slate' | 'system';
 export type StreamingMethod = 'auto' | 'mjpeg';
@@ -33,7 +34,7 @@ export interface ProfileSettings {
   montageFeedFit: MonitorFeedFit; // Object-fit for montage feeds
   montageShowToolbar: boolean; // Show/hide montage toolbar row
   eventsViewMode: EventsViewMode; // List vs montage view for Events page
-  monitorsFeedFit: MonitorFeedFit; // Object-fit for monitor grid feeds
+  monitorsFeedFit: MonitorsLayoutMode; // Layout mode for monitor list
   monitorDetailFeedFit: MonitorFeedFit; // Object-fit for monitor detail feed
   eventsThumbnailFit: MonitorFeedFit; // Object-fit for event thumbnails
   monitorDetailCycleSeconds: number; // Auto-cycle interval for single monitor view (0 = off)
@@ -139,7 +140,7 @@ export const DEFAULT_SETTINGS: ProfileSettings = {
   montageFeedFit: 'cover',
   montageShowToolbar: true,
   eventsViewMode: 'list',
-  monitorsFeedFit: 'cover',
+  monitorsFeedFit: 'contain',
   monitorDetailFeedFit: 'contain',
   eventsThumbnailFit: 'contain',
   monitorDetailCycleSeconds: 0,

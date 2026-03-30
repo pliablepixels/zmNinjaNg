@@ -154,7 +154,7 @@ export default function Monitors() {
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground hidden md:inline">{t('monitors.feed_fit')}</span>
             <Select value={settings.monitorsFeedFit} onValueChange={handleFeedFitChange}>
-              <SelectTrigger className="h-8 sm:h-9 w-[170px]" data-testid="monitors-fit-select">
+              <SelectTrigger className="h-8 sm:h-9 w-24" data-testid="monitors-fit-select">
                 <SelectValue placeholder={t('monitors.feed_fit')} />
               </SelectTrigger>
               <SelectContent>

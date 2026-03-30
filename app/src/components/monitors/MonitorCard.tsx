@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { Activity, Settings, Download, Clock } from 'lucide-react';
+import { Activity, Settings, Download, Clock, Video, Eye, Disc } from 'lucide-react';
 import { cn, formatEventCount } from '../../lib/utils';
 import { downloadSnapshotFromElement } from '../../lib/download';
 import { toast } from 'sonner';
@@ -46,7 +46,7 @@ function MonitorCardComponent({
 }: MonitorCardComponentProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const resolvedFit: CSSProperties['objectFit'] = objectFit ?? 'cover';
+  const resolvedFit: CSSProperties['objectFit'] = objectFit === 'flex' ? 'cover' : (objectFit ?? 'cover');
   const isRunning = status?.Status === 'Connected';
   const aspectRatio = getMonitorAspectRatio(monitor.Width, monitor.Height, monitor.Orientation);
 
@@ -109,10 +109,10 @@ function MonitorCardComponent({
 
   return (
     <Card className="group overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300 bg-card ring-1 ring-border/50 hover:ring-primary/50" data-testid="monitor-card">
-      <div className="flex flex-col sm:flex-row gap-4 p-4">
+      <div className="flex flex-row gap-4 p-4">
         {/* Thumbnail Preview - Clickable */}
         <div
-          className="relative bg-black/90 cursor-pointer w-full sm:w-72 md:w-80 focus:outline-none focus:ring-2 focus:ring-primary"
+          className="relative bg-card cursor-pointer w-[40%] shrink-0 max-h-48 focus:outline-none focus:ring-2 focus:ring-primary"
           style={{ aspectRatio: aspectRatio ?? '16 / 9' }}
           onClick={() => navigate(`/monitors/${monitor.Id}`, { state: { from: '/monitors' } })}
           onKeyDown={(e) => {
@@ -176,18 +176,36 @@ function MonitorCardComponent({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            <span className="text-sm font-medium text-muted-foreground">{t('monitors.function')}</span>
-            <Badge
-              variant={
-                monitor.Capturing
-                  ? (monitor.Capturing === 'None' ? 'outline' : 'secondary')
-                  : (monitor.Function === 'None' ? 'outline' : 'secondary')
-              }
-              className="font-mono text-xs"
-            >
-              {monitor.Capturing ?? monitor.Function}
-            </Badge>
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            {monitor.Capturing !== undefined ? (
+              <>
+                <div className="flex items-center gap-1" title={t('monitors.capturing')}>
+                  <Video className="h-3 w-3" />
+                  <Badge variant={monitor.Capturing === 'None' ? 'outline' : 'secondary'} className="font-mono text-xs">
+                    {monitor.Capturing}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-1" title={t('monitors.analysing')}>
+                  <Eye className="h-3 w-3" />
+                  <Badge variant={monitor.Analysing === 'None' ? 'outline' : 'secondary'} className="font-mono text-xs">
+                    {monitor.Analysing}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-1" title={t('monitors.recording')}>
+                  <Disc className="h-3 w-3" />
+                  <Badge variant={monitor.Recording === 'None' ? 'outline' : 'secondary'} className="font-mono text-xs">
+                    {monitor.Recording}
+                  </Badge>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center gap-1" title={t('monitors.function')}>
+                <Video className="h-3 w-3" />
+                <Badge variant={monitor.Function === 'None' ? 'outline' : 'secondary'} className="font-mono text-xs">
+                  {monitor.Function}
+                </Badge>
+              </div>
+            )}
             {monitor.Controllable === '1' && (
               <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400">
                 <Activity className="h-3 w-3" />

@@ -118,7 +118,7 @@ export const EventMontageView = ({
               className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all"
               onClick={() => navigate(`/events/${event.Id}`, { state: { from: '/events', eventFilters } })}
             >
-              <div className="relative bg-black" style={{ aspectRatio: aspectRatio.toString() }}>
+              <div className="relative bg-card" style={{ aspectRatio: aspectRatio.toString() }}>
                 <SecureImage
                   src={imageUrl}
                   alt={event.Name}

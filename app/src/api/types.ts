@@ -537,7 +537,7 @@ export interface MonitorCardProps {
   monitor: Monitor;
   status: MonitorStatus | undefined;
   eventCount?: number;
-  objectFit?: React.CSSProperties['objectFit'];
+  objectFit?: React.CSSProperties['objectFit'] | 'flex';
 }
 
 export interface EventCardProps {
