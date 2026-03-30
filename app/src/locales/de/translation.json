@@ -78,6 +78,7 @@
     "select_monitors": "Monitore auswählen",
     "all_monitors": "Alle Monitore (nur Ereignisse)",
     "monitor_required": "Bitte wählen Sie mindestens einen Monitor aus.",
+    "monitor_order": "Reihenfolge",
     "feed_fit": "Fit",
     "fit_contain": "Einpassen",
     "fit_cover": "Zuschneiden",

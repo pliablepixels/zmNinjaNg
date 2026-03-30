@@ -10,7 +10,7 @@
  * - Form validation
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -36,7 +36,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useEventTags } from '../../hooks/useEventTags';
 import { ALL_TAGS_FILTER_ID } from '../../hooks/useEventFilters';
 import { cn } from '../../lib/utils';
-import { X } from 'lucide-react';
+import { X, GripVertical } from 'lucide-react';
 
 interface WidgetEditDialogProps {
     open: boolean;
@@ -92,6 +92,49 @@ export function WidgetEditDialog({ open, onOpenChange, widget, profileId }: Widg
         );
     };
 
+    // Drag-to-reorder state
+    const [dragIndex, setDragIndex] = useState<number | null>(null);
+    const [dragOffsetY, setDragOffsetY] = useState(0);
+    const dragOriginY = useRef(0);
+    const orderListRef = useRef<HTMLDivElement>(null);
+
+    const handlePointerDown = useCallback((e: React.PointerEvent, index: number) => {
+        e.preventDefault();
+        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+        setDragIndex(index);
+        setDragOffsetY(0);
+        dragOriginY.current = e.clientY;
+    }, []);
+
+    const handlePointerMove = useCallback((e: React.PointerEvent) => {
+        if (dragIndex === null || !orderListRef.current) return;
+        setDragOffsetY(e.clientY - dragOriginY.current);
+        const items = orderListRef.current.querySelectorAll('[data-monitor-reorder]');
+        for (let i = 0; i < items.length; i++) {
+            if (i === dragIndex) continue;
+            const rect = items[i].getBoundingClientRect();
+            const midY = rect.top + rect.height / 2;
+            if (e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                if ((i < dragIndex && e.clientY < midY) || (i > dragIndex && e.clientY > midY)) {
+                    setSelectedMonitors((prev) => {
+                        const next = [...prev];
+                        [next[dragIndex], next[i]] = [next[i], next[dragIndex]];
+                        return next;
+                    });
+                    setDragIndex(i);
+                    dragOriginY.current = e.clientY;
+                    setDragOffsetY(0);
+                }
+                return;
+            }
+        }
+    }, [dragIndex]);
+
+    const handlePointerUp = useCallback(() => {
+        setDragIndex(null);
+        setDragOffsetY(0);
+    }, []);
+
     /**
      * Toggle tag selection
      */
@@ -134,7 +177,7 @@ export function WidgetEditDialog({ open, onOpenChange, widget, profileId }: Widg
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md" data-testid="widget-edit-dialog">
+            <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto" data-testid="widget-edit-dialog">
                 <DialogHeader>
                     <DialogTitle>{t('dashboard.edit_layout')}</DialogTitle>
                     <DialogDescription className="sr-only">
@@ -185,6 +228,35 @@ export function WidgetEditDialog({ open, onOpenChange, widget, profileId }: Widg
                                 <p className="text-xs text-muted-foreground text-red-500">
                                     {t('dashboard.monitor_required')}
                                 </p>
+                            )}
+                            {selectedMonitors.length > 1 && (
+                                <div className="space-y-1 mt-2">
+                                    <Label className="text-xs text-muted-foreground">{t('dashboard.monitor_order')}</Label>
+                                    <div ref={orderListRef} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}>
+                                        {selectedMonitors.map((id, index) => {
+                                            const mon = enabledMonitors.find(m => m.Monitor.Id === id);
+                                            const isDragging = dragIndex === index;
+                                            return (
+                                                <div
+                                                    key={id}
+                                                    data-monitor-reorder
+                                                    onPointerDown={(e) => handlePointerDown(e, index)}
+                                                    className={cn(
+                                                        "flex items-center gap-2 px-2 py-1.5 rounded text-sm select-none touch-none mb-1",
+                                                        isDragging
+                                                            ? "bg-primary/15 shadow-md z-10 relative scale-[1.02]"
+                                                            : "bg-muted/30 cursor-grab"
+                                                    )}
+                                                    style={isDragging ? { transform: `translateY(${dragOffsetY}px) scale(1.02)` } : undefined}
+                                                    data-testid={`widget-edit-monitor-reorder-${id}`}
+                                                >
+                                                    <GripVertical className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
+                                                    <span className="flex-1 truncate">{mon?.Monitor.Name || `Monitor ${id}`}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
                             )}
                         </div>
                     )}

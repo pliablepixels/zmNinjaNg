@@ -167,7 +167,7 @@ export function DashboardConfig() {
                     <span className="hidden sm:inline">{t('dashboard.add_widget')}</span>
                 </Button>
             </DialogTrigger>
-            <DialogContent data-testid="add-widget-dialog">
+            <DialogContent className="max-h-[90vh] overflow-y-auto" data-testid="add-widget-dialog">
                 <DialogHeader>
                     <DialogTitle>{t('dashboard.add_widget')}</DialogTitle>
                     <DialogDescription className="sr-only">

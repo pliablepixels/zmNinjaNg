@@ -78,6 +78,7 @@
     "select_monitors": "Select Monitors",
     "all_monitors": "All Monitors (Events only)",
     "monitor_required": "Please select at least one monitor.",
+    "monitor_order": "Display order",
     "feed_fit": "Fit",
     "fit_contain": "Contain",
     "fit_cover": "Crop",

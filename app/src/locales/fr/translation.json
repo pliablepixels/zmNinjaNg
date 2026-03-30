@@ -78,6 +78,7 @@
     "select_monitors": "Sélectionner des moniteurs",
     "all_monitors": "Tous les moniteurs (événements uniquement)",
     "monitor_required": "Veuillez sélectionner au moins un moniteur.",
+    "monitor_order": "Ordre",
     "feed_fit": "Ajuster",
     "fit_contain": "Adapter",
     "fit_cover": "Rogner",
