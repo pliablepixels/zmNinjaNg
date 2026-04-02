@@ -9,7 +9,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Switch } from '../components/ui/switch';
-import { RefreshCw, Filter, Activity, AlertCircle, Clock, ScanSearch, X, Crosshair } from 'lucide-react';
+import { RefreshCw, Filter, Activity, AlertCircle, Clock, ScanSearch, X, Crosshair, ZoomIn, ZoomOut } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { filterEnabledMonitors } from '../lib/filters';
 import { formatForServer } from '../lib/time';
@@ -51,8 +51,10 @@ export default function Timeline() {
   // Detection filter state
   const [detectionCategory, setDetectionCategory] = useState<DetectionCategory>('all');
 
-  // Reset key — increment to re-center the viewport
+  // Viewport control keys — increment to trigger action
   const [resetKey, setResetKey] = useState(0);
+  const [zoomInKey, setZoomInKey] = useState(0);
+  const [zoomOutKey, setZoomOutKey] = useState(0);
 
   // Event preview popover state
   const [selectedEvent, setSelectedEvent] = useState<{
@@ -399,14 +401,33 @@ export default function Timeline() {
               <div className="mb-2 flex items-center justify-end gap-2">
                 <Button
                   variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 text-xs text-muted-foreground"
+                  size="icon"
+                  className="h-6 w-6 text-muted-foreground"
+                  onClick={() => setZoomInKey((k) => k + 1)}
+                  title="Zoom in"
+                  data-testid="timeline-zoom-in-button"
+                >
+                  <ZoomIn className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-muted-foreground"
+                  onClick={() => setZoomOutKey((k) => k + 1)}
+                  title="Zoom out"
+                  data-testid="timeline-zoom-out-button"
+                >
+                  <ZoomOut className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-muted-foreground"
                   onClick={() => setResetKey((k) => k + 1)}
                   title={t('timeline.center_view')}
                   data-testid="timeline-center-button"
                 >
-                  <Crosshair className="h-3.5 w-3.5 mr-1" />
-                  {t('timeline.center_view')}
+                  <Crosshair className="h-3.5 w-3.5" />
                 </Button>
                 <span className="text-muted-foreground/30">|</span>
                 <span className="text-xs text-muted-foreground/50">
@@ -419,6 +440,8 @@ export default function Timeline() {
                 startMs={startMs}
                 endMs={endMs}
                 resetKey={resetKey}
+                zoomInKey={zoomInKey}
+                zoomOutKey={zoomOutKey}
                 onEventClick={handleEventClick}
                 onEventHover={handleEventHover}
               />

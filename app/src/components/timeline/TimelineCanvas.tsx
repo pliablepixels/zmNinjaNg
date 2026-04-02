@@ -18,6 +18,10 @@ interface TimelineCanvasProps {
   endMs: number;
   /** Increment to force viewport reset to startMs/endMs */
   resetKey?: number;
+  /** Increment to zoom in by 2x centered */
+  zoomInKey?: number;
+  /** Increment to zoom out by 2x centered */
+  zoomOutKey?: number;
   onEventClick: (event: TimelineEvent) => void;
   onEventHover: (event: TimelineEvent | null, x: number, y: number) => void;
 }
@@ -30,6 +34,8 @@ const TimelineCanvasInner = ({
   startMs,
   endMs,
   resetKey,
+  zoomInKey,
+  zoomOutKey,
   onEventClick,
   onEventHover,
 }: TimelineCanvasProps) => {
@@ -58,6 +64,23 @@ const TimelineCanvasInner = ({
       viewport.setRange(startMs, endMs);
     }
   }, [resetKey, startMs, endMs, viewport]);
+
+  // Zoom in/out when keys change (2x factor, centered)
+  const prevZoomInRef = useRef(zoomInKey);
+  useEffect(() => {
+    if (zoomInKey !== undefined && zoomInKey !== prevZoomInRef.current) {
+      prevZoomInRef.current = zoomInKey;
+      viewport.zoom(0.5, 0.5);
+    }
+  }, [zoomInKey, viewport]);
+
+  const prevZoomOutRef = useRef(zoomOutKey);
+  useEffect(() => {
+    if (zoomOutKey !== undefined && zoomOutKey !== prevZoomOutRef.current) {
+      prevZoomOutRef.current = zoomOutKey;
+      viewport.zoom(2, 0.5);
+    }
+  }, [zoomOutKey, viewport]);
 
   // Observe container width
   useEffect(() => {
