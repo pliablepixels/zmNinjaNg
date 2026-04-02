@@ -124,20 +124,20 @@ function MonitorCardComponent({
           style={{ aspectRatio: aspectRatio ?? '16 / 9' }}
           onClick={() => navigate(`/monitors/${monitor.Id}`, { state: { from: '/monitors' } })}
         >
-          {streamable && (displayedImageUrl || streamUrl) ? (
+          {/* VideoOff sits behind the stream; the img covers it once loaded */}
+          <div className="absolute inset-0 flex items-center justify-center bg-muted/30">
+            <VideoOff className="h-8 w-8 text-muted-foreground/40" />
+          </div>
+          {streamable && (
             <img
               ref={imgRef}
               src={displayedImageUrl || streamUrl}
               alt={monitor.Name}
-              className="w-full h-full"
+              className="relative w-full h-full"
               style={{ objectFit: resolvedFit }}
               onError={handleImageError}
               data-testid="monitor-player"
             />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-muted/30">
-              <VideoOff className="h-8 w-8 text-muted-foreground/40" />
-            </div>
           )}
           <div className="absolute top-1.5 left-1.5 z-10">
             <span
@@ -254,20 +254,20 @@ function MonitorCardComponent({
           tabIndex={0}
           aria-label={`${t('monitors.view_live')}: ${monitor.Name}`}
         >
-          {streamable && (displayedImageUrl || streamUrl) ? (
+          {/* VideoOff sits behind the stream; the img covers it once loaded */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <VideoOff className="h-8 w-8 text-muted-foreground/40" />
+          </div>
+          {streamable && (
             <img
               ref={imgRef}
               src={displayedImageUrl || streamUrl}
               alt={monitor.Name}
-              className="w-full h-full"
+              className="relative w-full h-full"
               style={{ objectFit: resolvedFit }}
               onError={handleImageError}
               data-testid="monitor-player"
             />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <VideoOff className="h-8 w-8 text-muted-foreground/40" />
-            </div>
           )}
         </div>
 

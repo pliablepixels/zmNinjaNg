@@ -50,7 +50,7 @@ function SingleMonitor({ monitorId, objectFit }: { monitorId: string; objectFit:
     // Delegate all streaming logic (connKey, cacheBuster, URL construction,
     // snapshot refresh interval, image preloading) to the shared hook.
     // The hook is disabled until the monitor query has loaded.
-    const { displayedImageUrl, imgRef } = useMonitorStream({
+    const { displayedImageUrl, streamUrl, imgRef } = useMonitorStream({
         monitorId,
         enabled: !!monitor,
     });
@@ -81,27 +81,19 @@ function SingleMonitor({ monitorId, objectFit }: { monitorId: string; objectFit:
             className="w-full h-full bg-black relative group overflow-hidden cursor-pointer"
             onClick={() => navigate(`/monitors/${monitor.Monitor.Id}`, { state: { from: '/dashboard' } })}
         >
-            {streamable && displayedImageUrl ? (
+            {/* VideoOff sits behind the stream; the img covers it once loaded */}
+            <div className="absolute inset-0 flex items-center justify-center text-white/50 bg-zinc-900">
+                <VideoOff className="h-8 w-8" />
+            </div>
+            {streamable && (
                 <img
                     ref={imgRef}
-                    src={displayedImageUrl}
+                    src={displayedImageUrl || streamUrl}
                     alt={monitor.Monitor.Name}
-                    className="w-full h-full"
+                    className="relative w-full h-full"
                     style={{ objectFit }}
-                    onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                        (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-                    }}
+                    data-testid="monitor-player"
                 />
-            ) : null}
-            {!streamable || !displayedImageUrl ? (
-                <div className="absolute inset-0 flex items-center justify-center text-white/50 bg-zinc-900">
-                    <VideoOff className="h-8 w-8" />
-                </div>
-            ) : (
-                <div className="hidden absolute inset-0 flex items-center justify-center text-white/50 bg-zinc-900">
-                    <VideoOff className="h-8 w-8" />
-                </div>
             )}
             <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 <p className="text-white text-xs font-medium truncate">{monitor.Monitor.Name}</p>
