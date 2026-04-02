@@ -6,9 +6,9 @@
  * Tapping outside the popover dismisses it.
  */
 
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Play, Clock, AlertTriangle, Tag } from 'lucide-react';
+import { Play, Clock, AlertTriangle, Tag, VideoOff } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -62,9 +62,22 @@ export const EventPreviewPopover = memo(function EventPreviewPopover({
   const accessToken = useAuthStore((s) => s.accessToken);
 
   const portalUrl = currentProfile?.portalUrl ?? '';
-  const imageUrl = getEventImageUrl(portalUrl, event.id, 'objdetect', {
-    token: accessToken ?? undefined,
-  });
+  const tokenOpts = { token: accessToken ?? undefined };
+  const objdetectUrl = getEventImageUrl(portalUrl, event.id, 'objdetect', tokenOpts);
+  const alarmUrl = getEventImageUrl(portalUrl, event.id, 'alarm', tokenOpts);
+  const snapshotUrl = getEventImageUrl(portalUrl, event.id, 'snapshot', tokenOpts);
+  const [imgSrc, setImgSrc] = useState(objdetectUrl);
+  const [imgFailed, setImgFailed] = useState(false);
+
+  const handleImgError = () => {
+    if (imgSrc === objdetectUrl) {
+      setImgSrc(alarmUrl);
+    } else if (imgSrc === alarmUrl) {
+      setImgSrc(snapshotUrl);
+    } else {
+      setImgFailed(true);
+    }
+  };
 
   const parsed = parseISO(event.startDateTime.replace(' ', 'T'));
   const dateLabel = format(parsed, 'EEE, MMM d');
@@ -90,11 +103,18 @@ export const EventPreviewPopover = memo(function EventPreviewPopover({
         }}
         data-testid="event-preview-popover"
       >
-        <img
-          src={imageUrl}
-          alt=""
-          className="aspect-video bg-black rounded-t-lg overflow-hidden object-contain w-full"
-        />
+        {imgFailed ? (
+          <div className="aspect-video bg-muted/30 rounded-t-lg flex items-center justify-center">
+            <VideoOff className="h-8 w-8 text-muted-foreground/40" />
+          </div>
+        ) : (
+          <img
+            src={imgSrc}
+            alt=""
+            className="aspect-video bg-black rounded-t-lg overflow-hidden object-contain w-full"
+            onError={handleImgError}
+          />
+        )}
         <div className="p-3 space-y-2">
           <div className="flex items-center justify-between gap-2">
             <span className="font-medium text-sm truncate min-w-0" title={event.monitorName}>
