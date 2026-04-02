@@ -1,6 +1,6 @@
 import { useMemo, useCallback, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { getEvents } from '../api/events';
 import type { EventData } from '../api/types';
 import { getMonitors } from '../api/monitors';
@@ -30,9 +30,11 @@ import { DetectionFilterTabs, categorizeEvent, type DetectionCategory } from '..
 import { EventPreviewPopover } from '../components/timeline/EventPreviewPopover';
 import type { TimelineEvent } from '../components/timeline/timeline-layout';
 import type { MonitorRow } from '../components/timeline/timeline-renderer';
+import type { ScrubberState } from '../components/timeline/TimelineScrubber';
 
 export default function Timeline() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const {
     selectedMonitorIds, startDateInput, endDateInput, onlyDetectedObjects,
@@ -55,6 +57,21 @@ export default function Timeline() {
   const [resetKey, setResetKey] = useState(0);
   const [zoomInKey, setZoomInKey] = useState(0);
   const [zoomOutKey, setZoomOutKey] = useState(0);
+
+  // Scrubber state — saved for restore after navigating back
+  const scrubberStateRef = useRef<ScrubberState | null>(null);
+  const initialScrubberState = (location.state as { scrubberState?: ScrubberState })?.scrubberState ?? null;
+
+  const handleScrubberStateChange = useCallback((state: ScrubberState | null) => {
+    scrubberStateRef.current = state;
+  }, []);
+
+  /** Navigate to event, preserving scrubber state for return. */
+  const navigateToEvent = useCallback((eventId: string) => {
+    navigate(`/events/${eventId}`, {
+      state: { from: '/timeline', scrubberState: scrubberStateRef.current },
+    });
+  }, [navigate]);
 
   // Event preview popover state
   const [selectedEvent, setSelectedEvent] = useState<{
@@ -215,8 +232,8 @@ export default function Timeline() {
 
   const handleOpenEvent = useCallback((eventId: string) => {
     setSelectedEvent(null);
-    navigate(`/events/${eventId}`);
-  }, [navigate]);
+    navigateToEvent(eventId);
+  }, [navigateToEvent]);
 
   const handleClosePopover = useCallback(() => {
     setSelectedEvent(null);
@@ -444,6 +461,9 @@ export default function Timeline() {
                 zoomOutKey={zoomOutKey}
                 onEventClick={handleEventClick}
                 onEventHover={handleEventHover}
+                onScrubberEventTap={navigateToEvent}
+                onScrubberStateChange={handleScrubberStateChange}
+                initialScrubberState={initialScrubberState}
               />
             </div>
           )}

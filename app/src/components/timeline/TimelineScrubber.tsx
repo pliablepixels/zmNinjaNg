@@ -7,7 +7,6 @@
  */
 
 import { memo, useState, useCallback, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { VideoOff } from 'lucide-react';
 import { getEventImageUrl } from '../../api/events';
@@ -16,12 +15,25 @@ import { useAuthStore } from '../../stores/auth';
 import type { TimelineEvent } from './timeline-layout';
 import type { MonitorRow } from './timeline-renderer';
 
+/** Serializable scrubber state for navigation restore. */
+export interface ScrubberState {
+  handleNorm: number;
+  playheadMs: number;
+  activeEventIds: string[];
+}
+
 interface TimelineScrubberProps {
   events: TimelineEvent[];
   monitors: MonitorRow[];
   viewStartMs: number;
   viewEndMs: number;
   onPlayheadChange: (timeMs: number | null) => void;
+  /** Called when a scrubber thumbnail is tapped. */
+  onEventTap: (eventId: string) => void;
+  /** Called whenever scrubber state changes — parent can save for restore. */
+  onStateChange?: (state: ScrubberState | null) => void;
+  /** Restore scrubber to this state on mount. */
+  initialState?: ScrubberState | null;
   /** Where to show thumbnails relative to the scrubber bar. */
   thumbnailPosition?: 'above' | 'below';
 }
@@ -46,11 +58,12 @@ function eventsNearTime(
 function ScrubberThumbnail({
   event,
   monitorName,
+  onTap,
 }: {
   event: TimelineEvent;
   monitorName: string;
+  onTap: (eventId: string) => void;
 }) {
-  const navigate = useNavigate();
   const { currentProfile } = useCurrentProfile();
   const accessToken = useAuthStore((s) => s.accessToken);
   const [failed, setFailed] = useState(false);
@@ -64,7 +77,7 @@ function ScrubberThumbnail({
     <button
       type="button"
       className="relative shrink-0 w-24 h-16 rounded overflow-hidden bg-black border border-border/50 hover:border-primary/50 transition-colors cursor-pointer"
-      onClick={() => navigate(`/events/${event.id}`)}
+      onClick={() => onTap(event.id)}
       title={`${monitorName} · #${event.id}`}
       data-testid={`scrubber-thumb-${event.id}`}
     >
@@ -93,12 +106,29 @@ function TimelineScrubberComponent({
   viewStartMs,
   viewEndMs,
   onPlayheadChange,
+  onEventTap,
+  onStateChange,
+  initialState,
   thumbnailPosition = 'above',
 }: TimelineScrubberProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [scrubbing, setScrubbing] = useState(false);
-  const [handleNorm, setHandleNorm] = useState(0.5); // 0-1 position
+  const [handleNorm, setHandleNorm] = useState(initialState?.handleNorm ?? 0.5);
   const [activeEvents, setActiveEvents] = useState<TimelineEvent[]>([]);
+
+  // Restore initial state on mount
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (restoredRef.current || !initialState || events.length === 0) return;
+    restoredRef.current = true;
+    const ids = new Set(initialState.activeEventIds);
+    const restored = events.filter((ev) => ids.has(ev.id));
+    if (restored.length > 0) {
+      setActiveEvents(restored);
+      setHandleNorm(initialState.handleNorm);
+      onPlayheadChange(initialState.playheadMs);
+    }
+  }, [initialState, events, onPlayheadChange]);
 
   const monitorNameMap = new Map(monitors.map((m) => [m.id, m.name]));
 
@@ -179,7 +209,21 @@ function TimelineScrubberComponent({
   const dismissThumbnails = useCallback(() => {
     setActiveEvents([]);
     onPlayheadChange(null);
-  }, [onPlayheadChange]);
+    onStateChange?.(null);
+  }, [onPlayheadChange, onStateChange]);
+
+  // Notify parent of scrubber state when thumbnails are visible (for save/restore)
+  const onStateChangeRef = useRef(onStateChange);
+  onStateChangeRef.current = onStateChange;
+  useEffect(() => {
+    if (!scrubbing && activeEvents.length > 0) {
+      onStateChangeRef.current?.({
+        handleNorm,
+        playheadMs: normToTime(handleNorm),
+        activeEventIds: activeEvents.map((ev) => ev.id),
+      });
+    }
+  }, [scrubbing, activeEvents, handleNorm, normToTime]);
 
   const playheadTime = normToTime(handleNorm);
 
@@ -206,6 +250,7 @@ function TimelineScrubberComponent({
             key={ev.id}
             event={ev}
             monitorName={monitorNameMap.get(ev.monitorId) ?? ''}
+            onTap={onEventTap}
           />
         ))}
       </div>

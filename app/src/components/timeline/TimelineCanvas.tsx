@@ -10,7 +10,7 @@ import { useTimelineGestures } from './useTimelineGestures';
 import { renderTimeline, type MonitorRow, type RenderViewport } from './timeline-renderer';
 import { hitTest } from './timeline-hit-test';
 import { canvasHeight, LAYOUT, getMonitorColor, type TimelineEvent } from './timeline-layout';
-import { TimelineScrubber } from './TimelineScrubber';
+import { TimelineScrubber, type ScrubberState } from './TimelineScrubber';
 
 interface TimelineCanvasProps {
   monitors: MonitorRow[];
@@ -25,6 +25,12 @@ interface TimelineCanvasProps {
   zoomOutKey?: number;
   onEventClick: (event: TimelineEvent) => void;
   onEventHover: (event: TimelineEvent | null, x: number, y: number) => void;
+  /** Called when a scrubber thumbnail is tapped. */
+  onScrubberEventTap: (eventId: string) => void;
+  /** Called when scrubber state changes (for save/restore). */
+  onScrubberStateChange?: (state: ScrubberState | null) => void;
+  /** Restore scrubber to this state on mount. */
+  initialScrubberState?: ScrubberState | null;
 }
 
 const NOW_REFRESH_INTERVAL = 30_000;
@@ -39,6 +45,9 @@ const TimelineCanvasInner = ({
   zoomOutKey,
   onEventClick,
   onEventHover,
+  onScrubberEventTap,
+  onScrubberStateChange,
+  initialScrubberState,
 }: TimelineCanvasProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -198,6 +207,9 @@ const TimelineCanvasInner = ({
           viewStartMs={viewport.startMs}
           viewEndMs={viewport.endMs}
           onPlayheadChange={setPlayheadMs}
+          onEventTap={onScrubberEventTap}
+          onStateChange={onScrubberStateChange}
+          initialState={initialScrubberState}
           thumbnailPosition="below"
         />
       </div>
