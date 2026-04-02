@@ -190,6 +190,17 @@ const TimelineCanvasInner = ({
       ref={containerRef}
       className="relative w-full overflow-hidden rounded-lg border border-border bg-background"
     >
+      {/* Scrubber bar — above time labels */}
+      <div className="px-2 pt-2">
+        <TimelineScrubber
+          events={events}
+          monitors={monitors}
+          viewStartMs={viewport.startMs}
+          viewEndMs={viewport.endMs}
+          onPlayheadChange={setPlayheadMs}
+          thumbnailPosition="below"
+        />
+      </div>
       <canvas
         ref={canvasRef}
         className="w-full"
@@ -220,16 +231,6 @@ const TimelineCanvasInner = ({
             </span>
           </div>
         ))}
-      </div>
-      {/* Scrubber bar */}
-      <div className="px-2 pb-2">
-        <TimelineScrubber
-          events={events}
-          monitors={monitors}
-          viewStartMs={viewport.startMs}
-          viewEndMs={viewport.endMs}
-          onPlayheadChange={setPlayheadMs}
-        />
       </div>
     </div>
   );

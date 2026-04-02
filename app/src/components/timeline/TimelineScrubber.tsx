@@ -22,6 +22,8 @@ interface TimelineScrubberProps {
   viewStartMs: number;
   viewEndMs: number;
   onPlayheadChange: (timeMs: number | null) => void;
+  /** Where to show thumbnails relative to the scrubber bar. */
+  thumbnailPosition?: 'above' | 'below';
 }
 
 /**
@@ -91,6 +93,7 @@ function TimelineScrubberComponent({
   viewStartMs,
   viewEndMs,
   onPlayheadChange,
+  thumbnailPosition = 'above',
 }: TimelineScrubberProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [scrubbing, setScrubbing] = useState(false);
@@ -178,6 +181,44 @@ function TimelineScrubberComponent({
 
   const playheadTime = normToTime(handleNorm);
 
+  const below = thumbnailPosition === 'below';
+
+  const thumbnailStrip = activeEvents.length > 0 && (
+    <div
+      className={`absolute ${below ? 'top-full mt-2' : 'bottom-full mb-2'} pointer-events-auto z-20`}
+      style={{
+        left: `${handleNorm * 100}%`,
+        transform: 'translateX(-50%)',
+        maxWidth: '90%',
+      }}
+    >
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+      <div
+        className="flex gap-1.5 p-2 rounded-lg bg-popover/95 border border-border shadow-xl backdrop-blur-sm overflow-x-auto"
+        style={{ touchAction: 'pan-x' }}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+      >
+        {activeEvents.map((ev) => (
+          <ScrubberThumbnail
+            key={ev.id}
+            event={ev}
+            monitorName={monitorNameMap.get(ev.monitorId) ?? ''}
+          />
+        ))}
+      </div>
+    </div>
+  );
+
+  const timeLabel = (scrubbing || activeEvents.length > 0) && (
+    <div
+      className={`absolute ${below ? 'top-full mt-1' : 'bottom-full mb-1'} text-[10px] text-muted-foreground bg-popover border border-border rounded px-1.5 py-0.5 -translate-x-1/2 pointer-events-none z-10`}
+      style={{ left: `${handleNorm * 100}%` }}
+    >
+      {format(new Date(playheadTime), 'MMM d, HH:mm:ss')}
+    </div>
+  );
+
   return (
     <div className="relative" data-testid="timeline-scrubber">
       {/* Backdrop to dismiss thumbnails when tapping outside */}
@@ -185,48 +226,14 @@ function TimelineScrubberComponent({
         <div className="fixed inset-0 z-10" onClick={dismissThumbnails} />
       )}
 
-      {/* Floating thumbnail strip — persists after release so you can tap them */}
-      {activeEvents.length > 0 && (
-        <div
-          className="absolute bottom-full mb-2 pointer-events-auto z-20"
-          style={{
-            left: `${handleNorm * 100}%`,
-            transform: 'translateX(-50%)',
-            maxWidth: '90%',
-          }}
-        >
-          {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-          <div
-            className="flex gap-1.5 p-2 rounded-lg bg-popover/95 border border-border shadow-xl backdrop-blur-sm overflow-x-auto"
-            style={{ touchAction: 'pan-x' }}
-            onTouchStart={(e) => e.stopPropagation()}
-            onTouchMove={(e) => e.stopPropagation()}
-          >
-            {activeEvents.map((ev) => (
-              <ScrubberThumbnail
-                key={ev.id}
-                event={ev}
-                monitorName={monitorNameMap.get(ev.monitorId) ?? ''}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Time label + thumbnails — position depends on prop */}
+      {timeLabel}
+      {thumbnailStrip}
 
-      {/* Time label — shown while scrubbing or when thumbnails are visible */}
-      {(scrubbing || activeEvents.length > 0) && (
-        <div
-          className="absolute bottom-full mb-1 text-[10px] text-muted-foreground bg-popover border border-border rounded px-1.5 py-0.5 -translate-x-1/2 pointer-events-none z-10"
-          style={{ left: `${handleNorm * 100}%` }}
-        >
-          {format(new Date(playheadTime), 'MMM d, HH:mm:ss')}
-        </div>
-      )}
-
-      {/* Scrubber track */}
+      {/* Scrubber track — taller touch target */}
       <div
         ref={trackRef}
-        className="relative h-6 cursor-pointer select-none touch-none"
+        className="relative h-8 cursor-pointer select-none touch-none"
         onMouseDown={onMouseDown}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
@@ -234,7 +241,7 @@ function TimelineScrubberComponent({
         data-testid="scrubber-track"
       >
         {/* Track background */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1 rounded-full bg-border/50" />
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-border/50" />
 
         {/* Event density markers */}
         {events.map((ev) => {
@@ -245,18 +252,18 @@ function TimelineScrubberComponent({
           return (
             <div
               key={ev.id}
-              className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-primary/30"
+              className="absolute top-1/2 -translate-y-1/2 h-2 rounded-full bg-primary/30"
               style={{ left: `${Math.max(0, left)}%`, width: `${Math.min(width, 100 - left)}%` }}
             />
           );
         })}
 
-        {/* Draggable handle */}
+        {/* Draggable handle — bigger for easier grabbing */}
         <div
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-primary border-2 border-background shadow-md transition-transform"
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-primary border-2 border-background shadow-lg transition-transform"
           style={{
             left: `${handleNorm * 100}%`,
-            transform: `translate(-50%, -50%) scale(${scrubbing ? 1.3 : 1})`,
+            transform: `translate(-50%, -50%) scale(${scrubbing ? 1.25 : 1})`,
           }}
         />
       </div>
