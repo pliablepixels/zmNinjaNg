@@ -185,7 +185,7 @@ function TimelineScrubberComponent({
 
   const thumbnailStrip = activeEvents.length > 0 && (
     <div
-      className={`absolute ${below ? 'top-full mt-2' : 'bottom-full mb-2'} pointer-events-auto z-20`}
+      className={`absolute ${below ? 'top-full mt-2' : 'bottom-full mb-2'} ${scrubbing ? 'pointer-events-none' : 'pointer-events-auto'} z-20`}
       style={{
         left: `${handleNorm * 100}%`,
         transform: 'translateX(-50%)',
