@@ -157,9 +157,9 @@ Given('there are events on the timeline', async ({ page }) => {
 When('I click on an event in the timeline', async ({ page }) => {
   if (!hasTimelineEvents) return;
 
-  // Wait for vis-timeline to initialize and render items
-  const eventItem = page.locator('.vis-item');
-  await expect(eventItem.first()).toBeVisible({ timeout: testConfig.timeouts.element }).catch(() => {});
+  // Wait for canvas timeline to render
+  const canvas = page.locator('[data-testid="timeline-canvas"]');
+  await expect(canvas).toBeVisible({ timeout: testConfig.timeouts.element }).catch(() => {});
 
   if (await eventItem.count() > 0) {
     await eventItem.first().click();

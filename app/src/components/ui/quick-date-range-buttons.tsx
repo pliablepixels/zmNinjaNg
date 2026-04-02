@@ -40,6 +40,21 @@ export function QuickDateRangeButtons({
 
   const ranges = [
     {
+      hours: 4,
+      label: t('events.past_4_hours_short'),
+      fullLabel: t('events.past_4_hours')
+    },
+    {
+      hours: 8,
+      label: t('events.past_8_hours_short'),
+      fullLabel: t('events.past_8_hours')
+    },
+    {
+      hours: 12,
+      label: t('events.past_12_hours_short'),
+      fullLabel: t('events.past_12_hours')
+    },
+    {
       hours: 24,
       label: t('events.past_24_hours_short'),
       fullLabel: t('events.past_24_hours')

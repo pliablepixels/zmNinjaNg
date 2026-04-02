@@ -1,26 +1,18 @@
-import { useMemo, useEffect, useRef } from 'react';
+import { useEffect, useMemo, useCallback, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { getEvents, getEventImageUrl } from '../api/events';
-import { getEventTags } from '../api/tags';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { getEvents } from '../api/events';
+import type { EventData } from '../api/types';
 import { getMonitors } from '../api/monitors';
-import { useCurrentProfile } from '../hooks/useCurrentProfile';
-import { useAuthStore } from '../stores/auth';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Switch } from '../components/ui/switch';
-import { RefreshCw, Filter, Activity, AlertCircle, Clock, ScanSearch, X } from 'lucide-react';
+import { RefreshCw, Filter, Clock, ScanSearch, X, Crosshair, ZoomIn, ZoomOut, ChevronDown } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { filterEnabledMonitors } from '../lib/filters';
-import { TIMELINE } from '../lib/zmninja-ng-constants';
-import { escapeHtml } from '../lib/utils';
 import { formatForServer } from '../lib/time';
-import { Timeline as VisTimeline } from 'vis-timeline/standalone';
-import { DataSet } from 'vis-data';
-import 'vis-timeline/styles/vis-timeline-graph2d.css';
-import '../styles/timeline.css';
 import {
   Popover,
   PopoverContent,
@@ -32,22 +24,18 @@ import { MonitorFilterPopoverContent } from '../components/filters/MonitorFilter
 import { EmptyState } from '../components/ui/empty-state';
 import { NotificationBadge } from '../components/NotificationBadge';
 import { useTimelineFilters } from '../hooks/useTimelineFilters';
-
-interface TimelineGroup {
-  id: string;
-  content: string;
-  style?: string;
-}
+import { useEventTagMapping } from '../hooks/useEventTags';
+import { TimelineCanvas } from '../components/timeline/TimelineCanvas';
+import { DetectionFilterTabs, categorizeEvent, type DetectionCategory } from '../components/timeline/DetectionFilterTabs';
+import { EventPreviewPopover } from '../components/timeline/EventPreviewPopover';
+import type { TimelineEvent } from '../components/timeline/timeline-layout';
+import type { MonitorRow } from '../components/timeline/timeline-renderer';
+import type { ScrubberState } from '../components/timeline/TimelineScrubber';
 
 export default function Timeline() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
-  const timelineRef = useRef<HTMLDivElement>(null);
-  const timelineInstance = useRef<VisTimeline | null>(null);
-  const { currentProfile } = useCurrentProfile();
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const portalUrl = currentProfile?.portalUrl || '';
-
   const {
     selectedMonitorIds, startDateInput, endDateInput, onlyDetectedObjects,
     setSelectedMonitorIds, setStartDateInput, setEndDateInput, setOnlyDetectedObjects,
@@ -62,6 +50,51 @@ export default function Timeline() {
   const startDate = startDateInput || defaultDates.current.start;
   const endDate = endDateInput || defaultDates.current.end;
 
+  // Detection filter state
+  const [detectionCategory, setDetectionCategory] = useState<DetectionCategory>('all');
+
+  // Filters section collapsed state
+  const [filtersCollapsed, setFiltersCollapsed] = useState(false);
+
+  // Viewport control keys — increment to trigger action
+  const [resetKey, setResetKey] = useState(0);
+  const [zoomInKey, setZoomInKey] = useState(0);
+  const [zoomOutKey, setZoomOutKey] = useState(0);
+
+  // Scrubber state — persisted to sessionStorage so it survives any back navigation
+  const SCRUBBER_KEY = 'timeline-scrubber-state';
+  const scrubberStateRef = useRef<ScrubberState | null>(null);
+  const [initialScrubberState, setInitialScrubberState] = useState<ScrubberState | null>(null);
+
+  // Re-check sessionStorage on every navigation to this page (location.key changes)
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(SCRUBBER_KEY);
+      if (saved) {
+        sessionStorage.removeItem(SCRUBBER_KEY);
+        setInitialScrubberState(JSON.parse(saved));
+      }
+    } catch { /* ignore */ }
+  }, [location.key]);
+
+  const handleScrubberStateChange = useCallback((state: ScrubberState | null) => {
+    scrubberStateRef.current = state;
+  }, []);
+
+  /** Navigate to event, saving scrubber state for return. */
+  const navigateToEvent = useCallback((eventId: string) => {
+    if (scrubberStateRef.current) {
+      sessionStorage.setItem(SCRUBBER_KEY, JSON.stringify(scrubberStateRef.current));
+    }
+    navigate(`/events/${eventId}`, { state: { from: '/timeline' } });
+  }, [navigate]);
+
+  // Event preview popover state
+  const [selectedEvent, setSelectedEvent] = useState<{
+    event: TimelineEvent;
+    position: { x: number; y: number };
+  } | null>(null);
+
   // Fetch monitors
   const { data: monitorsData } = useQuery({
     queryKey: ['monitors'],
@@ -74,11 +107,18 @@ export default function Timeline() {
     [monitorsData]
   );
 
+  // Build monitor lookup map
+  const monitorNameMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const { Monitor } of enabledMonitors) {
+      map.set(Monitor.Id, Monitor.Name);
+    }
+    return map;
+  }, [enabledMonitors]);
+
   // Build monitor filter string for API
   const monitorFilter = useMemo(() => {
-    if (selectedMonitorIds.length === 0) {
-      return undefined;
-    }
+    if (selectedMonitorIds.length === 0) return undefined;
     return selectedMonitorIds.join(',');
   }, [selectedMonitorIds]);
 
@@ -92,170 +132,142 @@ export default function Timeline() {
         notesRegexp: onlyDetectedObjects ? 'detected:' : undefined,
         sort: 'StartDateTime',
         direction: 'desc',
-        limit: 500,
+        limit: 2000,
       }),
   });
 
-  // Fetch tags for timeline events
-  const eventIds = useMemo(() => data?.events?.map(e => e.Event.Id) || [], [data]);
-  const { data: eventTagMap } = useQuery({
-    queryKey: ['timeline-event-tags', eventIds],
-    queryFn: () => getEventTags(eventIds),
-    enabled: eventIds.length > 0,
-  });
+  // Transform API events to TimelineEvent[]
+  const allTimelineEvents: TimelineEvent[] = useMemo(() => {
+    if (!data?.events) return [];
+    return data.events.map(({ Event }) => ({
+      id: Event.Id,
+      monitorId: Event.MonitorId,
+      startMs: new Date(Event.StartDateTime.replace(' ', 'T')).getTime(),
+      endMs: Event.EndDateTime
+        ? new Date(Event.EndDateTime.replace(' ', 'T')).getTime()
+        : new Date(Event.StartDateTime.replace(' ', 'T')).getTime() + parseFloat(Event.Length) * 1000,
+      cause: Event.Cause,
+      alarmRatio: parseInt(Event.AlarmFrames) / Math.max(parseInt(Event.Frames), 1),
+      notes: Event.Notes ?? '',
+    }));
+  }, [data]);
 
-  // Initialize and update timeline
-  useEffect(() => {
-    if (!timelineRef.current || !data?.events) return;
-
-    // Professional color palette with better contrast
-    const colors = [
-      { bg: '#3b82f6', border: '#2563eb', text: '#ffffff' }, // Blue
-      { bg: '#ef4444', border: '#dc2626', text: '#ffffff' }, // Red
-      { bg: '#10b981', border: '#059669', text: '#ffffff' }, // Green
-      { bg: '#f59e0b', border: '#d97706', text: '#ffffff' }, // Amber
-      { bg: '#8b5cf6', border: '#7c3aed', text: '#ffffff' }, // Violet
-      { bg: '#ec4899', border: '#db2777', text: '#ffffff' }, // Pink
-      { bg: '#06b6d4', border: '#0891b2', text: '#ffffff' }, // Cyan
-      { bg: '#84cc16', border: '#65a30d', text: '#ffffff' }, // Lime
-      { bg: '#f97316', border: '#ea580c', text: '#ffffff' }, // Orange
-      { bg: '#6366f1', border: '#4f46e5', text: '#ffffff' }, // Indigo
-    ];
-
-    // Create groups (one per monitor)
-    // Deduplicate monitors to prevent crashes
-    const uniqueMonitors = Array.from(
-      new Map(enabledMonitors.map(m => [m.Monitor.Id, m])).values()
-    );
-
-    const groups = new DataSet(
-      uniqueMonitors.map(({ Monitor }) => {
-        const colorIdx = parseInt(Monitor.Id) % colors.length;
-        const color = colors[colorIdx];
-        return {
-          id: Monitor.Id,
-          content: `<strong>${escapeHtml(Monitor.Name)}</strong>`,
-          style: `background: linear-gradient(to right, ${color.bg}15, ${color.bg}08);`,
-        };
-      })
-    );
-
-    // Create items (events)
-    // Deduplicate events to prevent crashes
-    const uniqueEvents = Array.from(
-      new Map(data.events.map(e => [e.Event.Id, e])).values()
-    );
-
-    const items = new DataSet(
-      uniqueEvents.map(({ Event }) => {
-        const startTime = new Date(Event.StartDateTime.replace(' ', 'T'));
-        const endTime = Event.EndDateTime ? new Date(Event.EndDateTime.replace(' ', 'T')) : new Date(startTime.getTime() + parseInt(Event.Length) * 1000);
-        const colorIdx = parseInt(Event.MonitorId) % colors.length;
-        const color = colors[colorIdx];
-
-        // Determine event severity based on alarm frames
-        const alarmRatio = parseInt(Event.AlarmFrames) / parseInt(Event.Frames);
-        const isHighPriority = alarmRatio > 0.5;
-
-        // Format duration nicely
-        const duration = parseInt(Event.Length);
-        const durationText = duration >= 60
-          ? `${Math.floor(duration / 60)}m ${duration % 60}s`
-          : `${duration}s`;
-
-        return {
-          id: Event.Id,
-          group: Event.MonitorId,
-          start: startTime,
-          end: endTime,
-          content: `<div style="display: flex; align-items: center; gap: 4px;">
-            ${isHighPriority ? '<span style="font-size: 10px;">⚠️</span>' : ''}
-            <span style="font-weight: 600;">${escapeHtml(Event.Cause)}</span>
-            <span style="opacity: 0.8;">•</span>
-            <span>${durationText}</span>
-          </div>`,
-          title: (() => {
-            const tags = eventTagMap?.get(Event.Id)?.map(t => t.Name).join(', ') || '';
-            return `<div style="text-align:center;margin-bottom:4px;">
-              <img src="${getEventImageUrl(portalUrl, Event.Id, 'snapshot', { token: accessToken || undefined, width: 160 })}" style="max-width:150px;border-radius:4px;" />
-            </div>
-            <strong>${escapeHtml(Event.Name)}</strong><br/>
-            ${escapeHtml(Event.Cause)} &middot; ${format(startTime, 'HH:mm:ss')} &middot; ${durationText}${Event.Notes ? '<br/>' + escapeHtml(Event.Notes) : ''}${tags ? '<br/>🏷️ ' + escapeHtml(tags) : ''}`;
-          })(),
-          style: `
-            background: linear-gradient(135deg, ${color.bg} 0%, ${color.bg}dd 100%);
-            border-color: ${color.border};
-            color: ${color.text};
-            ${isHighPriority ? 'border-width: 3px; box-shadow: 0 0 8px ' + color.border + '80;' : ''}
-          `,
-          className: 'timeline-event',
-        };
-      })
-    );
-
-    // Timeline options — set start/end so vis-timeline opens at the filter range
-    const windowStart = new Date(startDate);
-    const windowEnd = new Date(endDate);
-    const options = {
-      width: '100%',
-      height: '600px',
-      start: windowStart,
-      end: windowEnd,
-      margin: {
-        item: {
-          horizontal: 10,
-          vertical: 8,
-        },
-        axis: 50,
-      },
-      orientation: 'top',
-      stack: true,
-      stackSubgroups: true,
-      showCurrentTime: true,
-      showMajorLabels: true,
-      showMinorLabels: true,
-      zoomMin: TIMELINE.zoomMin, // 1 minute
-      zoomMax: 1000 * 60 * 60 * 24 * 90, // 90 days — supports month+ ranges
-      moveable: true,
-      zoomable: true,
-      selectable: true,
-      tooltip: {
-        followMouse: true,
-        overflowMethod: 'cap' as 'cap',
-      },
-      groupOrder: (a: TimelineGroup, b: TimelineGroup) => {
-        return parseInt(a.id) - parseInt(b.id);
-      },
+  // Compute detection category counts
+  const detectionCounts = useMemo(() => {
+    const counts: Record<DetectionCategory, number> = {
+      all: allTimelineEvents.length,
+      person: 0,
+      vehicle: 0,
+      animal: 0,
+      other: 0,
     };
+    for (const ev of allTimelineEvents) {
+      const cat = categorizeEvent(ev.notes);
+      counts[cat]++;
+    }
+    return counts;
+  }, [allTimelineEvents]);
 
-    // Destroy previous instance and recreate — vis-timeline doesn't reliably
-    // update when items + window change simultaneously
-    if (timelineInstance.current) {
-      timelineInstance.current.destroy();
-      timelineInstance.current = null;
+  // Filter by detection category
+  const filteredEvents = useMemo(() => {
+    if (detectionCategory === 'all') return allTimelineEvents;
+    return allTimelineEvents.filter((ev) => categorizeEvent(ev.notes) === detectionCategory);
+  }, [allTimelineEvents, detectionCategory]);
+
+  // Build MonitorRow[] for canvas — only monitors that have events in the filtered set
+  const monitorRows: MonitorRow[] = useMemo(() => {
+    const activeIds = new Set(filteredEvents.map((ev) => ev.monitorId));
+    const rows: MonitorRow[] = [];
+    // Deduplicate and maintain stable order
+    const seen = new Set<string>();
+    for (const { Monitor } of enabledMonitors) {
+      if (activeIds.has(Monitor.Id) && !seen.has(Monitor.Id)) {
+        seen.add(Monitor.Id);
+        rows.push({ id: Monitor.Id, name: Monitor.Name });
+      }
+    }
+    return rows;
+  }, [enabledMonitors, filteredEvents]);
+
+  // Canvas time range — fit to actual event extent (with padding), fall back to filter range
+  const { startMs, endMs } = useMemo(() => {
+    const filterStart = new Date(startDate).getTime();
+    const filterEnd = new Date(endDate).getTime();
+
+    if (filteredEvents.length === 0) {
+      return { startMs: filterStart, endMs: filterEnd };
     }
 
-    timelineInstance.current = new VisTimeline(timelineRef.current, items, groups, options);
+    let minMs = Infinity;
+    let maxMs = -Infinity;
+    for (const ev of filteredEvents) {
+      if (ev.startMs < minMs) minMs = ev.startMs;
+      if (ev.endMs > maxMs) maxMs = ev.endMs;
+    }
 
-    // Handle event click
-    timelineInstance.current.on('select', (properties) => {
-      if (properties.items && properties.items.length > 0) {
-        const eventId = properties.items[0];
-        navigate(`/events/${eventId}`);
-      }
-    });
-
-
-
-    return () => {
-      if (timelineInstance.current) {
-        timelineInstance.current.destroy();
-        timelineInstance.current = null;
-      }
+    // Add 5% padding on each side so events aren't flush with edges
+    const span = maxMs - minMs;
+    const padding = Math.max(span * 0.05, 60_000); // at least 1 minute
+    return {
+      startMs: Math.max(filterStart, minMs - padding),
+      endMs: Math.min(filterEnd, maxMs + padding),
     };
-  }, [data, enabledMonitors, navigate, startDate, endDate, portalUrl, accessToken, eventTagMap]);
+  }, [filteredEvents, startDate, endDate]);
 
-  // Note: cleanup on unmount is handled by the effect above (its return fn)
+  // Fetch tags for loaded events
+  const eventIds = useMemo(
+    () => data?.events?.map((e) => e.Event.Id) ?? [],
+    [data],
+  );
+  const { getTagsForEvent } = useEventTagMapping({ eventIds });
+
+  // Build a lookup from raw API events for the preview popover
+  const rawEventMap = useMemo(() => {
+    const map = new Map<string, EventData>();
+    if (!data?.events) return map;
+    for (const e of data.events) {
+      map.set(e.Event.Id, e);
+    }
+    return map;
+  }, [data]);
+
+  const handleEventClick = useCallback((ev: TimelineEvent) => {
+    // Find the raw API event data for the popover
+    const raw = rawEventMap.get(ev.id);
+    if (!raw) return;
+    // Position the popover near the center of the screen
+    setSelectedEvent({
+      event: ev,
+      position: { x: window.innerWidth / 2 - 144, y: 200 },
+    });
+  }, [rawEventMap]);
+
+  const handleEventHover = useCallback((_event: TimelineEvent | null, _x: number, _y: number) => {
+    // Hover is handled by the canvas renderer (highlight effect)
+  }, []);
+
+  const handleOpenEvent = useCallback((eventId: string) => {
+    setSelectedEvent(null);
+    navigateToEvent(eventId);
+  }, [navigateToEvent]);
+
+  const handleClosePopover = useCallback(() => {
+    setSelectedEvent(null);
+  }, []);
+
+  // Stats
+  const totalAlarmFrames = useMemo(
+    () => data?.events?.reduce((sum, e) => sum + parseInt(e.Event.AlarmFrames || '0'), 0) ?? 0,
+    [data]
+  );
+  const totalDurationMins = useMemo(
+    () => Math.round((data?.events?.reduce((sum, e) => sum + parseFloat(e.Event.Length || '0'), 0) ?? 0) / 60),
+    [data]
+  );
+  const activeMonitorCount = useMemo(
+    () => data?.events ? new Set(data.events.map((e) => e.Event.MonitorId)).size : 0,
+    [data]
+  );
 
   if (error) {
     return (
@@ -267,6 +279,23 @@ export default function Timeline() {
       </div>
     );
   }
+
+  // Build popover event data from selected event
+  const popoverEvent = selectedEvent ? (() => {
+    const raw = rawEventMap.get(selectedEvent.event.id);
+    if (!raw) return null;
+    return {
+      id: raw.Event.Id,
+      monitorId: raw.Event.MonitorId,
+      cause: raw.Event.Cause,
+      startDateTime: raw.Event.StartDateTime,
+      duration: raw.Event.Length,
+      alarmFrames: raw.Event.AlarmFrames,
+      notes: raw.Event.Notes,
+      monitorName: monitorNameMap.get(raw.Event.MonitorId) ?? raw.Event.Name,
+      tags: getTagsForEvent(raw.Event.Id).map((tag) => tag.Name),
+    };
+  })() : null;
 
   return (
     <div className="p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 md:space-y-6" data-testid="timeline-page">
@@ -289,9 +318,24 @@ export default function Timeline() {
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Filters — collapsible */}
       <Card>
-        <CardContent className="pt-6 space-y-4">
+        <button
+          type="button"
+          className="w-full flex items-center justify-between px-6 pt-4 pb-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          onClick={() => setFiltersCollapsed((c) => !c)}
+          data-testid="timeline-filters-toggle"
+        >
+          <span className="flex items-center gap-2">
+            <Filter className="h-3.5 w-3.5" />
+            {t('events.filters')}
+            {activeFilterCount > 0 && (
+              <span className="text-[10px] bg-primary/15 text-primary rounded-full px-1.5 py-0.5">{activeFilterCount}</span>
+            )}
+          </span>
+          <ChevronDown className={`h-4 w-4 transition-transform ${filtersCollapsed ? '-rotate-90' : ''}`} />
+        </button>
+        {!filtersCollapsed && <CardContent className="pt-2 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="startDate" className="text-xs">{t('timeline.start_date')}</Label>
@@ -370,10 +414,21 @@ export default function Timeline() {
               </Button>
             )}
           </div>
-        </CardContent>
+        </CardContent>}
       </Card>
 
-      {/* Timeline Graph */}
+      {/* Detection Filter Tabs */}
+      {allTimelineEvents.length > 0 && (
+        <div className="flex items-center justify-between gap-4" data-testid="timeline-detection-filters">
+          <DetectionFilterTabs
+            selected={detectionCategory}
+            onSelect={setDetectionCategory}
+            counts={detectionCounts}
+          />
+        </div>
+      )}
+
+      {/* Timeline Canvas */}
       <Card className="shadow-lg">
         <CardContent className="p-0">
           {isLoading ? (
@@ -381,101 +436,91 @@ export default function Timeline() {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
               <div className="text-muted-foreground">{t('timeline.loading')}</div>
             </div>
-          ) : data?.events && data.events.length === 0 ? (
+          ) : filteredEvents.length === 0 ? (
             <div className="h-[600px] flex items-center justify-center" data-testid="timeline-empty-state">
               <EmptyState
                 icon={Clock}
-                title={t('timeline.no_events_found')}
+                title={detectionCategory !== 'all' ? t('timeline.no_events_in_range') : t('timeline.no_events_found')}
                 description={t('timeline.adjust_filters')}
               />
             </div>
           ) : (
-            <div className="p-6" data-testid="timeline-content">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="text-sm text-muted-foreground" data-testid="timeline-events-count">
-                  {t('timeline.showing_events', { count: data?.events.length })}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {t('timeline.tip')}
-                </div>
+            <div className="p-4" data-testid="timeline-content">
+              <div className="mb-2 flex items-center justify-end gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-muted-foreground"
+                  onClick={() => setZoomInKey((k) => k + 1)}
+                  title="Zoom in"
+                  data-testid="timeline-zoom-in-button"
+                >
+                  <ZoomIn className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-muted-foreground"
+                  onClick={() => setZoomOutKey((k) => k + 1)}
+                  title="Zoom out"
+                  data-testid="timeline-zoom-out-button"
+                >
+                  <ZoomOut className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-muted-foreground"
+                  onClick={() => setResetKey((k) => k + 1)}
+                  title={t('timeline.center_view')}
+                  data-testid="timeline-center-button"
+                >
+                  <Crosshair className="h-3.5 w-3.5" />
+                </Button>
+                <span className="text-muted-foreground/30">|</span>
+                <span className="text-xs text-muted-foreground/50">
+                  {t('timeline.pinch_to_zoom')}
+                </span>
               </div>
-              <div
-                ref={timelineRef}
-                className="vis-timeline-custom"
-                data-testid="timeline-container"
-                style={{
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                  overflow: 'hidden',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                }}
+              <TimelineCanvas
+                monitors={monitorRows}
+                events={filteredEvents}
+                startMs={startMs}
+                endMs={endMs}
+                resetKey={resetKey}
+                zoomInKey={zoomInKey}
+                zoomOutKey={zoomOutKey}
+                onEventClick={handleEventClick}
+                onEventHover={handleEventHover}
+                onScrubberEventTap={navigateToEvent}
+                onScrubberStateChange={handleScrubberStateChange}
+                initialScrubberState={initialScrubberState}
               />
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Event Statistics */}
+      {/* Event Preview Popover */}
+      {selectedEvent && popoverEvent && (
+        <EventPreviewPopover
+          event={popoverEvent}
+          position={selectedEvent.position}
+          onOpenEvent={handleOpenEvent}
+          onClose={handleClosePopover}
+        />
+      )}
+
+      {/* Event Statistics — compact inline */}
       {data?.events && data.events.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" data-testid="timeline-statistics">
-          <Card className="border-l-4 border-l-blue-500 hover:shadow-md transition-shadow">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-2xl font-bold text-blue-600">{data.events.length}</div>
-                  <p className="text-xs text-muted-foreground mt-1 font-medium">{t('timeline.total_events')}</p>
-                </div>
-                <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-l-4 border-l-green-500 hover:shadow-md transition-shadow">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-2xl font-bold text-green-600">
-                    {new Set(data.events.map(e => e.Event.MonitorId)).size}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1 font-medium">{t('timeline.active_monitors')}</p>
-                </div>
-                <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
-                  <Activity className="h-6 w-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-l-4 border-l-amber-500 hover:shadow-md transition-shadow">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-2xl font-bold text-amber-600">
-                    {data.events.reduce((sum, e) => sum + parseInt(e.Event.AlarmFrames || '0'), 0).toLocaleString()}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1 font-medium">{t('timeline.alarm_frames')}</p>
-                </div>
-                <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center">
-                  <AlertCircle className="h-6 w-6 text-amber-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-l-4 border-l-purple-500 hover:shadow-md transition-shadow">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-2xl font-bold text-purple-600">
-                    {Math.round(data.events.reduce((sum, e) => sum + parseFloat(e.Event.Length || '0'), 0) / 60)}m
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1 font-medium">{t('timeline.total_duration')}</p>
-                </div>
-                <div className="h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-purple-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground" data-testid="timeline-statistics">
+          <span><span className="font-semibold text-blue-500">{data.events.length}</span> {t('timeline.total_events')}</span>
+          <span className="text-border">|</span>
+          <span><span className="font-semibold text-green-500">{activeMonitorCount}</span> {t('timeline.active_monitors')}</span>
+          <span className="text-border">|</span>
+          <span><span className="font-semibold text-amber-500">{totalAlarmFrames.toLocaleString()}</span> {t('timeline.alarm_frames')}</span>
+          <span className="text-border">|</span>
+          <span><span className="font-semibold text-purple-500">{totalDurationMins}m</span> {t('timeline.total_duration')}</span>
         </div>
       )}
     </div>

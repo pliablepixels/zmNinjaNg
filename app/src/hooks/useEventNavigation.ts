@@ -38,19 +38,22 @@ export function useEventNavigation({
   const eventFilters = (location.state?.eventFilters as EventFilters) || undefined;
   const hasFilters = !!eventFilters;
 
+  // Preserve the original referrer (e.g., '/timeline' or '/events') across prev/next navigation
+  const originalFrom = (location.state?.from as string) || '/events';
+
   const navigateToEvent = useCallback(
     (eventId: string, direction: 'left' | 'right') => {
       setSlideDirection(direction);
       navigate(`/events/${eventId}`, {
         state: {
-          from: '/events',
+          from: originalFrom,
           eventFilters,
           slideDirection: direction,
         },
         replace: true,
       });
     },
-    [navigate, eventFilters]
+    [navigate, eventFilters, originalFrom]
   );
 
   const goToPrevEvent = useCallback(async () => {
