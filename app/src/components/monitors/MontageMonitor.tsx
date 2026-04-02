@@ -16,6 +16,8 @@ import { useState, useRef, memo } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import type { Monitor, MonitorStatus, Profile } from '../../api/types';
+import { useAuthStore } from '../../stores/auth';
+import { getMonitorRunState, monitorDotColor } from '../../lib/monitor-status';
 import { useStreamLifecycle } from '../../hooks/useStreamLifecycle';
 import { useSettingsStore } from '../../stores/settings';
 import { Card } from '../ui/card';
@@ -57,7 +59,8 @@ function MontageMonitorComponent({
   showOverlay = false,
 }: MontageMonitorProps) {
   const { t } = useTranslation();
-  const isRunning = status?.Status === 'Connected';
+  const zmVersion = useAuthStore((s) => s.version);
+  const runState = getMonitorRunState(monitor, status, zmVersion);
   const settings = useSettingsStore(
     useShallow((state) => state.getProfileSettings(currentProfile?.id || ''))
   );
@@ -129,10 +132,10 @@ function MontageMonitorComponent({
         {/* Monitor status and name */}
         <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
           <Badge
-            variant={isRunning ? "default" : "destructive"}
+            variant="default"
             className={cn(
               "h-1.5 w-1.5 p-0 rounded-full shrink-0",
-              isRunning ? "bg-green-500 hover:bg-green-500" : "bg-red-500 hover:bg-red-500"
+              monitorDotColor(runState)
             )}
           />
           <span className={cn(

@@ -61,6 +61,11 @@ vi.mock('../../video/VideoPlayer', () => ({
   VideoPlayer: () => <div data-testid="video-player">Mock VideoPlayer</div>,
 }));
 
+vi.mock('../../../stores/auth', () => ({
+  useAuthStore: (selector: (state: { version: string }) => unknown) =>
+    selector({ version: '1.38.0' }),
+}));
+
 describe('MontageMonitor', () => {
   const mockMonitor: Monitor = {
     Id: '1',
@@ -69,12 +74,16 @@ describe('MontageMonitor', () => {
     Height: '1080',
     Orientation: '0',
     Function: 'Modect',
+    Capturing: 'Always',
+    Analysing: 'Always',
     Enabled: '1',
   } as Monitor;
 
   const mockStatus: MonitorStatus = {
     MonitorId: '1',
     Status: 'Connected',
+    CaptureFPS: '15.00',
+    AnalysisFPS: '10.00',
   };
 
   const mockProfile: Profile = {

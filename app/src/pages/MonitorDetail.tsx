@@ -30,6 +30,7 @@ import { ZoneOverlay } from '../components/video/ZoneOverlay';
 import { log, LogLevel } from '../lib/logger';
 import { getOrientedResolution, parseMonitorRotation } from '../lib/monitor-rotation';
 import { isZmVersionAtLeast } from '../lib/zm-version';
+import { getMonitorRunState, monitorDotColor } from '../lib/monitor-status';
 import { useZoomPan } from '../hooks/useZoomPan';
 
 // Extracted hooks and components
@@ -249,10 +250,7 @@ export default function MonitorDetail() {
               <span
                 className={cn(
                   'w-1.5 h-1.5 rounded-full shrink-0',
-                  (is138Plus
-                    ? monitor.Monitor.Capturing !== 'None'
-                    : monitor.Monitor.Function !== 'None')
-                    ? 'bg-green-500' : 'bg-red-500'
+                  monitorDotColor(getMonitorRunState(monitor.Monitor, monitor.Monitor_Status, zmVersion))
                 )}
               />
               <h1 className="text-sm sm:text-base font-semibold">{monitor.Monitor.Name}</h1>

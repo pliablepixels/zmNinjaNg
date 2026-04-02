@@ -138,7 +138,9 @@
     "fit_none": "None",
     "fit_scale_down": "Scale down",
     "view_events": "Events",
-    "offline": "Offline"
+    "offline": "Offline",
+    "disabled": "Disabled",
+    "warning": "Warning"
   },
   "events": {
     "title": "Events",

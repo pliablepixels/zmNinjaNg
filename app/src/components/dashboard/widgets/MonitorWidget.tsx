@@ -19,6 +19,8 @@ import { getMonitor, getMonitors } from '../../../api/monitors';
 import type { MonitorFeedFit } from '../../../stores/settings';
 import { useMonitorStream } from '../../../hooks/useMonitorStream';
 import { AlertTriangle, VideoOff } from 'lucide-react';
+import { useAuthStore } from '../../../stores/auth';
+import { getMonitorRunState, isMonitorStreamable } from '../../../lib/monitor-status';
 import { Skeleton } from '../../ui/skeleton';
 import { useTranslation } from 'react-i18next';
 import { calculateGridDimensions } from '../../../lib/grid-utils';
@@ -70,14 +72,16 @@ function SingleMonitor({ monitorId, objectFit }: { monitorId: string; objectFit:
         return null;
     }
 
-    const isRunning = monitor.Monitor_Status?.Status === 'Connected';
+    const zmVersion = useAuthStore((s) => s.version);
+    const runState = getMonitorRunState(monitor.Monitor, monitor.Monitor_Status, zmVersion);
+    const streamable = isMonitorStreamable(runState);
 
     return (
         <div
             className="w-full h-full bg-black relative group overflow-hidden cursor-pointer"
             onClick={() => navigate(`/monitors/${monitor.Monitor.Id}`, { state: { from: '/dashboard' } })}
         >
-            {isRunning && displayedImageUrl ? (
+            {streamable && displayedImageUrl ? (
                 <img
                     ref={imgRef}
                     src={displayedImageUrl}
@@ -90,7 +94,7 @@ function SingleMonitor({ monitorId, objectFit }: { monitorId: string; objectFit:
                     }}
                 />
             ) : null}
-            {!isRunning || !displayedImageUrl ? (
+            {!streamable || !displayedImageUrl ? (
                 <div className="absolute inset-0 flex items-center justify-center text-white/50 bg-zinc-900">
                     <VideoOff className="h-8 w-8" />
                 </div>

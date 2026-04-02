@@ -44,6 +44,11 @@ vi.mock('sonner', () => ({
   },
 }));
 
+vi.mock('../../../stores/auth', () => ({
+  useAuthStore: (selector: (state: { version: string }) => unknown) =>
+    selector({ version: '1.38.0' }),
+}));
+
 describe('MonitorCard', () => {
   it('calls settings callback when settings button is clicked', async () => {
     const user = userEvent.setup();
