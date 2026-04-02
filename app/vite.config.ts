@@ -35,7 +35,7 @@ export default defineConfig({
           'vendor-forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
           'vendor-query': ['@tanstack/react-query'],
           'vendor-i18n': ['i18next', 'react-i18next', 'i18next-browser-languagedetector'],
-          'vendor-charts': ['recharts', 'vis-timeline', 'vis-data'],
+          'vendor-charts': ['recharts'],
           'vendor-video': ['video.js'],
         },
       },
