@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { Activity, Settings, Download, Clock, Video, Eye, Disc } from 'lucide-react';
+import { Activity, Settings, Download, Clock, Video, VideoOff, Eye, Disc } from 'lucide-react';
 import { cn, formatEventCount } from '../../lib/utils';
 import { downloadSnapshotFromElement } from '../../lib/download';
 import { toast } from 'sonner';
@@ -60,6 +60,7 @@ function MonitorCardComponent({
   } = useMonitorStream({
     monitorId: monitor.Id,
   });
+
 
   /**
    * Handles image load errors.
@@ -119,7 +120,7 @@ function MonitorCardComponent({
           style={{ aspectRatio: aspectRatio ?? '16 / 9' }}
           onClick={() => navigate(`/monitors/${monitor.Id}`, { state: { from: '/monitors' } })}
         >
-          {(displayedImageUrl || streamUrl) && (
+          {isRunning && (displayedImageUrl || streamUrl) ? (
             <img
               ref={imgRef}
               src={displayedImageUrl || streamUrl}
@@ -129,6 +130,10 @@ function MonitorCardComponent({
               onError={handleImageError}
               data-testid="monitor-player"
             />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-muted/30">
+              <VideoOff className="h-8 w-8 text-muted-foreground/40" />
+            </div>
           )}
           <div className="absolute top-1.5 left-1.5 z-10">
             <Badge
@@ -238,7 +243,7 @@ function MonitorCardComponent({
       <div className="flex flex-row gap-4 p-4">
         {/* Thumbnail Preview - Clickable */}
         <div
-          className="relative bg-card cursor-pointer w-[40%] shrink-0 max-h-48 focus:outline-none focus:ring-2 focus:ring-primary"
+          className="relative bg-muted/30 rounded overflow-hidden cursor-pointer w-[40%] shrink-0 focus:outline-none focus:ring-2 focus:ring-primary"
           style={{ aspectRatio: aspectRatio ?? '16 / 9' }}
           onClick={() => navigate(`/monitors/${monitor.Id}`, { state: { from: '/monitors' } })}
           onKeyDown={(e) => {
@@ -251,7 +256,7 @@ function MonitorCardComponent({
           tabIndex={0}
           aria-label={`${t('monitors.view_live')}: ${monitor.Name}`}
         >
-          {(displayedImageUrl || streamUrl) && (
+          {isRunning && (displayedImageUrl || streamUrl) ? (
             <img
               ref={imgRef}
               src={displayedImageUrl || streamUrl}
@@ -261,23 +266,11 @@ function MonitorCardComponent({
               onError={handleImageError}
               data-testid="monitor-player"
             />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <VideoOff className="h-8 w-8 text-muted-foreground/40" />
+            </div>
           )}
-
-          {/* Status Badge */}
-          <div className="absolute top-2 left-2 z-10">
-            <Badge
-              variant={isRunning ? 'default' : 'destructive'}
-              className={cn(
-                'text-xs shadow-sm',
-                isRunning
-                  ? 'bg-green-500/90 hover:bg-green-500'
-                  : 'bg-red-500/90 hover:bg-red-500'
-              )}
-              data-testid="monitor-status"
-            >
-              {isRunning ? t('monitors.live') : t('monitors.offline')}
-            </Badge>
-          </div>
         </div>
 
         {/* Monitor Info & Controls */}
@@ -285,6 +278,18 @@ function MonitorCardComponent({
           {/* Name & Resolution */}
           <div>
             <div className="flex items-center gap-2 mb-1">
+              <Badge
+                variant={isRunning ? 'default' : 'destructive'}
+                className={cn(
+                  'text-xs shadow-sm shrink-0',
+                  isRunning
+                    ? 'bg-green-500/90 hover:bg-green-500'
+                    : 'bg-red-500/90 hover:bg-red-500'
+                )}
+                data-testid="monitor-status"
+              >
+                {isRunning ? t('monitors.live') : t('monitors.offline')}
+              </Badge>
               <div className="font-semibold text-base truncate" data-testid="monitor-name">{monitor.Name}</div>
               <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 shrink-0">
                 ID: {monitor.Id}

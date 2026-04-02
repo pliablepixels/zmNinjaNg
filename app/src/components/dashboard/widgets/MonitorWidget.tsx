@@ -70,12 +70,14 @@ function SingleMonitor({ monitorId, objectFit }: { monitorId: string; objectFit:
         return null;
     }
 
+    const isRunning = monitor.Monitor_Status?.Status === 'Connected';
+
     return (
         <div
             className="w-full h-full bg-black relative group overflow-hidden cursor-pointer"
             onClick={() => navigate(`/monitors/${monitor.Monitor.Id}`, { state: { from: '/dashboard' } })}
         >
-            {displayedImageUrl && (
+            {isRunning && displayedImageUrl ? (
                 <img
                     ref={imgRef}
                     src={displayedImageUrl}
@@ -87,10 +89,16 @@ function SingleMonitor({ monitorId, objectFit }: { monitorId: string; objectFit:
                         (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
                     }}
                 />
+            ) : null}
+            {!isRunning || !displayedImageUrl ? (
+                <div className="absolute inset-0 flex items-center justify-center text-white/50 bg-zinc-900">
+                    <VideoOff className="h-8 w-8" />
+                </div>
+            ) : (
+                <div className="hidden absolute inset-0 flex items-center justify-center text-white/50 bg-zinc-900">
+                    <VideoOff className="h-8 w-8" />
+                </div>
             )}
-            <div className="hidden absolute inset-0 flex items-center justify-center text-white/50 bg-zinc-900">
-                <VideoOff className="h-8 w-8" />
-            </div>
             <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 <p className="text-white text-xs font-medium truncate">{monitor.Monitor.Name}</p>
             </div>

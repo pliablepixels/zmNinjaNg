@@ -83,7 +83,7 @@ function EventCardComponent({ event, monitorName, thumbnailUrl, objectFit = 'con
     >
       <div className="flex gap-2 sm:gap-3 p-2 sm:p-3">
         {/* Thumbnail - Fixed width container for consistent text alignment */}
-        <div className="relative flex-shrink-0 rounded overflow-hidden bg-card w-24 sm:w-28 md:w-32 max-w-[40%]">
+        <div className="relative flex-shrink-0 rounded overflow-hidden bg-card border border-border/40 w-24 sm:w-28 md:w-32 max-w-[40%]">
           <div
             className="w-full max-h-28"
             style={{ aspectRatio: aspectRatio.toString() }}
@@ -150,11 +150,11 @@ function EventCardComponent({ event, monitorName, thumbnailUrl, objectFit = 'con
                   {monitorName}
                 </span>
               </div>
-              <div className="flex items-center gap-1 sm:gap-1.5">
+              <div className="flex items-center gap-1 sm:gap-1.5 bg-primary/10 rounded px-1.5 py-0.5">
                 <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
                 {fmtDate(startTime)}
               </div>
-              <div className="flex items-center gap-1 sm:gap-1.5">
+              <div className="flex items-center gap-1 sm:gap-1.5 bg-primary/10 rounded px-1.5 py-0.5">
                 <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                 {fmtTime(startTime)}
               </div>
