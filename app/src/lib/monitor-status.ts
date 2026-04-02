@@ -66,23 +66,3 @@ export function monitorDotColor(state: MonitorRunState): string {
     case 'disabled': return 'bg-zinc-400 dark:bg-zinc-600';
   }
 }
-
-/** Tailwind color classes for a Badge (with hover). */
-export function monitorBadgeColor(state: MonitorRunState): string {
-  switch (state) {
-    case 'live': return 'bg-green-500/90 hover:bg-green-500';
-    case 'warning': return 'bg-amber-500/90 hover:bg-amber-500';
-    case 'offline': return 'bg-red-500/90 hover:bg-red-500';
-    case 'disabled': return 'bg-zinc-400/90 hover:bg-zinc-400 dark:bg-zinc-600/90 dark:hover:bg-zinc-600';
-  }
-}
-
-/** i18n key for the status label. */
-export function monitorStatusI18nKey(state: MonitorRunState): string {
-  switch (state) {
-    case 'live': return 'monitors.live';
-    case 'warning': return 'monitors.warning';
-    case 'offline': return 'monitors.offline';
-    case 'disabled': return 'monitors.disabled';
-  }
-}

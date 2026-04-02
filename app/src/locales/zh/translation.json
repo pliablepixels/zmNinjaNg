@@ -125,7 +125,6 @@
     "same_as_max_fps": "同最大帧率",
     "no_monitors": "未找到监控",
     "no_signal": "无信号",
-    "live": "直播",
     "download_snapshot": "快照",
     "snapshot_downloaded": "快照已下载",
     "snapshot_failed": "快照失败",
@@ -137,10 +136,7 @@
     "fit_fill": "填充",
     "fit_none": "无",
     "fit_scale_down": "缩小",
-    "view_events": "事件",
-    "offline": "离线",
-    "disabled": "已禁用",
-    "warning": "警告"
+    "view_events": "事件"
   },
   "events": {
     "title": "事件",

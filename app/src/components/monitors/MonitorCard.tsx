@@ -20,7 +20,7 @@ import type { MonitorCardProps } from '../../api/types';
 import { log, LogLevel } from '../../lib/logger';
 import { useTranslation } from 'react-i18next';
 import { getMonitorAspectRatio } from '../../lib/monitor-rotation';
-import { getMonitorRunState, isMonitorStreamable, monitorDotColor, monitorStatusI18nKey } from '../../lib/monitor-status';
+import { getMonitorRunState, isMonitorStreamable, monitorDotColor } from '../../lib/monitor-status';
 import { useAuthStore } from '../../stores/auth';
 import type { CSSProperties } from 'react';
 
@@ -142,7 +142,6 @@ function MonitorCardComponent({
           <div className="absolute top-1.5 left-1.5 z-10">
             <span
               className={cn('block h-2 w-2 rounded-full shadow-sm', monitorDotColor(runState))}
-              title={t(monitorStatusI18nKey(runState))}
             />
           </div>
         </div>
@@ -279,7 +278,6 @@ function MonitorCardComponent({
             <div className="flex items-center gap-2 mb-1">
               <span
                 className={cn('block h-2 w-2 rounded-full shrink-0', monitorDotColor(runState))}
-                title={t(monitorStatusI18nKey(runState))}
                 data-testid="monitor-status"
               />
               <div className="font-semibold text-base truncate" data-testid="monitor-name">{monitor.Name}</div>

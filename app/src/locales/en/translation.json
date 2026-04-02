@@ -125,7 +125,6 @@
     "same_as_max_fps": "Same as Max FPS",
     "no_monitors": "No monitors found",
     "no_signal": "No Signal",
-    "live": "Live",
     "download_snapshot": "Snapshot",
     "snapshot_downloaded": "Snapshot downloaded",
     "snapshot_failed": "Snapshot failed",
@@ -137,10 +136,7 @@
     "fit_fill": "Fill",
     "fit_none": "None",
     "fit_scale_down": "Scale down",
-    "view_events": "Events",
-    "offline": "Offline",
-    "disabled": "Disabled",
-    "warning": "Warning"
+    "view_events": "Events"
   },
   "events": {
     "title": "Events",

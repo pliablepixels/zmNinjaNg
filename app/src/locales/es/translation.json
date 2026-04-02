@@ -125,7 +125,6 @@
     "same_as_max_fps": "Igual que FPS Máx",
     "no_monitors": "No se encontraron monitores",
     "no_signal": "Sin Señal",
-    "live": "En Vivo",
     "download_snapshot": "Instantánea",
     "snapshot_downloaded": "Instantánea descargada",
     "snapshot_failed": "Fallo al descargar instantánea",
@@ -137,10 +136,7 @@
     "fit_fill": "Rellenar",
     "fit_none": "Ninguno",
     "fit_scale_down": "Reducir",
-    "view_events": "Eventos",
-    "offline": "Fuera de línea",
-    "disabled": "Inactivo",
-    "warning": "Alerta"
+    "view_events": "Eventos"
   },
   "events": {
     "title": "Eventos",

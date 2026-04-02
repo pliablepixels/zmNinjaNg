@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getMonitorRunState, isMonitorStreamable, monitorDotColor, monitorBadgeColor, monitorStatusI18nKey } from '../monitor-status';
+import { getMonitorRunState, isMonitorStreamable, monitorDotColor } from '../monitor-status';
 import type { Monitor, MonitorStatus } from '../../api/types';
 
 function makeMonitor(overrides: Partial<Monitor> = {}): Monitor {
@@ -229,23 +229,5 @@ describe('monitorDotColor', () => {
     expect(monitorDotColor('warning')).toContain('amber');
     expect(monitorDotColor('offline')).toContain('red');
     expect(monitorDotColor('disabled')).toContain('zinc');
-  });
-});
-
-describe('monitorBadgeColor', () => {
-  it('returns correct colors for each state', () => {
-    expect(monitorBadgeColor('live')).toContain('green');
-    expect(monitorBadgeColor('warning')).toContain('amber');
-    expect(monitorBadgeColor('offline')).toContain('red');
-    expect(monitorBadgeColor('disabled')).toContain('zinc');
-  });
-});
-
-describe('monitorStatusI18nKey', () => {
-  it('returns correct i18n keys', () => {
-    expect(monitorStatusI18nKey('live')).toBe('monitors.live');
-    expect(monitorStatusI18nKey('warning')).toBe('monitors.warning');
-    expect(monitorStatusI18nKey('offline')).toBe('monitors.offline');
-    expect(monitorStatusI18nKey('disabled')).toBe('monitors.disabled');
   });
 });
