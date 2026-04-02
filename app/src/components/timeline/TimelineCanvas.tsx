@@ -154,7 +154,7 @@ const TimelineCanvasInner = ({
         className="w-full"
         data-testid="timeline-canvas"
       />
-      {/* Monitor name sidebar */}
+      {/* Monitor name sidebar with gradient fade to avoid obscuring events */}
       <div
         className="absolute left-0 z-10 pointer-events-none"
         style={{ top: LAYOUT.headerHeight }}
@@ -163,15 +163,18 @@ const TimelineCanvasInner = ({
         {monitors.map((monitor, index) => (
           <div
             key={monitor.id}
-            className="flex items-center gap-1.5 px-2 pointer-events-auto"
-            style={{ height: LAYOUT.rowHeight }}
+            className="flex items-center gap-1.5 pl-2 pr-4 pointer-events-auto"
+            style={{
+              height: LAYOUT.rowHeight,
+              background: 'linear-gradient(to right, hsl(var(--background)) 70%, transparent)',
+            }}
             title={monitor.name}
           >
             <span
               className="h-2 w-2 rounded-full shrink-0"
               style={{ backgroundColor: getMonitorColor(index) }}
             />
-            <span className="text-xs text-muted-foreground truncate max-w-24">
+            <span className="text-xs font-medium text-foreground/80 truncate max-w-28">
               {monitor.name}
             </span>
           </div>
