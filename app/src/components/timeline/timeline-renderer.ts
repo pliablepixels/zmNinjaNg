@@ -380,7 +380,6 @@ export function drawEvents(
 
     const color = getMonitorColor(rowIdx);
     const isHovered = event.id === hoveredEventId;
-    const isHighPriority = event.alarmRatio > 0.5;
 
     // Hovered: shadow
     if (isHovered) {
@@ -390,26 +389,10 @@ export function drawEvents(
       ctx.shadowOffsetY = 0;
     }
 
-    // High priority: amber glow
-    if (isHighPriority && !isHovered) {
-      ctx.shadowColor = 'rgba(245,158,11,0.5)';
-      ctx.shadowBlur = 6 * dpr;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
-    }
-
     // Bar fill
     drawRoundedRect(ctx, x1, barY, barW, barH, cornerRadius);
-    ctx.fillStyle = isHovered ? color : withAlpha(color, 0.7);
+    ctx.fillStyle = isHovered ? color : withAlpha(color, 0.85);
     ctx.fill();
-
-    // High priority: amber border
-    if (isHighPriority) {
-      drawRoundedRect(ctx, x1, barY, barW, barH, cornerRadius);
-      ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 1.5 * dpr;
-      ctx.stroke();
-    }
 
     // Hovered: white outline
     if (isHovered) {
