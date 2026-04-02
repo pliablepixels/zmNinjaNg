@@ -406,21 +406,49 @@ export function drawEvents(
     ctx.shadowColor = 'transparent';
     ctx.shadowBlur = 0;
 
-    // Cause label if bar is wide enough
-    const labelMinWidth = 40 * dpr;
-    if (barW > labelMinWidth && event.cause) {
-      ctx.fillStyle = '#ffffff';
-      ctx.font = `${(LAYOUT.fontSize - 1) * dpr}px ${LAYOUT.fontFamily}`;
+    // Bar label: detected objects + event ID
+    const labelPad = 3 * dpr;
+    const fontSize = (LAYOUT.fontSize - 2) * dpr;
+
+    if (barW > 30 * dpr) {
+      ctx.font = `${fontSize}px ${LAYOUT.fontFamily}`;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
 
-      const maxTextW = barW - 6 * dpr;
-      const text = truncateText(ctx, event.cause, maxTextW);
-      ctx.fillText(text, x1 + 3 * dpr, barY + barH / 2);
+      const objects = getDetectedObjects(event.notes);
+      const maxTextW = barW - labelPad * 2;
+
+      if (objects && barW > 60 * dpr) {
+        // Wide enough: "person, car · #12345"
+        const label = `${objects} · #${event.id}`;
+        ctx.fillStyle = '#ffffffdd';
+        ctx.fillText(truncateText(ctx, label, maxTextW), x1 + labelPad, barY + barH / 2);
+      } else if (objects) {
+        // Medium: just objects
+        ctx.fillStyle = '#ffffffdd';
+        ctx.fillText(truncateText(ctx, objects, maxTextW), x1 + labelPad, barY + barH / 2);
+      } else {
+        // No objects: just event ID
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.fillText(truncateText(ctx, `#${event.id}`, maxTextW), x1 + labelPad, barY + barH / 2);
+      }
     }
   }
 
   ctx.restore();
+}
+
+/** Extract detected object names from Notes field, stripping text after |. */
+function getDetectedObjects(notes: string | null): string {
+  if (!notes) return '';
+  const match = notes.match(/detected:(.*)/i);
+  if (!match) return '';
+  const objects = match[1]
+    .split(',')
+    .map((s) => s.split('|')[0].trim())
+    .filter(Boolean);
+  // Deduplicate
+  return [...new Set(objects)].join(', ');
 }
 
 function truncateText(
