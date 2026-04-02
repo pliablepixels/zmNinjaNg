@@ -132,11 +132,7 @@ function TimelineScrubberComponent({
     if (!scrubbing) return;
 
     const onMouseMove = (e: MouseEvent) => updateScrub(e.clientX);
-    const onMouseUp = () => {
-      setScrubbing(false);
-      onPlayheadChange(null);
-      setActiveEvents([]);
-    };
+    const onMouseUp = () => setScrubbing(false);
 
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
@@ -144,7 +140,7 @@ function TimelineScrubberComponent({
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
     };
-  }, [scrubbing, updateScrub, onPlayheadChange]);
+  }, [scrubbing, updateScrub]);
 
   // Touch handlers
   const onTouchStart = useCallback(
@@ -164,16 +160,25 @@ function TimelineScrubberComponent({
 
   const onTouchEnd = useCallback(() => {
     setScrubbing(false);
-    onPlayheadChange(null);
+  }, []);
+
+  // Dismiss thumbnails when tapping outside
+  const dismissThumbnails = useCallback(() => {
     setActiveEvents([]);
+    onPlayheadChange(null);
   }, [onPlayheadChange]);
 
   const playheadTime = normToTime(handleNorm);
 
   return (
     <div className="relative" data-testid="timeline-scrubber">
-      {/* Floating thumbnail strip — positioned at handle, clamped to edges */}
-      {scrubbing && activeEvents.length > 0 && (
+      {/* Backdrop to dismiss thumbnails when tapping outside */}
+      {!scrubbing && activeEvents.length > 0 && (
+        <div className="fixed inset-0 z-10" onClick={dismissThumbnails} />
+      )}
+
+      {/* Floating thumbnail strip — persists after release so you can tap them */}
+      {activeEvents.length > 0 && (
         <div
           className="absolute bottom-full mb-2 pointer-events-auto z-20"
           style={{
@@ -182,8 +187,8 @@ function TimelineScrubberComponent({
             maxWidth: '90%',
           }}
         >
-          <div className="flex gap-1.5 p-2 rounded-lg bg-popover/95 border border-border shadow-xl backdrop-blur-sm max-w-full overflow-x-auto">
-            {activeEvents.slice(0, 8).map((ev) => (
+          <div className="flex gap-1.5 p-2 rounded-lg bg-popover/95 border border-border shadow-xl backdrop-blur-sm overflow-x-auto">
+            {activeEvents.map((ev) => (
               <ScrubberThumbnail
                 key={ev.id}
                 event={ev}
@@ -194,8 +199,8 @@ function TimelineScrubberComponent({
         </div>
       )}
 
-      {/* Time label — shown while scrubbing */}
-      {scrubbing && (
+      {/* Time label — shown while scrubbing or when thumbnails are visible */}
+      {(scrubbing || activeEvents.length > 0) && (
         <div
           className="absolute bottom-full mb-1 text-[10px] text-muted-foreground bg-popover border border-border rounded px-1.5 py-0.5 -translate-x-1/2 pointer-events-none z-10"
           style={{ left: `${handleNorm * 100}%` }}
