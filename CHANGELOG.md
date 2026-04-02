@@ -1,5 +1,20 @@
 # Changelog
 
+## [zmNinjaNG-1.1.6](https://github.com/pliablepixels/zmNinjaNG/tree/zmNinjaNG-1.1.6) (2026-04-02)
+
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNG/compare/zmNinjaNG-1.1.5...zmNinjaNG-1.1.6)
+
+**Implemented enhancements:**
+
+- feat: redesign Timeline with custom Canvas renderer [\#97](https://github.com/pliablepixels/zmNinjaNG/issues/97)
+- feat: configurable grid columns on Monitor page [\#94](https://github.com/pliablepixels/zmNinjaNG/issues/94)
+
+**Fixed bugs:**
+
+- fix: unify monitor status logic across all views [\#95](https://github.com/pliablepixels/zmNinjaNG/issues/95)
+- fix: i18n labels overflow on narrow screens [\#93](https://github.com/pliablepixels/zmNinjaNG/issues/93)
+- fix: move PTZ to info row, remove Type from monitor card [\#92](https://github.com/pliablepixels/zmNinjaNG/issues/92)
+
 ## [zmNinjaNG-1.1.5](https://github.com/pliablepixels/zmNinjaNG/tree/zmNinjaNG-1.1.5) (2026-03-30)
 
 [Full Changelog](https://github.com/pliablepixels/zmNinjaNG/compare/zmNinjaNG-1.1.4...zmNinjaNG-1.1.5)
