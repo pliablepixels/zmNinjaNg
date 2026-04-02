@@ -406,32 +406,29 @@ export function drawEvents(
     ctx.shadowColor = 'transparent';
     ctx.shadowBlur = 0;
 
-    // Bar label: detected objects + event ID
+    // Bar label: two rows — top: detected objects or cause, bottom: Event ID
     const labelPad = 3 * dpr;
-    const fontSize = (LAYOUT.fontSize - 2) * dpr;
+    const fontSize = (LAYOUT.fontSize - 3) * dpr;
 
     if (barW > 30 * dpr) {
+      const maxTextW = barW - labelPad * 2;
+      const objects = getDetectedObjects(event.notes);
+      const topLine = objects || event.cause;
+      const bottomLine = `Event ID: ${event.id}`;
+      const midY = barY + barH / 2;
+
       ctx.font = `${fontSize}px ${LAYOUT.fontFamily}`;
       ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
 
-      const objects = getDetectedObjects(event.notes);
-      const maxTextW = barW - labelPad * 2;
+      // Top row
+      ctx.fillStyle = '#ffffffdd';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(truncateText(ctx, topLine, maxTextW), x1 + labelPad, midY - 1 * dpr);
 
-      if (objects && barW > 60 * dpr) {
-        // Wide enough: "person, car · #12345"
-        const label = `${objects} · #${event.id}`;
-        ctx.fillStyle = '#ffffffdd';
-        ctx.fillText(truncateText(ctx, label, maxTextW), x1 + labelPad, barY + barH / 2);
-      } else if (objects) {
-        // Medium: just objects
-        ctx.fillStyle = '#ffffffdd';
-        ctx.fillText(truncateText(ctx, objects, maxTextW), x1 + labelPad, barY + barH / 2);
-      } else {
-        // No objects: just event ID
-        ctx.fillStyle = 'rgba(255,255,255,0.6)';
-        ctx.fillText(truncateText(ctx, `#${event.id}`, maxTextW), x1 + labelPad, barY + barH / 2);
-      }
+      // Bottom row
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.textBaseline = 'top';
+      ctx.fillText(truncateText(ctx, bottomLine, maxTextW), x1 + labelPad, midY + 1 * dpr);
     }
   }
 
