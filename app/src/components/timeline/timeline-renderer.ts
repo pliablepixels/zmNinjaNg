@@ -12,7 +12,7 @@ import {
   getRowY,
   getMonitorColor,
   timeToX,
-  TimelineEvent,
+  type TimelineEvent,
 } from './timeline-layout';
 
 // ---------------------------------------------------------------------------

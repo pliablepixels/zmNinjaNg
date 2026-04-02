@@ -922,7 +922,16 @@
     "tooltip_duration": "Dauer",
     "tooltip_frames_total": "Frames",
     "tooltip_alarm_frames": "Alarm-Frames",
-    "tooltip_score": "Bewertung"
+    "tooltip_score": "Bewertung",
+    "filter_all": "Alle",
+    "filter_person": "Personen",
+    "filter_vehicle": "Fahrzeuge",
+    "filter_animal": "Tiere",
+    "filter_other": "Andere",
+    "open_event": "Öffnen",
+    "events_loaded": "{{count}} Ereignisse",
+    "pinch_to_zoom": "Scrollen zum Zoomen, Ziehen zum Bewegen",
+    "no_events_in_range": "Keine Ereignisse in diesem Zeitraum"
   },
   "error": {
     "something_went_wrong": "Etwas ist schief gelaufen",

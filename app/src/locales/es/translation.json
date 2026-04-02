@@ -922,7 +922,16 @@
     "tooltip_duration": "Duración",
     "tooltip_frames_total": "Fotogramas",
     "tooltip_alarm_frames": "Fotogramas de Alarma",
-    "tooltip_score": "Puntuación"
+    "tooltip_score": "Puntuación",
+    "filter_all": "Todos",
+    "filter_person": "Personas",
+    "filter_vehicle": "Vehículos",
+    "filter_animal": "Animales",
+    "filter_other": "Otros",
+    "open_event": "Abrir",
+    "events_loaded": "{{count}} eventos",
+    "pinch_to_zoom": "Desplazar para zoom, arrastrar para mover",
+    "no_events_in_range": "Sin eventos en este rango"
   },
   "error": {
     "something_went_wrong": "Algo salió mal",

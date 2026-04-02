@@ -922,7 +922,16 @@
     "tooltip_duration": "Duration",
     "tooltip_frames_total": "Frames",
     "tooltip_alarm_frames": "Alarm Frames",
-    "tooltip_score": "Score"
+    "tooltip_score": "Score",
+    "filter_all": "All",
+    "filter_person": "People",
+    "filter_vehicle": "Vehicles",
+    "filter_animal": "Animals",
+    "filter_other": "Other",
+    "open_event": "Open",
+    "events_loaded": "{{count}} events",
+    "pinch_to_zoom": "Scroll to zoom, drag to pan",
+    "no_events_in_range": "No events in this time range"
   },
   "error": {
     "something_went_wrong": "Something went wrong",

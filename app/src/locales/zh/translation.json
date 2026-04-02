@@ -922,7 +922,16 @@
     "tooltip_duration": "时长",
     "tooltip_frames_total": "帧数",
     "tooltip_alarm_frames": "报警帧",
-    "tooltip_score": "评分"
+    "tooltip_score": "评分",
+    "filter_all": "全部",
+    "filter_person": "人员",
+    "filter_vehicle": "车辆",
+    "filter_animal": "动物",
+    "filter_other": "其他",
+    "open_event": "打开",
+    "events_loaded": "{{count}} 个事件",
+    "pinch_to_zoom": "滚动缩放，拖动平移",
+    "no_events_in_range": "此时间范围内无事件"
   },
   "error": {
     "something_went_wrong": "出错了",
