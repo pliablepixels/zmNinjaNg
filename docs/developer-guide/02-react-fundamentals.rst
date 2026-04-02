@@ -399,7 +399,7 @@ snapshot in time**.
      return <Button onClick={handleClick}>{text}</Button>;
    }
 
-**Why does ``alert`` show ‘Hello’?**
+**Why does** ``alert`` **show ‘Hello’?**
 
 1. When the component first renders, ``text`` is ``'Hello'``
 2. The ``handleClick`` function is created with ``text`` captured as
@@ -489,9 +489,13 @@ state. Conditional hooks break this order.
 useEffect: Side Effects
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-``useEffect`` runs code **after** the component renders. Use it for: -
-Fetching data - Subscriptions - Setting up timers - Manually changing
-the DOM - Cleanup (like closing connections)
+``useEffect`` runs code **after** the component renders. Use it for:
+
+- Fetching data
+- Subscriptions
+- Setting up timers
+- Manually changing the DOM
+- Cleanup (like closing connections)
 
 .. code:: tsx
 
@@ -752,13 +756,17 @@ with child re-renders and effect dependencies.
 When to Use useCallback
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-✅ **Use when:** - Passing callbacks to child components wrapped in
-``React.memo`` - Using functions as dependencies in ``useEffect`` or
-other hooks - Creating event handlers that shouldn’t change
+✅ **Use when:**
 
-❌ **Don’t use when:** - Function isn’t passed to children - No
-performance issue (premature optimization) - Function needs to capture
-latest state (better to omit useCallback)
+- Passing callbacks to child components wrapped in ``React.memo``
+- Using functions as dependencies in ``useEffect`` or other hooks
+- Creating event handlers that shouldn’t change
+
+❌ **Don’t use when:**
+
+- Function isn’t passed to children
+- No performance issue (premature optimization)
+- Function needs to capture latest state (better to omit useCallback)
 
 useCallback with Dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -800,12 +808,16 @@ to cache expensive calculations.
      );
    }
 
-**When to use useMemo:** - Expensive calculations (sorting, filtering
-large arrays) - Creating objects/arrays used as dependencies in hooks -
-After profiling shows a performance issue
+**When to use useMemo:**
 
-**Don’t use for:** - Simple calculations (more overhead than benefit) -
-Premature optimization
+- Expensive calculations (sorting, filtering large arrays)
+- Creating objects/arrays used as dependencies in hooks
+- After profiling shows a performance issue
+
+**Don’t use for:**
+
+- Simple calculations (more overhead than benefit)
+- Premature optimization
 
 Object Identity and References
 ------------------------------
@@ -984,13 +996,19 @@ monitor’s status changes, only that card should re-render, not all 10.
 When to Use React.memo
 ~~~~~~~~~~~~~~~~~~~~~~
 
-✅ **Good use cases:** - Component renders expensive UI (complex
-calculations, animations) - Component is in a large list (50+ items) -
-Props rarely change - Parent re-renders frequently
+✅ **Good use cases:**
 
-❌ **Don’t use when:** - Component is cheap to render - Props change on
-every render anyway - Only one instance exists - You haven’t profiled to
-confirm it’s slow
+- Component renders expensive UI (complex calculations, animations)
+- Component is in a large list (50+ items)
+- Props rarely change
+- Parent re-renders frequently
+
+❌ **Don’t use when:**
+
+- Component is cheap to render
+- Props change on every render anyway
+- Only one instance exists
+- You haven’t profiled to confirm it’s slow
 
 **Rule of thumb**: Use ``memo`` for list items and components with
 expensive rendering. Otherwise, only add it after profiling shows a
@@ -1045,7 +1063,7 @@ functions:
 memo with Global State (Zustand)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Critical**: ``memo()`` only compares **props**. It doesn’t prevent
+**Critical:** ``memo()`` only compares **props**. It doesn’t prevent
 re-renders from state changes inside the component.
 
 .. code:: tsx
@@ -1100,7 +1118,7 @@ Common Mistake: Extracting Functions Without Subscribing
      // - Star updates correctly!
    });
 
-**Key principle**: When using :doc:``memo()`` with global state (Zustand,
+**Key principle**: When using ``memo()`` with global state (Zustand,
 Redux, Context), you must **subscribe** to the state with a selector.
 Extracting functions without subscribing breaks reactivity.
 
@@ -1121,7 +1139,7 @@ HTML                React Native                  zmNinjaNG Usage
 ``<span>``, ``<p>`` ``<Text>``                    Text display
 ``<button>``        ``<Pressable>``, ``<Button>`` Interactive elements
 ``<input>``         ``<TextInput>``               Form inputs
-``<img>``           ``<Image>:doc:``                   Images
+``<img>``           ``<Image>``                    Images
 =================== ============================= ====================
 
 But **all React concepts are identical** - components, props, state,

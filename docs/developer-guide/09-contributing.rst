@@ -65,31 +65,47 @@ Development Workflow
    # Or for bug fixes:
    git checkout -b fix/issue-123-bug-description
 
-**Branch naming:** - ``feature/description`` - New features -
-``fix/description`` - Bug fixes - ``refactor/description`` - Code
-improvements - ``docs/description`` - Documentation updates -
-``test/description`` - Test additions/fixes
+**Branch naming:**
+
+- ``feature/description`` - New features
+- ``fix/description`` - Bug fixes
+- ``refactor/description`` - Code improvements
+- ``docs/description`` - Documentation updates
+- ``test/description`` - Test additions/fixes
 
 3. Write Code
 ~~~~~~~~~~~~~
 
 Follow the patterns in this guide and AGENTS.md:
 
-**Code quality:** - Keep files small and focused - Follow DRY principles
-- Don’t over-engineer - Write clear comments for “why”, not “what”
+**Code quality:**
 
-**Testing (MANDATORY):** - Write tests BEFORE or DURING implementation -
-Unit tests for all new logic/components - E2E tests for UI changes and
-user journeys
+- Keep files small and focused
+- Follow DRY principles
+- Don’t over-engineer
+- Write clear comments for “why”, not “what”
 
-**Internationalization:** - No hardcoded user-facing text - Update ALL
-language files (en, de, es, fr, zh)
+**Testing (MANDATORY):**
 
-**Logging:** - Use component-specific log helpers - Always specify
-LogLevel - Never use console.\*
+- Write tests BEFORE or DURING implementation
+- Unit tests for all new logic/components
+- E2E tests for UI changes and user journeys
 
-**Data attributes:** - Add ``data-testid`` to all interactive elements -
-Use kebab-case naming
+**Internationalization:**
+
+- No hardcoded user-facing text
+- Update ALL language files (en, de, es, fr, zh)
+
+**Logging:**
+
+- Use component-specific log helpers
+- Always specify LogLevel
+- Never use console.\*
+
+**Data attributes:**
+
+- Add ``data-testid`` to all interactive elements
+- Use kebab-case naming
 
 4. Run Tests
 ~~~~~~~~~~~~
@@ -110,8 +126,11 @@ Use kebab-case naming
    # E2E tests (if UI changed)
    npm run test:e2e -- <relevant-feature>.feature
 
-**If tests fail:** - Fix the code AND/OR fix the tests - Never commit
-failing tests - Never skip tests
+**If tests fail:**
+
+- Fix the code AND/OR fix the tests
+- Never commit failing tests
+- Never skip tests
 
 5. Commit Changes
 ~~~~~~~~~~~~~~~~~
@@ -126,9 +145,14 @@ failing tests - Never skip tests
 
    [optional footer]
 
-**Types:** - ``feat:`` - New feature - ``fix:`` - Bug fix - ``docs:`` -
-Documentation changes - ``test:`` - Test changes - ``refactor:`` - Code
-restructuring - ``chore:`` - Maintenance tasks
+**Types:**
+
+- ``feat:`` - New feature
+- ``fix:`` - Bug fix
+- ``docs:`` - Documentation changes
+- ``test:`` - Test changes
+- ``refactor:`` - Code restructuring
+- ``chore:`` - Maintenance tasks
 
 **Examples:**
 
@@ -267,8 +291,11 @@ restructuring - ``chore:`` - Maintenance tasks
 8. Merge
 ~~~~~~~~
 
-Once approved: - Squash commits if requested - Ensure CI passes -
-Maintainer will merge
+Once approved:
+
+- Squash commits if requested
+- Ensure CI passes
+- Maintainer will merge
 
 Code Review Guidelines
 ----------------------

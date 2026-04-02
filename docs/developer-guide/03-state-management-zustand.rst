@@ -29,9 +29,13 @@ What is Zustand?
 Zustand is a lightweight state management library. Think of it as a
 global ``useState`` that any component can access.
 
-**Key features**: - Simple API (less boilerplate than Redux) - No
-Context Provider needed - TypeScript-friendly - Works outside React
-components - Automatic persistence to storage
+**Key features**:
+
+- Simple API (less boilerplate than Redux)
+- No Context Provider needed
+- TypeScript-friendly
+- Works outside React components
+- Automatic persistence to storage
 
 Creating a Store
 ----------------
@@ -157,12 +161,16 @@ even if you don’t use it.
      return <Text>{currentProfile?.name}</Text>;
    }
 
-**When to use selectors**: - When you only need a small part of the
-store - In frequently-rendered components - To prevent unnecessary
-re-renders
+**When to use selectors**:
 
-**When NOT to use selectors**: - When you need multiple pieces of state
-(use destructuring instead) - In components that rarely render
+- When you only need a small part of the store
+- In frequently-rendered components
+- To prevent unnecessary re-renders
+
+**When NOT to use selectors**:
+
+- When you need multiple pieces of state (use destructuring instead)
+- In components that rarely render
 
 Multiple Selectors
 ~~~~~~~~~~~~~~~~~~
@@ -282,15 +290,20 @@ It compares each element:
 When to Use useShallow
 ^^^^^^^^^^^^^^^^^^^^^^
 
-**Use for:** - Selecting arrays: ``(state) => state.items`` - Selecting
-objects: ``(state) => state.config`` - Selecting multiple values:
-``(state) => ({ a: state.a, b: state.b })``
+**Use for:**
 
-**Don’t use for:** - Primitives: ``(state) => state.count``
-(numbers/strings/booleans are fine) - Single object properties:
-``(state) => state.currentProfile`` (already stable if unchanged) -
-Actions/functions: ``(state) => state.addItem`` (functions don’t need
-shallow comparison)
+- Selecting arrays: ``(state) => state.items``
+- Selecting objects: ``(state) => state.config``
+- Selecting multiple values: ``(state) => ({ a: state.a, b: state.b })``
+
+**Don’t use for:**
+
+- Primitives: ``(state) => state.count`` (numbers/strings/booleans are
+  fine)
+- Single object properties: ``(state) => state.currentProfile`` (already
+  stable if unchanged)
+- Actions/functions: ``(state) => state.addItem`` (functions don’t need
+  shallow comparison)
 
 Examples
 ^^^^^^^^
@@ -392,7 +405,7 @@ Actions should encapsulate business logic:
      },
    }));
 
-**The ``get`` function**: Second parameter to ``create``, returns
+**The** ``get`` **function**: Second parameter to ``create``, returns
 current state:
 
 .. code:: tsx
@@ -432,8 +445,10 @@ Zustand can persist state to storage automatically:
 AsyncStorage 2. On app launch, Zustand loads state from AsyncStorage 3.
 Everything is automatic
 
-**Caveats**: - Can slow down updates if state is large - Versioning is
-manual (detect and handle format changes yourself)
+**Caveats**:
+
+- Can slow down updates if state is large
+- Versioning is manual (detect and handle format changes yourself)
 
 Advanced Persistence: Hydration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -446,7 +461,7 @@ later.
 This can cause UI flashes or errors if the app tries to use state before
 it’s loaded. To handle this, we use the ``onRehydrateStorage`` callback.
 
-**Implementation Pattern (``src/stores/profile.ts``)**:
+**Implementation Pattern** (``src/stores/profile.ts``):
 
 .. code:: tsx
 
@@ -517,8 +532,11 @@ Unlike React state, Zustand works outside components:
      useProfileStore.getState().setCurrentProfileId(null);
    }
 
-This is useful for: - Utility functions - API clients - Event handlers
-outside React
+This is useful for:
+
+- Utility functions
+- API clients
+- Event handlers outside React
 
 The Critical Issue: Object References
 -------------------------------------
@@ -623,9 +641,11 @@ We use multiple stores for different domains:
    ├── eventFavorites.ts        # Per-profile favorited events
    └── kioskStore.ts            # Kiosk mode lock state (ephemeral)
 
-**Why multiple stores?** - Separation of concerns - Better performance
-(components subscribe to relevant store only) - Easier to test and
-reason about
+**Why multiple stores?**
+
+- Separation of concerns
+- Better performance (components subscribe to relevant store only)
+- Easier to test and reason about
 
 Kiosk Store (``stores/kioskStore.ts``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -861,7 +881,7 @@ Key Takeaways
 4. **Object references change**: Zustand values get new references even
    if unchanged
 5. **Refs prevent loops**: Don’t use Zustand values as
-   :doc:``useCallback``/``useEffect`` dependencies directly
+   ``useCallback``/``useEffect`` dependencies directly
 6. **Multiple stores**: Separate concerns for better organization
 7. **Persistence is automatic**: With the persist middleware
 8. **Works outside React**: Can call ``getState()`` from anywhere

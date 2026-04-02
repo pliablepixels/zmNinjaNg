@@ -19,11 +19,148 @@ server data:
 
    https://your-server.com/zm/api/<endpoint>
 
-**Common Endpoints:** - ``/host/getVersion.json`` - Server version -
-``/monitors.json`` - List all monitors - ``/monitors/<id>.json`` -
-Single monitor details - ``/events.json`` - List events -
-``/events/<id>.json`` - Event details - ``/groups.json`` - List monitor
-groups - ``/host/login.json`` - Authentication
+**Endpoint Reference:**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 10 40 30 20
+
+   * - Method
+     - Endpoint
+     - Description
+     - Module
+   * - POST
+     - ``/host/login.json``
+     - Authenticate and receive tokens
+     - ``auth.ts``
+   * - GET
+     - ``/host/getVersion.json``
+     - Server version info
+     - ``auth.ts``
+   * - GET
+     - ``/monitors.json``
+     - List all monitors with status
+     - ``monitors.ts``
+   * - GET
+     - ``/monitors/<id>.json``
+     - Single monitor details
+     - ``monitors.ts``
+   * - POST
+     - ``/monitors/<id>.json``
+     - Update monitor settings
+     - ``monitors.ts``
+   * - GET
+     - ``/controls/<controlId>.json``
+     - PTZ control definition
+     - ``monitors.ts``
+   * - GET
+     - ``/monitors/alarm/id:<id>/command:<cmd>.json``
+     - Trigger/cancel/query alarm (cmd: on, off, status)
+     - ``monitors.ts``
+   * - GET
+     - ``/monitors/daemonStatus/id:<id>/daemon:<daemon>.json``
+     - Check daemon status for a monitor
+     - ``monitors.ts``
+   * - GET
+     - ``/events/index.json``
+     - List events (with query params)
+     - ``events.ts``
+   * - GET
+     - ``/events/index/<filterPath>.json``
+     - List events with URL-based filters
+     - ``events.ts``
+   * - GET
+     - ``/events/<id>.json``
+     - Single event details
+     - ``events.ts``
+   * - PUT
+     - ``/events/<id>.json``
+     - Update event metadata
+     - ``events.ts``
+   * - DELETE
+     - ``/events/<id>.json``
+     - Delete an event
+     - ``events.ts``
+   * - GET
+     - ``/events/consoleEvents/<interval>.json``
+     - Event counts per monitor for a time interval
+     - ``events.ts``
+   * - GET
+     - ``/servers.json``
+     - List ZoneMinder servers
+     - ``server.ts``
+   * - GET
+     - ``/host/daemonCheck.json``
+     - Check if ZoneMinder daemon is running
+     - ``server.ts``
+   * - GET
+     - ``/host/getLoad.json``
+     - Server CPU load
+     - ``server.ts``
+   * - GET
+     - ``/host/getDiskPercent.json``
+     - Disk usage percentage
+     - ``server.ts``
+   * - GET
+     - ``/host/getTimeZone.json``
+     - Server timezone
+     - ``time.ts``
+   * - GET
+     - ``/configs.json``
+     - All ZoneMinder config entries
+     - ``server.ts``
+   * - GET
+     - ``/configs/viewByName/<key>.json``
+     - Single config value (ZM_PATH_ZMS, ZM_GO2RTC_PATH, ZM_MIN_STREAMING_PORT)
+     - ``server.ts``
+   * - GET
+     - ``/groups.json``
+     - List monitor groups
+     - ``groups.ts``
+   * - GET
+     - ``/states.json``
+     - List run states
+     - ``states.ts``
+   * - POST
+     - ``/states/change/<stateName>.json``
+     - Switch to a run state
+     - ``states.ts``
+   * - GET
+     - ``/notifications.json``
+     - List push notification registrations
+     - ``notifications.ts``
+   * - POST
+     - ``/notifications.json``
+     - Register for push notifications
+     - ``notifications.ts``
+   * - PUT
+     - ``/notifications/<id>.json``
+     - Update a notification registration
+     - ``notifications.ts``
+   * - DELETE
+     - ``/notifications/<id>.json``
+     - Remove a notification registration
+     - ``notifications.ts``
+   * - GET
+     - ``/tags.json``
+     - List all tags
+     - ``tags.ts``
+   * - GET
+     - ``/tags/index/Events.Id:<ids>.json``
+     - Tags for specific events
+     - ``tags.ts``
+   * - GET
+     - ``/zones.json?MonitorId=<id>``
+     - Zones for a monitor
+     - ``zones.ts``
+   * - GET
+     - ``/logs.json``
+     - List server logs
+     - ``logs.ts``
+   * - GET
+     - ``/logs/index/<filterPath>.json``
+     - Filtered server logs
+     - ``logs.ts``
 
 Authentication
 ~~~~~~~~~~~~~~
@@ -120,11 +257,13 @@ promise to prevent duplicate login attempts:
      // ...
    }
 
-**Benefits:** - ✅ Zero 401 errors during app load - ✅ Transparent to
-query callers - no special handling needed - ✅ Works across all
-platforms (Web, iOS, Android, Desktop/Tauri) - ✅ Prevents duplicate
-login attempts when multiple queries fire simultaneously - ✅ Fails fast
-if authentication fails - no infinite retry loops
+**Benefits:**
+
+- Zero 401 errors during app load
+- Transparent to query callers - no special handling needed
+- Works across all platforms (Web, iOS, Android, Desktop/Tauri)
+- Prevents duplicate login attempts when multiple queries fire simultaneously
+- Fails fast if authentication fails - no infinite retry loops
 
 **Reactive 401 Handling:**
 
@@ -150,9 +289,12 @@ Connection Keys (connkey)
 
 For streaming URLs, ZoneMinder uses connection keys instead of tokens:
 
-**What are connkeys?** - Short-lived authentication keys for media
-streams - Generated via ``/host/getConnkey.json`` - Appended to stream
-URLs - Expire after a period (server-configured)
+**What are connkeys?**
+
+- Short-lived authentication keys for media streams
+- Generated via ``/host/getConnkey.json``
+- Appended to stream URLs
+- Expire after a period (server-configured)
 
 **Generation** (``src/stores/monitors.ts``):
 
@@ -185,37 +327,61 @@ Connection keys are stored in the Zustand monitors store (persisted via
 one is already stored, or generates a new one. ``regenerateConnKey``
 always creates a fresh key (used on stream failure).
 
-   ### Streaming Mechanics
+Streaming Mechanics
+~~~~~~~~~~~~~~~~~~~
 
-   Video streaming in zmNinjaNG is more complex than simple API calls due to browser limitations and ZoneMinder's architecture.
+Video streaming in zmNinjaNG is more complex than simple API calls due to
+browser limitations and ZoneMinder's architecture.
 
-   #### 1. Cache Busting (`_t`)
-   Browsers aggressively cache image requests based on URL. When using `mode=single` (Snapshot mode) or when a stream connection breaks and needs re-establishing, the browser might show a stale image if the URL hasn't changed.
+1. Cache Busting (``_t``)
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   To force a refresh, we append a **cache buster parameter** (`_t=<timestamp>`) to the stream URL:
+Browsers aggressively cache image requests based on URL. When using
+``mode=single`` (Snapshot mode) or when a stream connection breaks and
+needs re-establishing, the browser might show a stale image if the URL
+hasn't changed.
 
-/cgi-bin/nph-zms?mode=jpeg&monitor=1&token=xyz&_t=1704358000000
+To force a refresh, we append a **cache buster parameter**
+(``_t=<timestamp>``) to the stream URL:
 
 ::
 
-   This is handled centrally in `src/lib/url-builder.ts`.
+   /cgi-bin/nph-zms?mode=jpeg&monitor=1&token=xyz&_t=1704358000000
 
-   #### 2. Multi-Port Streaming
-   Browsers limit the number of concurrent connections to the same domain (typically 6). If you have a dashboard with 10 monitors, the 7th monitor will fail to load until another closes.
+This is handled centrally in ``src/lib/url-builder.ts``.
 
-   To bypass this, we use **domain sharding via ports**. If `minStreamingPort` is configured (e.g., 30000) in the profile:
-   - Monitor 1 loads from `port 30001`
-   - Monitor 2 loads from `port 30002`
-   - ...and so on.
+2. Multi-Port Streaming
+^^^^^^^^^^^^^^^^^^^^^^^
 
-   This tricks the browser into treating each stream as a separate origin, bypassing the connection limit.
+Browsers limit the number of concurrent connections to the same domain
+(typically 6). If you have a dashboard with 10 monitors, the 7th monitor
+will fail to load until another closes.
 
-   #### 3. Streaming vs. Snapshot
-   The app supports two view modes:
-   - **Streaming (`mode=jpeg`)**: A long-lived HTTP connection where the server pushes new frames (MJPEG). Low latency but higher bandwidth and connection usage.
-   - **Snapshot (`mode=single`)**: The app fetches a single JPEG image, waits `snapshotRefreshInterval` seconds, and fetches again. Lower resource usage but lower frame rate.
+To bypass this, we use **domain sharding via ports**. If
+``minStreamingPort`` is configured (e.g., 30000) in the profile:
 
-   Snapshot mode uses `Image()` preloading in `useMonitorStream` to download the next frame in the background before swapping the `src` of the visible image, ensuring flicker-free playback.
+- Monitor 1 loads from ``port 30001``
+- Monitor 2 loads from ``port 30002``
+- ...and so on.
+
+This tricks the browser into treating each stream as a separate origin,
+bypassing the connection limit.
+
+3. Streaming vs. Snapshot
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The app supports two view modes:
+
+- **Streaming** (``mode=jpeg``): A long-lived HTTP connection where the
+  server pushes new frames (MJPEG). Low latency but higher bandwidth and
+  connection usage.
+- **Snapshot** (``mode=single``): The app fetches a single JPEG image,
+  waits ``snapshotRefreshInterval`` seconds, and fetches again. Lower
+  resource usage but lower frame rate.
+
+Snapshot mode uses ``Image()`` preloading in ``useMonitorStream`` to
+download the next frame in the background before swapping the ``src`` of
+the visible image, ensuring flicker-free playback.
 
 React Query Integration
 -----------------------
@@ -254,57 +420,60 @@ What the “Cache” Actually Does
        ↓
    Components re-render with new data
 
-The stored state prevents: 1. **Loading spinners between polls** - UI
-shows previous data while fetching 2. **Duplicate simultaneous
-requests** - If 3 components use ``useMonitors()``, only 1 network
-request is made 3. **Data loss on unmount** - Navigate away and back
-within 5 minutes, old data is still there
+The stored state prevents:
+
+1. **Loading spinners between polls** - UI shows previous data while
+   fetching
+2. **Duplicate simultaneous requests** - If 3 components use
+   ``useMonitors()``, only 1 network request is made
+3. **Data loss on unmount** - Navigate away and back within 5 minutes,
+   old data is still there
 
 Key Settings Explained
 ^^^^^^^^^^^^^^^^^^^^^^
 
-+---------------------+-----------------------+---------------------------+
-| Setting             | zmNinjaNG Value            | What It Does              |
-+=====================+=======================+===========================+
-| ``staleTime``       | ``0`` (default)       | How long data is “fresh”. |
-|                     |                       | At 0, data is immediately |
-|                     |                       | stale, so any new         |
-|                     |                       | subscriber triggers a     |
-|                     |                       | background refetch.       |
-+---------------------+-----------------------+---------------------------+
-| ``gcTime``          | ``5 min`` (default)   | How long unused data      |
-|                     |                       | stays in memory. After 5  |
-|                     |                       | min with no subscribers,  |
-|                     |                       | data is garbage           |
-|                     |                       | collected.                |
-+---------------------+-----------------------+---------------------------+
-| ``refetchInterval`` | varies                | **Always makes a network  |
-|                     |                       | request** at this         |
-|                     |                       | interval. Not cached.     |
-+---------------------+-----------------------+---------------------------+
++---------------------+------------------------+---------------------------+
+| Setting             | zmNinjaNG Value        | What It Does              |
++=====================+========================+===========================+
+| ``staleTime``       | ``0`` (default)        | How long data is “fresh”. |
+|                     |                        | At 0, data is immediately |
+|                     |                        | stale, so any new         |
+|                     |                        | subscriber triggers a     |
+|                     |                        | background refetch.       |
++---------------------+------------------------+---------------------------+
+| ``gcTime``          | ``5 min`` (default)    | How long unused data      |
+|                     |                        | stays in memory. After 5  |
+|                     |                        | min with no subscribers,  |
+|                     |                        | data is garbage           |
+|                     |                        | collected.                |
++---------------------+------------------------+---------------------------+
+| ``refetchInterval`` | varies                 | **Always makes a network  |
+|                     |                        | request** at this         |
+|                     |                        | interval. Not cached.     |
++---------------------+------------------------+---------------------------+
 
 When Network Requests Happen
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-+-------------------------+--------------------------------------------+
-| Scenario                | Network Request?                           |
-+=========================+============================================+
-| ``refetchInterval``     | **Yes** - always hits the server           |
-| timer fires             |                                            |
-+-------------------------+--------------------------------------------+
-| Component mounts, data  | **No** - uses stored data (but may trigger |
-| exists from recent poll | background refetch since ``staleTime: 0``) |
-+-------------------------+--------------------------------------------+
-| Component mounts, no    | **Yes** - fetches from server              |
-| data exists             |                                            |
-+-------------------------+--------------------------------------------+
-| Multiple components use | **One request** - deduplicated             |
-| same query key          |                                            |
-| simultaneously          |                                            |
-+-------------------------+--------------------------------------------+
-| Window regains focus    | **No** - ``refetchOnWindowFocus: false``   |
-|                         | in zmNinjaNG                                    |
-+-------------------------+--------------------------------------------+
++-------------------------+----------------------------------------------+
+| Scenario                | Network Request?                             |
++=========================+==============================================+
+| ``refetchInterval``     | **Yes** - always hits the server             |
+| timer fires             |                                              |
++-------------------------+----------------------------------------------+
+| Component mounts, data  | **No** - uses stored data (but may trigger   |
+| exists from recent poll | background refetch since ``staleTime: 0``)   |
++-------------------------+----------------------------------------------+
+| Component mounts, no    | **Yes** - fetches from server                |
+| data exists             |                                              |
++-------------------------+----------------------------------------------+
+| Multiple components use | **One request** - deduplicated               |
+| same query key          |                                              |
+| simultaneously          |                                              |
++-------------------------+----------------------------------------------+
+| Window regains focus    | **No** - ``refetchOnWindowFocus: false``     |
+|                         | in zmNinjaNG                                 |
++-------------------------+----------------------------------------------+
 
 Example: Monitor Polling
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -387,9 +556,11 @@ Basic Queries
    ['events', profileId, filters]  // Filtered events
    ['groups', profileId]           // Monitor groups for profile
 
-Query keys are used for: - Caching (same key = same cache entry) -
-Invalidation (clear specific cached data) - Deduplication (prevent
-duplicate requests)
+Query keys are used for:
+
+- Caching (same key = same cache entry)
+- Invalidation (clear specific cached data)
+- Deduplication (prevent duplicate requests)
 
 Dependent Queries
 ~~~~~~~~~~~~~~~~~
@@ -783,14 +954,18 @@ intervals for any polling that affects network usage.
 
 **When to add bandwidth settings:**
 
-Use bandwidth settings for: - Background polling that fetches server
-data repeatedly - Auto-refresh features that run on timers - Any
-operation that could consume significant bandwidth over time
+Use bandwidth settings for:
 
-Do NOT use bandwidth settings for: - User-triggered actions (button
-clicks, navigation) - One-time data fetches - Protocol requirements
-(authentication, keepalives) - Data that rarely changes (use
-``staleTime`` instead)
+- Background polling that fetches server data repeatedly
+- Auto-refresh features that run on timers
+- Any operation that could consume significant bandwidth over time
+
+Do NOT use bandwidth settings for:
+
+- User-triggered actions (button clicks, navigation)
+- One-time data fetches
+- Protocol requirements (authentication, keepalives)
+- Data that rarely changes (use ``staleTime`` instead)
 
 Timer Best Practices
 ^^^^^^^^^^^^^^^^^^^^
@@ -1067,11 +1242,18 @@ or third-party HTTP libraries directly.
 
    src/api/
    ├── auth.ts          # Authentication endpoints
-   ├── monitors.ts      # Monitor endpoints
+   ├── client.ts        # HTTP client setup
    ├── events.ts        # Event endpoints
-   ├── streaming.ts     # Stream URL generation
-   ├── server.ts        # Server info endpoints
-   └── types.ts         # TypeScript types for API responses
+   ├── groups.ts        # Monitor group endpoints
+   ├── logs.ts          # Server log endpoints
+   ├── monitors.ts      # Monitor endpoints and stream URL generation
+   ├── notifications.ts # Push notification endpoints
+   ├── server.ts        # Server info and config endpoints
+   ├── states.ts        # Run state endpoints
+   ├── tags.ts          # Tag endpoints
+   ├── time.ts          # Timezone endpoint
+   ├── types.ts         # TypeScript types for API responses
+   └── zones.ts         # Zone endpoints
 
 Unified HTTP Client (``src/lib/http.ts``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1198,9 +1380,13 @@ Platform-Specific Implementations
      responseType: 'json', // or 'blob', 'arraybuffer'
    });
 
-Benefits: - Bypasses CORS restrictions - Uses native networking stack
-(faster, more reliable) - Handles SSL/TLS natively - Self-signed certificate
-support via ``SSLTrust`` Capacitor plugin (see ``lib/ssl-trust.ts``)
+Benefits:
+
+- Bypasses CORS restrictions
+- Uses native networking stack (faster, more reliable)
+- Handles SSL/TLS natively
+- Self-signed certificate support via ``SSLTrust`` Capacitor plugin
+  (see ``lib/ssl-trust.ts``)
 
 **Tauri (Desktop) - Tauri Fetch Plugin:**
 
@@ -1446,9 +1632,11 @@ degradation.
    const eventTagMap = await getEventTags(['123', '456', '789']);
    // Returns Map<eventId, Tag[]> or null if not supported
 
-**Features:** - Graceful degradation for servers without tag support -
-Automatic batching for large event ID lists (avoids URL length limits) -
-Returns ``null`` instead of throwing on 404/401/403 responses
+**Features:**
+
+- Graceful degradation for servers without tag support
+- Automatic batching for large event ID lists (avoids URL length limits)
+- Returns ``null`` instead of throwing on 404/401/403 responses
 
 **Response structure:**
 
@@ -1546,9 +1734,11 @@ Server WebSocket.
    // Delete a registration
    await deleteNotification(notif.Id);
 
-**Features:** - Upsert semantics (POST with existing token updates the row)
-- User-scoped (server returns only the current user’s tokens) - Feature
-detection via 404 response for older ZM versions
+**Features:**
+
+- Upsert semantics (POST with existing token updates the row)
+- User-scoped (server returns only the current user’s tokens)
+- Feature detection via 404 response for older ZM versions
 
 Event Poller Service
 --------------------
@@ -1589,7 +1779,7 @@ notifications in ES mode.
 **Liveness detection:**
 
 - **Keepalive ping**: Sends a version-request every 60 seconds
-- **``checkAlive(timeoutMs)``**: Sends a version request and resolves
+- ``checkAlive(timeoutMs)``: Sends a version request and resolves
   ``true``/``false`` based on whether a response arrives within the timeout.
   Used by ``NotificationHandler`` on app resume (mobile) and tab visibility
   change (desktop) to detect dead connections
@@ -1666,14 +1856,21 @@ Let’s trace a complete data flow: viewing monitors
 4. Platform-specific HTTP execution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**On Web:** - Standard ``fetch()`` is used - In dev mode, requests route
-through proxy to bypass CORS
+**On Web:**
 
-**On Native (iOS/Android):** - Capacitor HTTP plugin is used - Bypasses
-CORS restrictions - Uses native networking stack
+- Standard ``fetch()`` is used
+- In dev mode, requests route through proxy to bypass CORS
 
-**On Tauri (Desktop):** - Tauri fetch plugin is used - Native
-performance
+**On Native (iOS/Android):**
+
+- Capacitor HTTP plugin is used
+- Bypasses CORS restrictions
+- Uses native networking stack
+
+**On Tauri (Desktop):**
+
+- Tauri fetch plugin is used
+- Native performance
 
 5. Response logged with correlation ID
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1918,11 +2115,11 @@ that can’t be terminated.
 Stream Modes
 ~~~~~~~~~~~~
 
-Defined in :doc:``src/lib/zm-constants.ts``:
+Defined in ``src/lib/zm-constants.ts``:
 
-- **``jpeg``**: MJPEG streaming (continuous multipart JPEG frames)
-- **``single``**: Single frame snapshot (one JPEG image)
-- **``stream``**: Raw stream (rarely used)
+- ``jpeg``: MJPEG streaming (continuous multipart JPEG frames)
+- ``single``: Single frame snapshot (one JPEG image)
+- ``stream``: Raw stream (rarely used)
 
 ZMS Commands
 ~~~~~~~~~~~~
@@ -1964,9 +2161,9 @@ Key Takeaways
 -------------
 
 1.  **ZoneMinder API**: RESTful JSON API with session-based auth
-2.  **HTTP Architecture**: Unified :doc:``lib/http.ts`` client with automatic
+2.  **HTTP Architecture**: Unified ``lib/http.ts`` client with automatic
     platform detection
-3.  **Always use ``httpGet``/``httpPost``/``httpPut``/``httpDelete``**:
+3.  **Always use** ``httpGet``/``httpPost``/``httpPut``/``httpDelete``:
     Never use raw ``fetch()`` or third-party HTTP libraries
 4.  **Correlation IDs**: Monotonic sequence (1, 2, 3…) tracks
     request/response pairs in logs

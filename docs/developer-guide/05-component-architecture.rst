@@ -24,10 +24,10 @@ The ``src/`` directory is organized by responsibility:
 Key Directories Explained
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- **``api/``**: Contains raw fetch functions for ZoneMinder endpoints.
+- ``api/``: Contains raw fetch functions for ZoneMinder endpoints.
   These functions are stateless and should not depend on React or stores
   directly if possible (though some might need auth tokens).
-- **``hooks/``**: Reusable React logic.
+- ``hooks/``: Reusable React logic.
 
   - ``useMonitorStream``: Manages video stream URLs and auth.
   - ``useStreamLifecycle``: Shared connKey lifecycle (CMD_QUIT, cleanup, media abort). Used by ``useMonitorStream``, ``MontageMonitor``, and ``MonitorWidget``.
@@ -41,19 +41,19 @@ Key Directories Explained
   Note: ``usePTZControl`` lives in ``pages/hooks/usePTZControl.ts``, not
   in ``src/hooks/``.
 
-- **``lib/``**: “Library” code - helpers that could theoretically be in
+- ``lib/``: “Library” code - helpers that could theoretically be in
   a separate npm package.
 
   - ``logger.ts``: Structured logging system.
   - ``utils.ts``: String formatting, date helpers.
   - ``http.ts``: Fetch wrapper with error handling.
 
-- **``services/``**: Bridges between the web app and native platform
+- ``services/``: Bridges between the web app and native platform
   features.
 
   - ``notifications.ts``: Push notification handling.
 
-- **``stores/``**: Global state management (see Chapter 3).
+- ``stores/``: Global state management (see Chapter 3).
 
 Component Structure
 -------------------
@@ -124,10 +124,14 @@ MonitorCard
 The primary component for displaying a single monitor with live stream
 preview, status, and actions.
 
-**Key Features:** - Live stream thumbnail (JPEG stream from ZoneMinder)
-- Auto-regenerates connection keys on stream failure - Download snapshot
-functionality - Status badge (Live/Offline) with FPS - Quick navigation
-to monitor detail and events - Settings button for monitor configuration
+**Key Features:**
+
+- Live stream thumbnail (JPEG stream from ZoneMinder)
+- Auto-regenerates connection keys on stream failure
+- Download snapshot functionality
+- Status badge (Live/Offline) with FPS
+- Quick navigation to monitor detail and events
+- Settings button for monitor configuration
 
 **Implementation Details:**
 
@@ -216,14 +220,16 @@ data hasn’t changed.
 
 **The useMonitorStream Hook:**
 
-Encapsulates stream URL generation and connection key management: -
-Generates authenticated stream URL with connection key - Watches for
-failures and regenerates keys - Returns ref for the ``<img>:doc:`` element
-for snapshot downloads - **See** `Chapter 7: Streaming
-Mechanics <07-api-and-data-fetching>` for
-details on cache busting (``_t``), multi-port streaming, and snapshot
-preloading. - Uses ``src/lib/url-builder.ts`` for centralized URL
-construction.
+Encapsulates stream URL generation and connection key management:
+
+- Generates authenticated stream URL with connection key
+- Watches for failures and regenerates keys
+- Returns ref for the ``<img>`` element for snapshot downloads
+- **See** `Chapter 7: Streaming
+  Mechanics <07-api-and-data-fetching>`__ for
+  details on cache busting (``_t``), multi-port streaming, and snapshot
+  preloading.
+- Uses ``src/lib/url-builder.ts`` for centralized URL construction.
 
 MontageMonitor
 ~~~~~~~~~~~~~~
@@ -292,8 +298,12 @@ PTZControls
 
 Pan-Tilt-Zoom control interface for controllable cameras.
 
-**Features:** - Directional pad for pan/tilt - Zoom in/out controls -
-Preset position buttons - Auto-pause mode (move while pressed)
+**Features:**
+
+- Directional pad for pan/tilt
+- Zoom in/out controls
+- Preset position buttons
+- Auto-pause mode (move while pressed)
 
 **API Integration:**
 
@@ -425,8 +435,13 @@ EventCard
 
 Displays a single event with thumbnail, details, and actions.
 
-**Features:** - Event thumbnail - Cause/notes display - Duration and
-timestamp - Quick play button - Delete/download actions
+**Features:**
+
+- Event thumbnail
+- Cause/notes display
+- Duration and timestamp
+- Quick play button
+- Delete/download actions
 
 ZmsEventPlayer
 ~~~~~~~~~~~~~~
@@ -470,8 +485,11 @@ EventHeatmap
 
 Calendar heatmap showing event frequency by day and hour.
 
-**Uses:** - ``react-calendar-heatmap`` for visualization - Queries event
-counts aggregated by time - Color intensity based on event frequency
+**Uses:**
+
+- ``react-calendar-heatmap`` for visualization
+- Queries event counts aggregated by time
+- Color intensity based on event frequency
 
 TagChip
 ~~~~~~~
@@ -480,9 +498,11 @@ TagChip
 
 Displays event tags as small badge/chip elements.
 
-**Features:** - Compact visual representation of tags - Used in
-EventCard to show assigned tags - Styled to match the app’s design
-system
+**Features:**
+
+- Compact visual representation of tags
+- Used in EventCard to show assigned tags
+- Styled to match the app’s design system
 
 **Usage:**
 
@@ -504,8 +524,11 @@ GroupFilterSelect
 
 Dropdown component for filtering monitors by group.
 
-**Features:** - Fetches groups from the groups API - Supports “All
-Groups” option - Updates filter state when selection changes
+**Features:**
+
+- Fetches groups from the groups API
+- Supports “All Groups” option
+- Updates filter state when selection changes
 
 **Usage:**
 
@@ -526,14 +549,19 @@ QRScanner
 
 A dialog-based QR code scanner for importing server profiles.
 
-**Platform Implementations:** - **Native (iOS/Android)**: Uses
-``capacitor-barcode-scanner`` for native camera access - **Web
-(Desktop)**: Uses ``html5-qrcode`` library with browser camera API
+**Platform Implementations:**
 
-**Features:** - Scan QR codes with device camera - Load QR codes from
-photo files (“Load from Photo” option) - Graceful error handling for
-permission denied, camera not found - Auto-cleanup of scanner resources
-on unmount
+- **Native (iOS/Android)**: Uses ``capacitor-barcode-scanner`` for
+  native camera access
+- **Web (Desktop)**: Uses ``html5-qrcode`` library with browser camera
+  API
+
+**Features:**
+
+- Scan QR codes with device camera
+- Load QR codes from photo files (“Load from Photo” option)
+- Graceful error handling for permission denied, camera not found
+- Auto-cleanup of scanner resources on unmount
 
 **Usage:**
 
@@ -550,12 +578,15 @@ on unmount
      }}
    />
 
-**Implementation Notes:** - The ``html5-qrcode`` library manipulates DOM
-directly, so the scanner container is created outside React’s virtual
-DOM to avoid reconciliation conflicts - Native scanner launches a
-full-screen camera view; the dialog is hidden while scanning - File
-scanning creates a temporary DOM element, scans the image, then cleans
-up
+**Implementation Notes:**
+
+- The ``html5-qrcode`` library manipulates DOM directly, so the scanner
+  container is created outside React’s virtual DOM to avoid
+  reconciliation conflicts
+- Native scanner launches a full-screen camera view; the dialog is
+  hidden while scanning
+- File scanning creates a temporary DOM element, scans the image, then
+  cleans up
 
 UI Components
 -------------
@@ -607,7 +638,11 @@ VideoPlayer
 
 Wrapper around HTML5 video with Ionic integration.
 
-**Features:** - Autoplay control - Play/pause callbacks - Error handling
+**Features:**
+
+- Autoplay control
+- Play/pause callbacks
+- Error handling
 - Fullscreen support
 
 **Picture-in-Picture integration:**
@@ -767,7 +802,7 @@ update (streams, event counts, etc.) — only interaction is blocked.
 **Key test IDs:** ``kiosk-overlay``, ``kiosk-unlock-button``,
 ``kiosk-pin-pad``
 
-**Renders ``null`` when** ``isLocked`` is ``false``.
+**Renders** ``null`` **when** ``isLocked`` **is** ``false``.
 
 PinPad
 ~~~~~~
@@ -777,7 +812,7 @@ PinPad
 4-digit numeric keypad rendered in a modal. Used for both PIN setup
 (first-time) and unlock.
 
-**Modes (``PinPadMode``):**
+**Modes** (``PinPadMode``):
 
 - ``'set'`` — prompts the user to choose a PIN (first-time setup)
 - ``'confirm'`` — prompts the user to re-enter the PIN to verify it
@@ -1100,7 +1135,7 @@ Key Takeaways
    ui/
 2. **Memoize list items**: Prevent unnecessary re-renders
 3. **Data attributes for testing**: All interactive elements have
-   :doc:``data-testid``
+   ``data-testid``
 4. **Custom hooks extract logic**: ``useMonitorStream``,
    ``usePTZControl``, etc.
 5. **Refs for DOM access**: Screenshots, video playback, scroll position

@@ -38,7 +38,7 @@ The ``useProfileStore`` attempts to read saved profiles and the last
 active user from ``AsyncStorage`` (mobile) or ``localStorage`` (web).
 
 - **State**: ``isInitialized`` starts as ``false``.
-- **Visual**: User sees ``<RouteLoadingFallback />:doc:`` (a spinner).
+- **Visual**: User sees ``<RouteLoadingFallback />`` (a spinner).
 - **Mechanism**: ``zustand/persist`` triggers ``onRehydrateStorage``.
 
 Profile Bootstrap
@@ -78,11 +78,14 @@ cancel:
 Initialization Complete
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Once bootstrap completes (or is cancelled): 1. ``isInitialized`` becomes
-``true``, ``isBootstrapping`` becomes ``false``. 2. ``AppRoutes``
-decides where to send the user: - **No Profile**: Redirects to
-``/profiles/new``. - **Has Profile**: Redirects to ``/monitors`` (or
-last visited route).
+Once bootstrap completes (or is cancelled):
+
+1. ``isInitialized`` becomes ``true``, ``isBootstrapping`` becomes
+   ``false``.
+2. ``AppRoutes`` decides where to send the user:
+
+  - **No Profile**: Redirects to ``/profiles/new``.
+  - **Has Profile**: Redirects to ``/monitors`` (or last visited route).
 
 3. The Authentication Flow
 --------------------------
@@ -94,21 +97,26 @@ auth requirements.
 A. Token Exchange
 ~~~~~~~~~~~~~~~~~
 
-When you log in or the app wakes up: 1. **Credentials**: We retrieve the
-username/password (decrypted from SecureStorage). 2. **Login API**: We
-call ``POST /api/host/login``. 3. **Response**: Server returns
-``access_token`` and ``refresh_token``. 4. **Store**: Tokens are saved
-to ``useAuthStore`` (in memory mostly, refresh token persisted).
+When you log in or the app wakes up:
+
+1. **Credentials**: We retrieve the username/password (decrypted from
+   SecureStorage).
+2. **Login API**: We call ``POST /api/host/login``.
+3. **Response**: Server returns ``access_token`` and ``refresh_token``.
+4. **Store**: Tokens are saved to ``useAuthStore`` (in memory mostly,
+   refresh token persisted).
 
 B. The “Refresh Loop”
 ~~~~~~~~~~~~~~~~~~~~~
 
 Tokens expire (usually after 1 hour). We need to verify we are still
-logged in. - **Hook**: ``useTokenRefresh`` runs in ``App.tsx``. -
-**Logic**: It sets a timer. When the token is about to expire, it
-silently calls the refresh API to get a new one. - **Nuance**: If
-refresh fails (e.g., user changed password), we forcibly logout and
-redirect to login screen.
+logged in.
+
+- **Hook**: ``useTokenRefresh`` runs in ``App.tsx``.
+- **Logic**: It sets a timer. When the token is about to expire, it
+  silently calls the refresh API to get a new one.
+- **Nuance**: If refresh fails (e.g., user changed password), we
+  forcibly logout and redirect to login screen.
 
 4. The “Main Loop” (Runtime)
 ----------------------------
@@ -156,23 +164,28 @@ OS.
 Backgrounding
 ~~~~~~~~~~~~~
 
-When the user swipes the app away (but doesn’t close it): - **State**:
-App goes to “Background”. - **Limit**: JS execution pauses (mostly). -
-**Streams**: Video streams are paused to save battery/data.
+When the user swipes the app away (but doesn’t close it):
+
+- **State**: App goes to “Background”.
+- **Limit**: JS execution pauses (mostly).
+- **Streams**: Video streams are paused to save battery/data.
 
 Resuming
 ~~~~~~~~
 
-When the user re-opens the app: - **State**: App comes to “Foreground”.
-- **Check**: We check ``last_interaction`` timestamp. - **Security**: If
-enabled, we might ask for Biometric Auth (FaceID) before revealing the
-screen. - **Reconnect**: Video streams detect the interruption and
-reconnect. - **WebSocket Liveness**: ``NotificationHandler`` sends a
-ping to the notification WebSocket and waits for a response. If the
-server doesn't respond within 5 seconds, the connection is treated as
-dead and an immediate reconnect is triggered. - **Badge Clear**: Delivered
-notifications and the native badge are cleared via
-``FirebaseMessaging.removeAllDeliveredNotifications()``.
+When the user re-opens the app:
+
+- **State**: App comes to “Foreground”.
+- **Check**: We check ``last_interaction`` timestamp.
+- **Security**: If enabled, we might ask for Biometric Auth (FaceID)
+  before revealing the screen.
+- **Reconnect**: Video streams detect the interruption and reconnect.
+- **WebSocket Liveness**: ``NotificationHandler`` sends a
+  ping to the notification WebSocket and waits for a response. If the
+  server doesn't respond within 5 seconds, the connection is treated as
+  dead and an immediate reconnect is triggered.
+- **Badge Clear**: Delivered notifications and the native badge are
+  cleared via ``FirebaseMessaging.removeAllDeliveredNotifications()``.
 
 6. Navigation Lifecycle
 -----------------------

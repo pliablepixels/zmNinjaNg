@@ -116,10 +116,13 @@ Profile-scoped settings in ``ProfileSettings``:
      // ... other settings
    }
 
-**Recommendations:** - **auto**: Best for most users - uses WebRTC when
-available, falls back to MJPEG - **webrtc**: For users who want WebRTC
-only (falls back to MJPEG if unavailable) - **mjpeg**: For compatibility
-or if WebRTC causes issues
+**Recommendations:**
+
+- **auto**: Best for most users - uses WebRTC when available, falls back
+  to MJPEG
+- **webrtc**: For users who want WebRTC only (falls back to MJPEG if
+  unavailable)
+- **mjpeg**: For compatibility or if WebRTC causes issues
 
 Fallback Ladder
 ---------------
@@ -277,15 +280,22 @@ Testing Strategy
 Unit Tests
 ~~~~~~~~~~
 
-Located in: - ``/app/src/hooks/__tests__/useGo2RTCStream.test.ts`` -
-Hook lifecycle tests (15 tests) -
-``/app/src/components/video/__tests__/VideoPlayer.test.tsx`` - Component
-tests - ``/app/src/lib/__tests__/url-builder.test.ts`` - URL builder
-tests - ``/app/src/lib/__tests__/discovery.test.ts`` - Discovery tests
+Located in:
 
-**Key test areas:** - Connection lifecycle (idle → connecting →
-connected) - Fallback ladder (WebRTC → MSE → HLS → MJPEG) - Error
-handling and retry logic - Cleanup on unmount - State transitions
+- ``/app/src/hooks/__tests__/useGo2RTCStream.test.ts`` - Hook lifecycle
+  tests (15 tests)
+- ``/app/src/components/video/__tests__/VideoPlayer.test.tsx`` -
+  Component tests
+- ``/app/src/lib/__tests__/url-builder.test.ts`` - URL builder tests
+- ``/app/src/lib/__tests__/discovery.test.ts`` - Discovery tests
+
+**Key test areas:**
+
+- Connection lifecycle (idle → connecting → connected)
+- Fallback ladder (WebRTC → MSE → HLS → MJPEG)
+- Error handling and retry logic
+- Cleanup on unmount
+- State transitions
 
 **Note:** Some useGo2RTCStream tests have async timing issues but the
 hook implementation is correct.

@@ -698,18 +698,23 @@ Logs Page
 Provides a unified view of both application logs (ephemeral, stored in
 memory) and ZoneMinder server logs (fetched via API).
 
-**Key Features**: - Toggle between App (zmNinjaNG) and Server logs - Filter
-by log level (DEBUG, INFO, WARN, ERROR) - Filter by component (e.g.,
-specific monitor or service) - Export logs to file or share (mobile) -
-Live server log fetching
+**Key Features**:
+
+- Toggle between App (zmNinjaNG) and Server logs
+- Filter by log level (DEBUG, INFO, WARN, ERROR)
+- Filter by component (e.g., specific monitor or service)
+- Export logs to file or share (mobile)
+- Live server log fetching
 
 Notification System
 ~~~~~~~~~~~~~~~~~~~
 
-**Pages**: - **History**: ``src/pages/NotificationHistory.tsx`` - List
-of past notifications with read status, event thumbnails, and tap-to-
-navigate. - **Settings**: ``src/pages/NotificationSettings.tsx`` -
-Notification configuration, including:
+**Pages**:
+
+- **History**: ``src/pages/NotificationHistory.tsx`` - List of past
+  notifications with read status, event thumbnails, and tap-to-navigate.
+- **Settings**: ``src/pages/NotificationSettings.tsx`` - Notification
+  configuration, including:
 
 - **Connection status badge**: Shows connected/disconnected (ES mode)
   or "Direct mode active" (Direct mode)
@@ -732,9 +737,12 @@ Server Status
 
 Dashboard for server health and control.
 
-**Features**: - Version information (API & Core) - System Load and Disk
-Usage metrics - Daemon status check - ZoneMinder Run State management
-(Start/Stop/Restart)
+**Features**:
+
+- Version information (API & Core)
+- System Load and Disk Usage metrics
+- Daemon status check
+- ZoneMinder Run State management (Start/Stop/Restart)
 
 Timeline View
 ~~~~~~~~~~~~~
@@ -743,10 +751,13 @@ Timeline View
 
 A visualization of events over time using ``vis-timeline``.
 
-**Implementation details**: - Uses ``vis-timeline/standalone`` for
-rendering - Groups events by Monitor - Color-coded by Monitor ID for
-visual distinction - Interactive zooming and panning - “Quick Range”
-buttons for common timeframes (1h, 8h, 24h)
+**Implementation details**:
+
+- Uses ``vis-timeline/standalone`` for rendering
+- Groups events by Monitor
+- Color-coded by Monitor ID for visual distinction
+- Interactive zooming and panning
+- “Quick Range” buttons for common timeframes (1h, 8h, 24h)
 
 Common Page Patterns
 --------------------
@@ -814,7 +825,7 @@ Key Takeaways
    structure
 5. **Error boundaries**: Wrap pages to catch component errors
 6. **Loading states**: Always show skeleton/spinner while fetching
-7. **Internationalization**: All user-facing text uses :doc:``t()`` function
+7. **Internationalization**: All user-facing text uses ``t()`` function
 8. **Navigation**: Use React Router’s ``useHistory`` hook
 
 Next Steps

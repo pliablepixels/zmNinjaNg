@@ -106,7 +106,7 @@ React Pitfalls
 - Stream URL updates, image re-renders with new URL
 - Second ZMS stream starts on server with valid ``connKey``
 - On unmount, only the stream with valid ``connKey`` gets terminated
-- **Result: Zombie stream with ``connKey=0`` left running on server**
+- **Result:** Zombie stream with ``connKey=0`` left running on server
 - Viewing N monitors creates 2*N streams instead of N
 
 **Solution:**
@@ -144,10 +144,12 @@ React Pitfalls
 
    return <img src={streamUrl} />;  // ✅ Only renders when connKey is valid
 
-**Key principles for stream lifecycle:** - Never render a stream without
-a valid connection key - Always send ``CMD_QUIT`` to terminate streams
-on unmount - Use refs to access latest values in cleanup effects - Check
-``connKey !== 0`` before building stream URLs
+**Key principles for stream lifecycle:**
+
+- Never render a stream without a valid connection key
+- Always send ``CMD_QUIT`` to terminate streams on unmount
+- Use refs to access latest values in cleanup effects
+- Check ``connKey !== 0`` before building stream URLs
 
 4. Mutating State Directly
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -802,11 +804,11 @@ Use a ref to track when you’re syncing from store vs. user interaction:
 
 1. **Use a ref** to track sync state (refs don’t cause re-renders)
 2. **Set flag before** updating local state from store
-3. **Use ``requestAnimationFrame``** to reset flag after React processes
+3. **Use** ``requestAnimationFrame`` to reset flag after React processes
    the update
 4. **Check flag** before writing back to store
 
-**Why ``requestAnimationFrame``?**
+**Why** ``requestAnimationFrame`` **?**
 
 - ``queueMicrotask`` can fire before React finishes processing
 - ``setTimeout(..., 0)`` is unpredictable
@@ -974,19 +976,27 @@ overlay boundary to succeed
      </div>
    </div>
 
-**Key principles:** - Always add :doc:``pointer-events-none`` to invisible
-overlay elements - Use ``group-hover:pointer-events-auto`` to restore
-interactivity on hover (desktop) - Test touch interactions on actual iOS
-devices, not just desktop - Invisible doesn’t mean non-interactive - iOS
-can still capture touch events
+**Key principles:**
 
-**When this matters:** - Hover overlays on cards, images, tiles -
-Tooltip containers - Hidden menus that appear on hover - Any element
-with ``opacity-0`` that overlays interactive content
+- Always add ``pointer-events-none`` to invisible overlay elements
+- Use ``group-hover:pointer-events-auto`` to restore interactivity on
+  hover (desktop)
+- Test touch interactions on actual iOS devices, not just desktop
+- Invisible doesn’t mean non-interactive
+- iOS can still capture touch events
 
-**Testing:** - Test on actual iOS device (Safari or native app) - Try
-tapping all interactive elements in mobile portrait mode - Verify no
-“dead zones” where taps are ignored
+**When this matters:**
+
+- Hover overlays on cards, images, tiles
+- Tooltip containers
+- Hidden menus that appear on hover
+- Any element with ``opacity-0`` that overlays interactive content
+
+**Testing:**
+
+- Test on actual iOS device (Safari or native app)
+- Try tapping all interactive elements in mobile portrait mode
+- Verify no “dead zones” where taps are ignored
 
 --------------
 
@@ -1080,10 +1090,12 @@ removing streaming params:
    // Result: https://server/zm/cgi-bin/zms?monitor=1&mode=single&scale=100&token=...
    await downloadFile(snapshotUrl, 'snapshot.jpg');  // ✅ Completes quickly
 
-**Key principles:** - Always normalize ZMS/nph-zms URLs before
-downloading - Set ``mode=single`` to get a single JPEG frame - Remove
-``maxfps``, ``connkey``, and other streaming parameters - Handle both
-``/zms`` and ``/nph-zms`` path patterns
+**Key principles:**
+
+- Always normalize ZMS/nph-zms URLs before downloading
+- Set ``mode=single`` to get a single JPEG frame
+- Remove ``maxfps``, ``connkey``, and other streaming parameters
+- Handle both ``/zms`` and ``/nph-zms`` path patterns
 
 Security Pitfalls
 -----------------

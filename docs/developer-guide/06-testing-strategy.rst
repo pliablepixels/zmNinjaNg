@@ -517,7 +517,7 @@ Android Setup
 2. Select **Pixel 7** as the hardware profile.
 3. Select system image: **API 34**, **arm64-v8a**,
    ``google_apis`` image (required for Apple Silicon Macs).
-4. Name the AVD **``Pixel_7_API_34``** (default expected by config).
+4. Name the AVD ``Pixel_7_API_34`` (default expected by config).
 5. Verify ``adb`` is on your PATH:
 
 .. code:: bash

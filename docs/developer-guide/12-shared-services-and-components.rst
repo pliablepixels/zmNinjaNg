@@ -26,11 +26,13 @@ Logger (``lib/logger.ts``)
 Structured logging system with sanitization and component-specific
 helpers.
 
-**Features:** - Log levels: DEBUG, INFO, WARN, ERROR, NONE - Automatic
-sanitization of passwords, tokens, and sensitive data -
-Component-specific logger methods (e.g., ``log.api()``,
-``log.profile()``, ``log.download()``) - Centralized log storage for
-debug UI (``/logs`` page)
+**Features:**
+
+- Log levels: DEBUG, INFO, WARN, ERROR, NONE
+- Automatic sanitization of passwords, tokens, and sensitive data
+- Component-specific logger methods (e.g., ``log.api()``,
+  ``log.profile()``, ``log.download()``)
+- Centralized log storage for debug UI (``/logs`` page)
 
 **Implementation:**
 
@@ -47,16 +49,19 @@ debug UI (``/logs`` page)
    log.download('Download started', LogLevel.INFO, { filename: 'video.mp4' });
    log.profileService('Switching profile', LogLevel.INFO, { from: 'A', to: 'B' });
 
-**Available Component Loggers:** - ``api``, ``app``, ``auth``,
-``crypto``, ``dashboard``, ``discovery``, ``download`` -
-``errorBoundary``, ``eventCard``, ``eventDetail``, ``eventMontage`` -
-``http``, ``imageError``, ``monitor``, ``monitorCard``,
-``monitorDetail``, ``montageMonitor`` - ``navigation``,
-``notificationHandler``, ``notifications``, ``notificationSettings`` -
-``profile``, ``profileForm``, ``profileService``, ``profileSwitcher`` -
-``push``, ``queryCache``, ``secureImage``, ``secureStorage``,
-``server``, ``time`` - ``videoMarkers``, ``videoPlayer``,
-``zmsEventPlayer``
+**Available Component Loggers:**
+
+- ``api``, ``app``, ``auth``, ``crypto``, ``dashboard``, ``discovery``,
+  ``download``
+- ``errorBoundary``, ``eventCard``, ``eventDetail``, ``eventMontage``
+- ``http``, ``imageError``, ``monitor``, ``monitorCard``,
+  ``monitorDetail``, ``montageMonitor``
+- ``navigation``, ``notificationHandler``, ``notifications``,
+  ``notificationSettings``
+- ``profile``, ``profileForm``, ``profileService``, ``profileSwitcher``
+- ``push``, ``queryCache``, ``secureImage``, ``secureStorage``,
+  ``server``, ``time``
+- ``videoMarkers``, ``videoPlayer``, ``zmsEventPlayer``
 
 **Used By:** Entire application (all components, stores, API functions)
 
@@ -68,10 +73,13 @@ HTTP Client (``lib/http.ts``)
 Platform-agnostic HTTP request abstraction that works on Web, iOS,
 Android, and Desktop.
 
-**Features:** - Automatic platform detection (Capacitor, Tauri, or Web)
-- CORS handling via proxy in development - Request/response logging via
-logger - Token injection for authentication - Support for multiple
-response types (json, blob, arraybuffer, text)
+**Features:**
+
+- Automatic platform detection (Capacitor, Tauri, or Web)
+- CORS handling via proxy in development
+- Request/response logging via logger
+- Token injection for authentication
+- Support for multiple response types (json, blob, arraybuffer, text)
 
 **Implementation:**
 
@@ -99,10 +107,11 @@ response types (json, blob, arraybuffer, text)
      responseType: 'blob'
    });
 
-**Platform Implementations:** - **Web**: Uses ``fetch()`` with standard
-CORS handling - **Mobile (Capacitor)**: Uses ``CapacitorHttp`` for
-native networking - **Desktop (Tauri)**: Uses
-``@tauri-apps/plugin-http`` for native fetch
+**Platform Implementations:**
+
+- **Web**: Uses ``fetch()`` with standard CORS handling
+- **Mobile (Capacitor)**: Uses ``CapacitorHttp`` for native networking
+- **Desktop (Tauri)**: Uses ``@tauri-apps/plugin-http`` for native fetch
 
 **SSL Trust:** When self-signed certificates are enabled for a profile,
 the Tauri HTTP path passes ``danger: { acceptInvalidCerts: true,
@@ -202,12 +211,15 @@ Discovery (``lib/discovery.ts``)
 ZoneMinder server discovery utility that probes for API endpoints and
 derives connection URLs.
 
-**Features:** - Automatic HTTPS/HTTP fallback for scheme-less URLs -
-Probes ``/zm/api`` and ``/api`` paths to find API endpoint - Derives
-``portalUrl`` and ``cgiUrl`` from confirmed API location - Optional
-authentication to fetch accurate ``ZM_PATH_ZMS`` from server config -
-Cancellable via AbortSignal - Skips redundant probes on connection
-errors (faster failure)
+**Features:**
+
+- Automatic HTTPS/HTTP fallback for scheme-less URLs
+- Probes ``/zm/api`` and ``/api`` paths to find API endpoint
+- Derives ``portalUrl`` and ``cgiUrl`` from confirmed API location
+- Optional authentication to fetch accurate ``ZM_PATH_ZMS`` from server
+  config
+- Cancellable via AbortSignal
+- Skips redundant probes on connection errors (faster failure)
 
 **Implementation:**
 
@@ -240,10 +252,12 @@ errors (faster failure)
    // Cancel from elsewhere
    abortController.abort();
 
-**Error Codes:** - ``API_NOT_FOUND`` - No ZoneMinder API found at any
-probed path - ``PORTAL_UNREACHABLE`` - Server completely unreachable -
-``CANCELLED`` - Discovery was cancelled via AbortSignal - ``UNKNOWN`` -
-Unexpected error
+**Error Codes:**
+
+- ``API_NOT_FOUND`` - No ZoneMinder API found at any probed path
+- ``PORTAL_UNREACHABLE`` - Server completely unreachable
+- ``CANCELLED`` - Discovery was cancelled via AbortSignal
+- ``UNKNOWN`` - Unexpected error
 
 A higher-level wrapper, ``discoverUrls``, bundles the common call pattern
 with iOS retry logic and an abort signal, so neither ``ProfileForm`` nor
@@ -272,11 +286,15 @@ Download Utilities (``lib/download.ts``)
 Cross-platform file download with progress tracking and cancellation
 support.
 
-**Features:** - Platform-specific implementations (Web, Mobile, Desktop)
-- Progress callbacks for UI updates - Cancellation via AbortSignal -
-Automatic file saving to appropriate locations - Mobile: Saves to
-Documents + Photo/Video library - Desktop: User selects save location -
-Web: Browser download
+**Features:**
+
+- Platform-specific implementations (Web, Mobile, Desktop)
+- Progress callbacks for UI updates
+- Cancellation via AbortSignal
+- Automatic file saving to appropriate locations
+- Mobile: Saves to Documents + Photo/Video library
+- Desktop: User selects save location
+- Web: Browser download
 
 **Implementation:**
 
@@ -300,9 +318,11 @@ Web: Browser download
    // Download monitor snapshot
    await downloadSnapshot(imageUrl, monitorName);
 
-**Platform Implementations:** - **Web**: Blob + anchor download -
-**Mobile**: CapacitorHttp → Filesystem → Media library - **Desktop**:
-Tauri fetch → User-selected path
+**Platform Implementations:**
+
+- **Web**: Blob + anchor download
+- **Mobile**: CapacitorHttp → Filesystem → Media library
+- **Desktop**: Tauri fetch → User-selected path
 
 **Critical Note:** Mobile implementation uses base64 directly (NOT Blob
 conversion) to avoid Out-Of-Memory errors on large video files.
@@ -316,9 +336,11 @@ Proxy URL Utilities (``lib/proxy-utils.ts``)
 
 Utilities for wrapping URLs with development proxy to handle CORS.
 
-**Features:** - Automatically wraps external URLs with proxy in
-development mode - Preserves URLs in production - Platform-aware (only
-web development needs proxy)
+**Features:**
+
+- Automatically wraps external URLs with proxy in development mode
+- Preserves URLs in production
+- Platform-aware (only web development needs proxy)
 
 **Implementation:**
 
@@ -343,9 +365,13 @@ URL Builder (``lib/url-builder.ts``)
 
 Centralized URL construction for ZoneMinder endpoints.
 
-**Features:** - Stream URLs with authentication - Event image/video URLs
-- Control URLs for PTZ - Consistent parameter handling - Cache busting
-support
+**Features:**
+
+- Stream URLs with authentication
+- Event image/video URLs
+- Control URLs for PTZ
+- Consistent parameter handling
+- Cache busting support
 
 **Implementation:**
 
@@ -388,10 +414,12 @@ Event Icons (``lib/event-icons.ts``)
 
 Maps event causes from ZoneMinder to Lucide icons for visual display.
 
-**Features:** - Exact match for known causes (Motion, Alarm, Signal,
-Linked, etc.) - Prefix matching for cause variants (e.g., “Motion:All”,
-“Motion:Person” → Motion icon) - Fallback to Circle icon for unknown
-causes
+**Features:**
+
+- Exact match for known causes (Motion, Alarm, Signal, Linked, etc.)
+- Prefix matching for cause variants (e.g., “Motion:All”,
+  “Motion:Person” → Motion icon)
+- Fallback to Circle icon for unknown causes
 
 **Implementation:**
 
@@ -408,9 +436,14 @@ causes
    const hasIcon = hasSpecificCauseIcon('Motion');  // true
    const hasIcon2 = hasSpecificCauseIcon('Custom');  // false
 
-**Mapped Causes:** - ``Motion`` → Move icon - ``Alarm`` → Bell icon -
-``Signal`` → Wifi icon - ``Linked`` → Link icon - ``Forced Web`` → Hand
-icon - ``Continuous`` → Video icon
+**Mapped Causes:**
+
+- ``Motion`` → Move icon
+- ``Alarm`` → Bell icon
+- ``Signal`` → Wifi icon
+- ``Linked`` → Link icon
+- ``Forced Web`` → Hand icon
+- ``Continuous`` → Video icon
 
 **Used By:** EventCard, event list components
 
@@ -421,8 +454,12 @@ Time Utilities (``lib/time.ts``)
 
 Date/time formatting and timezone conversion for ZoneMinder API.
 
-**Features:** - Server-compatible ISO format - Local datetime formatting
-for inputs - Timezone conversion - Duration formatting
+**Features:**
+
+- Server-compatible ISO format
+- Local datetime formatting for inputs
+- Timezone conversion
+- Duration formatting
 
 **Implementation:**
 
@@ -451,8 +488,12 @@ Crypto Utilities (``lib/crypto.ts``)
 
 Encryption/decryption for secure password storage (web platform).
 
-**Features:** - AES-256-GCM encryption - Secure key derivation - Browser
-SubtleCrypto API - Base64 encoding for storage
+**Features:**
+
+- AES-256-GCM encryption
+- Secure key derivation
+- Browser SubtleCrypto API
+- Base64 encoding for storage
 
 **Implementation:**
 
@@ -477,9 +518,12 @@ Secure Storage (``lib/secureStorage.ts``)
 
 Platform-specific secure storage abstraction.
 
-**Features:** - **Mobile**: Native keychain/keystore via
-``@aparajita/capacitor-secure-storage`` - **Web**: Encrypted
-localStorage via crypto utilities - Consistent API across platforms
+**Features:**
+
+- **Mobile**: Native keychain/keystore via
+  ``@aparajita/capacitor-secure-storage``
+- **Web**: Encrypted localStorage via crypto utilities
+- Consistent API across platforms
 
 **Implementation:**
 
@@ -505,8 +549,11 @@ Platform Detection (``lib/platform.ts``)
 
 Platform detection utilities.
 
-**Features:** - Detects Tauri (desktop), Capacitor (mobile), or Web -
-Proxy mode detection (development) - Consistent platform checks
+**Features:**
+
+- Detects Tauri (desktop), Capacitor (mobile), or Web
+- Proxy mode detection (development)
+- Consistent platform checks
 
 **Implementation:**
 
@@ -536,8 +583,11 @@ API Validator (``lib/api-validator.ts``)
 
 Zod-based runtime validation for API responses.
 
-**Features:** - Type-safe runtime validation - Detailed error messages -
-Schema coercion (e.g., numbers as strings)
+**Features:**
+
+- Type-safe runtime validation
+- Detailed error messages
+- Schema coercion (e.g., numbers as strings)
 
 **Implementation:**
 
@@ -564,8 +614,11 @@ Grid Utils (``lib/grid-utils.ts``)
 
 Grid layout calculations for montage views.
 
-**Features:** - Responsive grid column calculations - Aspect ratio
-handling - Breakpoint support
+**Features:**
+
+- Responsive grid column calculations
+- Aspect ratio handling
+- Breakpoint support
 
 **Implementation:**
 
@@ -805,8 +858,11 @@ SecureImage (``ui/secure-image.tsx``)
 
 Image component that handles authenticated requests.
 
-**Features:** - Fetches images with credentials - Converts to blob URL -
-Automatic cleanup
+**Features:**
+
+- Fetches images with credentials
+- Converts to blob URL
+- Automatic cleanup
 
 **Implementation:**
 
@@ -832,8 +888,12 @@ VideoPlayer (``ui/video-player.tsx``)
 
 HTML5 video wrapper with platform integration.
 
-**Features:** - Autoplay control - Fullscreen support - Error handling -
-Play/pause callbacks
+**Features:**
+
+- Autoplay control
+- Fullscreen support
+- Error handling
+- Play/pause callbacks
 
 **Usage:**
 
@@ -856,8 +916,11 @@ PasswordInput (``ui/password-input.tsx``)
 
 Password input with show/hide toggle.
 
-**Features:** - Eye icon toggle - Keyboard-accessible - Standard input
-props
+**Features:**
+
+- Eye icon toggle
+- Keyboard-accessible
+- Standard input props
 
 **Usage:**
 
@@ -878,8 +941,11 @@ EmptyState (``ui/empty-state.tsx``)
 
 Placeholder component for empty lists/states.
 
-**Features:** - Icon support - Title and description - Optional action
-button
+**Features:**
+
+- Icon support
+- Title and description
+- Optional action button
 
 **Usage:**
 
@@ -903,8 +969,11 @@ PullToRefresh (``ui/pull-to-refresh-indicator.tsx``)
 
 Visual indicator for pull-to-refresh gesture.
 
-**Features:** - Platform-aware (mobile only) - Animated spinner -
-Progress indication
+**Features:**
+
+- Platform-aware (mobile only)
+- Animated spinner
+- Progress indication
 
 **Usage:**
 
@@ -928,8 +997,11 @@ QuickDateRangeButtons (``ui/quick-date-range-buttons.tsx``)
 
 Quick date range selector buttons.
 
-**Features:** - Predefined ranges (24h, 48h, 1wk, 2wk, 1mo) -
-Abbreviated labels with tooltips - Responsive (hides text on mobile)
+**Features:**
+
+- Predefined ranges (24h, 48h, 1wk, 2wk, 1mo)
+- Abbreviated labels with tooltips
+- Responsive (hides text on mobile)
 
 **Usage:**
 
@@ -1088,9 +1160,12 @@ MonitorFilterPopover (``filters/MonitorFilterPopover.tsx``)
 
 Monitor selection filter with “All Monitors” toggle.
 
-**Features:** - Select individual monitors - “All Monitors” checkbox -
-Search/filter monitors - Used in multiple contexts (Events, Timeline,
-Dashboard)
+**Features:**
+
+- Select individual monitors
+- “All Monitors” checkbox
+- Search/filter monitors
+- Used in multiple contexts (Events, Timeline, Dashboard)
 
 **Usage:**
 
@@ -1112,9 +1187,13 @@ EventsFilterPopover (``events/EventsFilterPopover.tsx``)
 
 Comprehensive event filtering UI (extracted from Events page).
 
-**Features:** - Monitor selection via MonitorFilterPopover -
-Favorites-only toggle - Date range inputs - Quick date range buttons -
-Apply/Clear actions
+**Features:**
+
+- Monitor selection via MonitorFilterPopover
+- Favorites-only toggle
+- Date range inputs
+- Quick date range buttons
+- Apply/Clear actions
 
 **Usage:**
 
@@ -1147,11 +1226,19 @@ BackgroundTaskDrawer (``BackgroundTaskDrawer.tsx``)
 
 Drawer UI for background tasks (downloads, uploads, syncs).
 
-**Features:** - Task progress bars - Cancellation support -
-Auto-expand/collapse states - Completion badge
+**Features:**
 
-**States:** - Hidden: No tasks - Expanded: Shows progress bars -
-Collapsed: Thin bar at bottom - Badge: Floating count badge
+- Task progress bars
+- Cancellation support
+- Auto-expand/collapse states
+- Completion badge
+
+**States:**
+
+- Hidden: No tasks
+- Expanded: Shows progress bars
+- Collapsed: Thin bar at bottom
+- Badge: Floating count badge
 
 **Usage:**
 
@@ -1292,23 +1379,30 @@ When creating a new shared utility, follow these guidelines:
 1. Choose the Right Location
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- **``lib/``** - Pure utilities (no React, no stores)
-- **``hooks/``** - React-specific logic
-- **``services/``** - Platform-specific bridges (Capacitor plugins)
-- **``components/ui/``** - Primitive UI components
-- **``components/domain/``** - Domain-specific reusable components
+- ``lib/`` - Pure utilities (no React, no stores)
+- ``hooks/`` - React-specific logic
+- ``services/`` - Platform-specific bridges (Capacitor plugins)
+- ``components/ui/`` - Primitive UI components
+- ``components/domain/`` - Domain-specific reusable components
 
 2. Document Usage
 ~~~~~~~~~~~~~~~~~
 
-Update this file with: - Description of the utility - Code examples -
-Platform considerations - List of consumers
+Update this file with:
+
+- Description of the utility
+- Code examples
+- Platform considerations
+- List of consumers
 
 3. Follow Patterns
 ~~~~~~~~~~~~~~~~~~
 
-Look at existing utilities for patterns: - Consistent error handling -
-Logging via component-specific loggers - Platform detection where needed
+Look at existing utilities for patterns:
+
+- Consistent error handling
+- Logging via component-specific loggers
+- Platform detection where needed
 - TypeScript types exported
 
 4. Test
@@ -1388,7 +1482,7 @@ Notification Services (services/)
 The notification system spans three services that handle different delivery
 mechanisms:
 
-**``services/notifications.ts``** — WebSocket connection to ZoneMinder Event
+``services/notifications.ts`` — WebSocket connection to ZoneMinder Event
 Server (ES mode). Handles real-time alarm events via ``zmeventnotification.pl``.
 
 - Singleton via ``getNotificationService()``
@@ -1401,7 +1495,7 @@ Server (ES mode). Handles real-time alarm events via ``zmeventnotification.pl``.
 - 60-second keepalive ping
 - ``reconnectAttempts`` resets only after successful authentication
 
-**``services/pushNotifications.ts``** — FCM push notification handling for
+``services/pushNotifications.ts`` — FCM push notification handling for
 iOS and Android.
 
 - Singleton via ``getPushService()``
@@ -1411,7 +1505,7 @@ iOS and Android.
   (but ignored if WebSocket is already connected, to avoid duplicates)
 - Handles notification tap to navigate to event detail
 
-**``services/eventPoller.ts``** — Polls ZM events API for new events in
+``services/eventPoller.ts`` — Polls ZM events API for new events in
 Direct notification mode on desktop/web.
 
 - Singleton via ``getEventPoller()``
@@ -1422,7 +1516,7 @@ Direct notification mode on desktop/web.
 - Optional ``Notes REGEXP:detected:`` filter for object-detection-only events
 - Maintains a seen-event set (capped at 500) to avoid duplicate notifications
 
-**``components/NotificationHandler.tsx``** — Headless component that
+``components/NotificationHandler.tsx`` — Headless component that
 orchestrates the notification lifecycle:
 
 - Auto-connects WebSocket (ES mode) or starts poller (Direct mode on desktop)

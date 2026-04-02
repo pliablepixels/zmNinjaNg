@@ -89,7 +89,7 @@ Code Examples
 -------------
 
 Throughout this guide, we use real examples from the zmNinjaNG codebase. File
-paths are shown relative to the :doc:``app/`` directory:
+paths are shown relative to the ``app/`` directory:
 
 ::
 
