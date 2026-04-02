@@ -24,18 +24,18 @@ interface TimelineScrubberProps {
   onPlayheadChange: (timeMs: number | null) => void;
 }
 
-/** Find all events that overlap a given timestamp. */
-function eventsAtTime(events: TimelineEvent[], timeMs: number): TimelineEvent[] {
-  return events.filter((ev) => ev.startMs <= timeMs && ev.endMs >= timeMs);
-}
-
-/** Find the closest event to a timestamp (within 30s tolerance). */
-function nearestEvents(events: TimelineEvent[], timeMs: number): TimelineEvent[] {
-  const exact = eventsAtTime(events, timeMs);
-  if (exact.length > 0) return exact;
-
-  // Find events within a small window around the playhead
-  const tolerance = 30_000; // 30 seconds
+/**
+ * Find events near a timestamp. Tolerance scales with zoom level so that
+ * the scrubber "snaps" to events even when bars are visually thin.
+ * At minimum 30s tolerance, plus 1% of the visible range.
+ */
+function eventsNearTime(
+  events: TimelineEvent[],
+  timeMs: number,
+  viewDurationMs: number,
+): TimelineEvent[] {
+  // 1% of visible range or 30s, whichever is larger
+  const tolerance = Math.max(30_000, viewDurationMs * 0.01);
   return events.filter(
     (ev) => ev.startMs <= timeMs + tolerance && ev.endMs >= timeMs - tolerance,
   );
@@ -113,7 +113,7 @@ function TimelineScrubberComponent({
       setHandleNorm(norm);
       const timeMs = normToTime(norm);
       onPlayheadChange(timeMs);
-      setActiveEvents(nearestEvents(events, timeMs));
+      setActiveEvents(eventsNearTime(events, timeMs, viewEndMs - viewStartMs));
     },
     [events, normToTime, onPlayheadChange],
   );
@@ -172,10 +172,15 @@ function TimelineScrubberComponent({
 
   return (
     <div className="relative" data-testid="timeline-scrubber">
-      {/* Floating thumbnail strip — shown while scrubbing */}
+      {/* Floating thumbnail strip — positioned at handle, clamped to edges */}
       {scrubbing && activeEvents.length > 0 && (
         <div
-          className="absolute bottom-full mb-2 left-0 right-0 flex justify-center pointer-events-auto z-20"
+          className="absolute bottom-full mb-2 pointer-events-auto z-20"
+          style={{
+            left: `${handleNorm * 100}%`,
+            transform: 'translateX(-50%)',
+            maxWidth: '90%',
+          }}
         >
           <div className="flex gap-1.5 p-2 rounded-lg bg-popover/95 border border-border shadow-xl backdrop-blur-sm max-w-full overflow-x-auto">
             {activeEvents.slice(0, 8).map((ev) => (
