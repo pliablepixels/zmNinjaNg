@@ -13,6 +13,7 @@ import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Activity, Settings, Download, Clock, Video, VideoOff, Eye, Disc } from 'lucide-react';
 import { cn, formatEventCount } from '../../lib/utils';
+import { handleKeyClick } from '../../lib/tv-a11y';
 import { downloadSnapshotFromElement } from '../../lib/download';
 import { toast } from 'sonner';
 import { useMonitorStream } from '../../hooks/useMonitorStream';
@@ -119,9 +120,12 @@ function MonitorCardComponent({
         data-testid="monitor-card"
       >
         <div
-          className="relative bg-card cursor-pointer"
+          className="relative bg-card cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
           style={{ aspectRatio: aspectRatio ?? '16 / 9' }}
           onClick={() => navigate(`/monitors/${monitor.Id}`, { state: { from: '/monitors' } })}
+          onKeyDown={handleKeyClick}
+          tabIndex={0}
+          role="button"
         >
           {/* VideoOff sits behind the stream; the img covers it once loaded */}
           <div className="absolute inset-0 flex items-center justify-center bg-muted/30">
