@@ -8,6 +8,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(SSLTrustPlugin.class);
         registerPlugin(PipPlugin.class);
+        registerPlugin(TvDetectorPlugin.class);
         super.onCreate(savedInstanceState);
     }
 }
