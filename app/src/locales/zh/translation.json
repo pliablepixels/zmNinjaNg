@@ -375,7 +375,9 @@
     "appearance": {
       "custom": "自定义...",
       "twelve_hour": "12小时制",
-      "twenty_four_hour": "24小时制"
+      "twenty_four_hour": "24小时制",
+      "tv_mode": "TV模式",
+      "tv_mode_desc": "D-pad导航和显示"
     }
   },
   "ssl": {

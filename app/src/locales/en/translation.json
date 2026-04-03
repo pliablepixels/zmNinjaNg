@@ -375,7 +375,9 @@
     "appearance": {
       "custom": "Custom...",
       "twelve_hour": "12-hour",
-      "twenty_four_hour": "24-hour"
+      "twenty_four_hour": "24-hour",
+      "tv_mode": "TV mode",
+      "tv_mode_desc": "D-pad navigation and larger UI"
     }
   },
   "ssl": {
