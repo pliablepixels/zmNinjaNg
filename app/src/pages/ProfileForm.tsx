@@ -325,13 +325,13 @@ export default function ProfileForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-y-auto p-4" data-tv-region="setup-screen">
+    <div className="min-h-screen flex flex-col bg-background relative overflow-y-auto p-4" data-tv-region="setup-screen">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:20px_20px]" />
       <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/20 rounded-full blur-3xl opacity-50 animate-pulse" />
       <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-secondary/20 rounded-full blur-3xl opacity-50" />
 
-      <Card className="w-full max-w-md border-border/50 shadow-2xl backdrop-blur-xl bg-card/80 z-10">
+      <Card className="w-full max-w-md mx-auto my-auto border-border/50 shadow-2xl backdrop-blur-xl bg-card/80 z-10">
         <CardHeader className="text-center pb-8">
           <div className="mx-auto w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 ring-1 ring-primary/20">
             <Video className="w-8 h-8 text-primary" />
