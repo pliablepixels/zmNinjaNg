@@ -20,7 +20,7 @@ import type { MonitorCardProps } from '../../api/types';
 import { log, LogLevel } from '../../lib/logger';
 import { useTranslation } from 'react-i18next';
 import { getMonitorAspectRatio } from '../../lib/monitor-rotation';
-import { getMonitorRunState, isMonitorStreamable, monitorDotColor } from '../../lib/monitor-status';
+import { getMonitorRunState, monitorDotColor } from '../../lib/monitor-status';
 import { useAuthStore } from '../../stores/auth';
 import type { CSSProperties } from 'react';
 
@@ -52,7 +52,6 @@ function MonitorCardComponent({
   const zmVersion = useAuthStore((s) => s.version);
   const resolvedFit: CSSProperties['objectFit'] = objectFit === 'flex' ? 'cover' : (objectFit ?? 'cover');
   const runState = getMonitorRunState(monitor, status, zmVersion);
-  const streamable = isMonitorStreamable(runState);
   const aspectRatio = getMonitorAspectRatio(monitor.Width, monitor.Height, monitor.Orientation);
 
   // Use the custom hook to manage the monitor stream URL and connection state
@@ -128,17 +127,15 @@ function MonitorCardComponent({
           <div className="absolute inset-0 flex items-center justify-center bg-muted/30">
             <VideoOff className="h-8 w-8 text-muted-foreground/40" />
           </div>
-          {streamable && (
-            <img
-              ref={imgRef}
-              src={displayedImageUrl || streamUrl}
-              alt={monitor.Name}
-              className="relative w-full h-full"
-              style={{ objectFit: resolvedFit }}
-              onError={handleImageError}
-              data-testid="monitor-player"
-            />
-          )}
+          <img
+            ref={imgRef}
+            src={displayedImageUrl || streamUrl}
+            alt={monitor.Name}
+            className="relative w-full h-full"
+            style={{ objectFit: resolvedFit }}
+            onError={handleImageError}
+            data-testid="monitor-player"
+          />
           <div className="absolute top-1.5 left-1.5 z-10">
             <span
               className={cn('block h-2 w-2 rounded-full shadow-sm', monitorDotColor(runState))}
@@ -258,17 +255,15 @@ function MonitorCardComponent({
           <div className="absolute inset-0 flex items-center justify-center">
             <VideoOff className="h-8 w-8 text-muted-foreground/40" />
           </div>
-          {streamable && (
-            <img
-              ref={imgRef}
-              src={displayedImageUrl || streamUrl}
-              alt={monitor.Name}
-              className="relative w-full h-full"
-              style={{ objectFit: resolvedFit }}
-              onError={handleImageError}
-              data-testid="monitor-player"
-            />
-          )}
+          <img
+            ref={imgRef}
+            src={displayedImageUrl || streamUrl}
+            alt={monitor.Name}
+            className="relative w-full h-full"
+            style={{ objectFit: resolvedFit }}
+            onError={handleImageError}
+            data-testid="monitor-player"
+          />
         </div>
 
         {/* Monitor Info & Controls */}
