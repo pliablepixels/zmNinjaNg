@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
+import { Switch } from '../ui/switch';
 import { SectionHeader, SettingsCard, SettingsRow, RowLabel } from './SettingsLayout';
 import { validateFormatString } from '../../lib/format-date-time';
 import type { ProfileSettings, DateFormatPreset, TimeFormatPreset } from '../../stores/settings';
@@ -189,6 +190,16 @@ export function AppearanceSection({ settings, update }: AppearanceSectionProps) 
             </div>
           )}
         </div>
+      </SettingsCard>
+      <SettingsCard>
+        <SettingsRow>
+          <RowLabel label={t('settings.appearance.tv_mode')} desc={t('settings.appearance.tv_mode_desc')} />
+          <Switch
+            checked={settings.tvMode}
+            onCheckedChange={(checked) => update('tvMode', checked)}
+            data-testid="settings-tv-mode"
+          />
+        </SettingsRow>
       </SettingsCard>
     </section>
   );

@@ -19,8 +19,6 @@ import { getMonitor, getMonitors } from '../../../api/monitors';
 import type { MonitorFeedFit } from '../../../stores/settings';
 import { useMonitorStream } from '../../../hooks/useMonitorStream';
 import { AlertTriangle, VideoOff } from 'lucide-react';
-import { useAuthStore } from '../../../stores/auth';
-import { getMonitorRunState, isMonitorStreamable } from '../../../lib/monitor-status';
 import { Skeleton } from '../../ui/skeleton';
 import { useTranslation } from 'react-i18next';
 import { calculateGridDimensions } from '../../../lib/grid-utils';
@@ -40,7 +38,6 @@ interface MonitorWidgetProps {
 function SingleMonitor({ monitorId, objectFit }: { monitorId: string; objectFit: MonitorFeedFit }) {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const zmVersion = useAuthStore((s) => s.version);
     const { data: monitor, isLoading, error } = useQuery({
         queryKey: ['monitor', monitorId],
         queryFn: () => getMonitor(monitorId),
@@ -73,9 +70,6 @@ function SingleMonitor({ monitorId, objectFit }: { monitorId: string; objectFit:
         return null;
     }
 
-    const runState = getMonitorRunState(monitor.Monitor, monitor.Monitor_Status, zmVersion);
-    const streamable = isMonitorStreamable(runState);
-
     return (
         <div
             className="w-full h-full bg-black relative group overflow-hidden cursor-pointer"
@@ -85,7 +79,7 @@ function SingleMonitor({ monitorId, objectFit }: { monitorId: string; objectFit:
             <div className="absolute inset-0 flex items-center justify-center text-white/50 bg-zinc-900">
                 <VideoOff className="h-8 w-8" />
             </div>
-            {streamable && (
+            {(displayedImageUrl || streamUrl) && (
                 <img
                     ref={imgRef}
                     src={displayedImageUrl || streamUrl}

@@ -40,6 +40,7 @@ import { useKioskStore } from '../../stores/kioskStore';
 import { PinPad } from '../kiosk/PinPad';
 import { useKioskLock } from '../../hooks/useKioskLock';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { useTvMode } from '../../hooks/useTvMode';
 
 export interface SidebarContentProps {
   onMobileClose?: () => void;
@@ -49,6 +50,7 @@ export interface SidebarContentProps {
 export function SidebarContent({ onMobileClose, isCollapsed }: SidebarContentProps) {
   const location = useLocation();
   const isMobileDrawer = !!onMobileClose;
+  const { isTvMode } = useTvMode();
   const currentProfile = useProfileStore(
     useShallow((state) => {
       const { profiles, currentProfileId } = state;
@@ -399,6 +401,11 @@ export function SidebarContent({ onMobileClose, isCollapsed }: SidebarContentPro
               {kioskIsLocked ? <LockOpen className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
             </Button>
           </>
+        )}
+        {isTvMode && (
+          <span className={cn("block text-[10px] pt-1 text-primary/60 font-medium", isCollapsed ? "text-center" : "px-1")}>
+            {isCollapsed ? 'TV' : t('sidebar.tv_mode')}
+          </span>
         )}
         <span className={cn("block text-[10px] pt-1 opacity-40", isCollapsed ? "text-center" : "px-1")} style={{ fontSize: '10px' }}>
           v{getAppVersion()}

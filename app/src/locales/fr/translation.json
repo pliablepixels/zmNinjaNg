@@ -375,7 +375,9 @@
     "appearance": {
       "custom": "Personnalisé...",
       "twelve_hour": "12 heures",
-      "twenty_four_hour": "24 heures"
+      "twenty_four_hour": "24 heures",
+      "tv_mode": "Mode TV",
+      "tv_mode_desc": "Navigation D-pad et affichage"
     }
   },
   "ssl": {
@@ -816,7 +818,8 @@
     "notifications": "Notifications",
     "profiles": "Profils",
     "logs": "Journaux",
-    "switch_language": "Changer de Langue"
+    "switch_language": "Changer de Langue",
+    "tv_mode": "Mode TV"
   },
   "server": {
     "title": "Serveur",

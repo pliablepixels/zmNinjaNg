@@ -24,6 +24,7 @@ import { MonitorFilterPopoverContent } from '../components/filters/MonitorFilter
 import { EmptyState } from '../components/ui/empty-state';
 import { NotificationBadge } from '../components/NotificationBadge';
 import { useTimelineFilters } from '../hooks/useTimelineFilters';
+import { useTvKeyHandler } from '../hooks/useTvKeyHandler';
 import { useEventTagMapping } from '../hooks/useEventTags';
 import { TimelineCanvas } from '../components/timeline/TimelineCanvas';
 import { DetectionFilterTabs, categorizeEvent, type DetectionCategory } from '../components/timeline/DetectionFilterTabs';
@@ -67,6 +68,15 @@ export default function Timeline() {
   const [zoomInKey, setZoomInKey] = useState(0);
   const [zoomOutKey, setZoomOutKey] = useState(0);
   const [goToNowKey, setGoToNowKey] = useState(0);
+  const [panLeftKey, setPanLeftKey] = useState(0);
+  const [panRightKey, setPanRightKey] = useState(0);
+
+  useTvKeyHandler({
+    ArrowLeft: () => setPanLeftKey((k) => k + 1),
+    ArrowRight: () => setPanRightKey((k) => k + 1),
+    ArrowUp: () => setZoomInKey((k) => k + 1),
+    ArrowDown: () => setZoomOutKey((k) => k + 1),
+  });
 
   // Scrubber state — persisted to sessionStorage so it survives any back navigation
   const SCRUBBER_KEY = 'timeline-scrubber-state';
@@ -551,6 +561,8 @@ export default function Timeline() {
                 zoomInKey={zoomInKey}
                 zoomOutKey={zoomOutKey}
                 goToNowKey={goToNowKey}
+                panLeftKey={panLeftKey}
+                panRightKey={panRightKey}
                 onEventClick={handleEventClick}
                 onEventHover={handleEventHover}
                 onScrubberEventTap={navigateToEvent}

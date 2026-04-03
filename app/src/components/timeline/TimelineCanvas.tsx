@@ -26,6 +26,10 @@ interface TimelineCanvasProps {
   zoomOutKey?: number;
   /** Increment to scroll viewport so NOW is visible */
   goToNowKey?: number;
+  /** Increment to pan left */
+  panLeftKey?: number;
+  /** Increment to pan right */
+  panRightKey?: number;
   onEventClick: (event: TimelineEvent) => void;
   onEventHover: (event: TimelineEvent | null, x: number, y: number) => void;
   /** Called when a scrubber thumbnail is tapped. */
@@ -49,6 +53,8 @@ const TimelineCanvasInner = ({
   zoomInKey,
   zoomOutKey,
   goToNowKey,
+  panLeftKey,
+  panRightKey,
   onEventClick,
   onEventHover,
   onScrubberEventTap,
@@ -118,6 +124,25 @@ const TimelineCanvasInner = ({
       viewport.animateToRange(now - dur / 2, now + dur / 2);
     }
   }, [goToNowKey, viewport]);
+
+  // Pan left/right by 20% of current viewport duration
+  const prevPanLeftRef = useRef(panLeftKey);
+  useEffect(() => {
+    if (panLeftKey !== undefined && panLeftKey !== prevPanLeftRef.current) {
+      prevPanLeftRef.current = panLeftKey;
+      const dur = viewport.durationMs;
+      viewport.animateToRange(viewport.startMs - dur * 0.2, viewport.endMs - dur * 0.2);
+    }
+  }, [panLeftKey, viewport]);
+
+  const prevPanRightRef = useRef(panRightKey);
+  useEffect(() => {
+    if (panRightKey !== undefined && panRightKey !== prevPanRightRef.current) {
+      prevPanRightRef.current = panRightKey;
+      const dur = viewport.durationMs;
+      viewport.animateToRange(viewport.startMs + dur * 0.2, viewport.endMs + dur * 0.2);
+    }
+  }, [panRightKey, viewport]);
 
   // Observe container width + scrubber height
   useEffect(() => {

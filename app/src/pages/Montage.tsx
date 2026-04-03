@@ -12,8 +12,10 @@ import { useCurrentProfile } from '../hooks/useCurrentProfile';
 import { useBandwidthSettings } from '../hooks/useBandwidthSettings';
 import { useAuthStore } from '../stores/auth';
 import { useSettingsStore } from '../stores/settings';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTvKeyHandler } from '../hooks/useTvKeyHandler';
+import { useTvMode } from '../hooks/useTvMode';
 import { Button } from '../components/ui/button';
 import { MontageMonitor } from '../components/monitors/MontageMonitor';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
@@ -129,6 +131,63 @@ export default function Montage() {
     onWidthChange: handleWidthChange,
     currentWidthRef,
   });
+
+  // TV mode D-pad grid navigation
+  const { isTvMode } = useTvMode();
+  const [focusedMonitorIndex, setFocusedMonitorIndex] = useState(0);
+
+  // Estimate columns from gridCols (display columns)
+  const estimatedCols = gridCols;
+
+  const handleDpadNav = useCallback(
+    (direction: 'left' | 'right' | 'up' | 'down') => {
+      setFocusedMonitorIndex((prev) => {
+        const total = monitors.length;
+        if (total === 0) return 0;
+        let next = prev;
+        switch (direction) {
+          case 'left':
+            next = prev - 1;
+            break;
+          case 'right':
+            next = prev + 1;
+            break;
+          case 'up':
+            next = prev - estimatedCols;
+            break;
+          case 'down':
+            next = prev + estimatedCols;
+            break;
+        }
+        return Math.max(0, Math.min(total - 1, next));
+      });
+    },
+    [monitors.length, estimatedCols]
+  );
+
+  const handleDpadEnter = useCallback(() => {
+    const mon = monitors[focusedMonitorIndex];
+    if (mon) {
+      navigate(`/monitors/${mon.Monitor.Id}`);
+    }
+  }, [monitors, focusedMonitorIndex, navigate]);
+
+  useTvKeyHandler({
+    ArrowLeft: () => handleDpadNav('left'),
+    ArrowRight: () => handleDpadNav('right'),
+    ArrowUp: () => handleDpadNav('up'),
+    ArrowDown: () => handleDpadNav('down'),
+    Enter: handleDpadEnter,
+  });
+
+  // Focus the monitor element when index changes in TV mode
+  useEffect(() => {
+    if (!isTvMode || monitors.length === 0) return;
+    const el = document.querySelector(
+      `[data-testid="montage-monitor-${monitors[focusedMonitorIndex]?.Monitor.Id}"]`
+    ) as HTMLElement | null;
+    el?.focus();
+  }, [isTvMode, focusedMonitorIndex, monitors]);
 
   // Pinch-to-zoom (disabled in fullscreen to avoid gesture conflicts)
   const pinchZoom = usePinchZoom({
@@ -364,8 +423,17 @@ export default function Montage() {
               onDragStop={handleDragStop}
               onResizeStop={handleResizeStop}
             >
-              {monitors.map(({ Monitor, Monitor_Status }) => (
-                <div key={Monitor.Id} className={cn("relative", isMonitorPinned(Monitor.Id) && "pin-locked")}>
+              {monitors.map(({ Monitor, Monitor_Status }, idx) => (
+                <div
+                  key={Monitor.Id}
+                  className={cn(
+                    "relative",
+                    isMonitorPinned(Monitor.Id) && "pin-locked",
+                    isTvMode && idx === focusedMonitorIndex && "ring-2 ring-primary"
+                  )}
+                  data-testid={`montage-monitor-${Monitor.Id}`}
+                  tabIndex={isTvMode ? 0 : undefined}
+                >
                   <MontageMonitor
                     monitor={Monitor}
                     status={Monitor_Status}

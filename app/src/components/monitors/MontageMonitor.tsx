@@ -30,6 +30,7 @@ import { downloadSnapshotFromElement } from '../../lib/download';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { log } from '../../lib/logger';
+import { handleKeyClick } from '../../lib/tv-a11y';
 
 interface MontageMonitorProps {
   monitor: Monitor;
@@ -224,6 +225,9 @@ function MontageMonitorComponent({
           !isFullscreen && "cursor-pointer"
         )}
         onClick={() => !isEditing && navigate(`/monitors/${monitor.Id}`)}
+        onKeyDown={handleKeyClick}
+        tabIndex={isEditing ? -1 : 0}
+        role="button"
       >
         {/* Skeleton loader */}
         {!imageLoaded && (

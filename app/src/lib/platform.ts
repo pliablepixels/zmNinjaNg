@@ -51,4 +51,15 @@ export const Platform = {
   get shouldUseProxy() {
     return this.isDev && this.isWeb;
   },
+
+  /**
+   * True if running on an Android TV or Fire Stick device.
+   * Checks native-injected global first (definitive), then user agent as fallback.
+   */
+  get isTVDevice() {
+    // Native side injects this before web content loads
+    if ((window as unknown as Record<string, unknown>).__ZMNINJA_IS_TV__) return true;
+    const ua = navigator.userAgent.toLowerCase();
+    return /\b(tv|aft|stb|android tv|fire tv|bravia|smart-tv|smarttv|googletv)\b/.test(ua);
+  },
 };

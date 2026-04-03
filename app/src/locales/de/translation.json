@@ -375,7 +375,9 @@
     "appearance": {
       "custom": "Benutzerdefiniert...",
       "twelve_hour": "12-Stunden",
-      "twenty_four_hour": "24-Stunden"
+      "twenty_four_hour": "24-Stunden",
+      "tv_mode": "TV-Modus",
+      "tv_mode_desc": "D-Pad-Navigation und Anzeige"
     }
   },
   "ssl": {
@@ -816,7 +818,8 @@
     "notifications": "Benachrichtigungen",
     "profiles": "Profile",
     "logs": "Protokolle",
-    "switch_language": "Sprache wechseln"
+    "switch_language": "Sprache wechseln",
+    "tv_mode": "TV-Modus"
   },
   "server": {
     "title": "Server",

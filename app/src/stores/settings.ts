@@ -96,6 +96,8 @@ export interface ProfileSettings {
   eventVideoAutoplay: boolean;
   // Desktop sidebar width in pixels (60–320, persisted across sessions)
   sidebarWidth: number;
+  // TV mode — enables D-pad navigation and larger UI
+  tvMode: boolean;
 }
 
 interface SettingsState {
@@ -198,6 +200,7 @@ export const DEFAULT_SETTINGS: ProfileSettings = {
   montageSavedLayouts: [],
   montageActiveLayoutName: null,
   sidebarWidth: 256,
+  tvMode: false,
 };
 
 export const useSettingsStore = create<SettingsState>()(
