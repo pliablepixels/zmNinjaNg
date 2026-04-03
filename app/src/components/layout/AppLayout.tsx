@@ -26,6 +26,7 @@ import { useTranslation } from 'react-i18next';
 import { BackgroundTaskDrawer } from '../BackgroundTaskDrawer';
 import { CertTrustDialog } from '../CertTrustDialog';
 import { onCertTrustRequest, type PendingCertTrust } from '../../lib/cert-trust-event';
+import { useTvMode } from '../../hooks/useTvMode';
 import { useKioskStore } from '../../stores/kioskStore';
 import { KioskOverlay } from '../kiosk/KioskOverlay';
 import { LanguageSwitcher } from './LanguageSwitcher';
@@ -43,6 +44,12 @@ export default function AppLayout() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(() => (settings.sidebarWidth ?? 256) <= 80);
   const { t } = useTranslation();
+  const { isTvMode } = useTvMode();
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('tv-mode', isTvMode);
+    return () => document.documentElement.classList.remove('tv-mode');
+  }, [isTvMode]);
 
   // Track route changes and save to settings
   useEffect(() => {
