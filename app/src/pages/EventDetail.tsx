@@ -33,6 +33,7 @@ import { useEventFavoritesStore } from '../stores/eventFavorites';
 import { useZoomPan } from '../hooks/useZoomPan';
 import { ZoomControls } from '../components/ui/ZoomControls';
 import { useEventNavigation } from '../hooks/useEventNavigation';
+import { useTvKeyHandler } from '../hooks/useTvKeyHandler';
 import { cn } from '../lib/utils';
 
 export default function EventDetail() {
@@ -70,6 +71,12 @@ export default function EventDetail() {
   } = useEventNavigation({
     currentEventId: id,
     currentStartDateTime: event?.Event.StartDateTime,
+  });
+
+  // TV D-pad: left/right navigate between events
+  useTvKeyHandler({
+    ArrowLeft: goToPrevEvent,
+    ArrowRight: goToNextEvent,
   });
 
   const isFav = currentProfile && event ? isFavorited(currentProfile.id, event.Event.Id) : false;
