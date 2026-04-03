@@ -14,7 +14,6 @@
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation"
             android:name=".MainActivity"
             android:banner="@drawable/app_icon_flat"
-            android:icon="@drawable/app_icon_square"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
@@ -33,7 +32,8 @@
             android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:exported="false"
-            android:theme="@android:style/Theme.NoTitleBar" />
+            android:theme="@android:style/Theme.NoTitleBar"
+        />
 
         <provider
             android:name="androidx.core.content.FileProvider"
