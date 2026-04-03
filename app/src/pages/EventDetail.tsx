@@ -22,6 +22,8 @@ import { ArrowLeft, Calendar, Clock, HardDrive, AlertTriangle, Download, Archive
 import { getEventCauseIcon } from '../lib/event-icons';
 import { getObjectClassIconFromList } from '../lib/object-class-icons';
 import { useDateTimeFormat } from '../hooks/useDateTimeFormat';
+import { useTvMode } from '../hooks/useTvMode';
+import { Platform } from '../lib/platform';
 import { downloadEventVideo } from '../lib/download';
 import { getOrientedResolution } from '../lib/monitor-rotation';
 import { toast } from 'sonner';
@@ -33,7 +35,6 @@ import { useEventFavoritesStore } from '../stores/eventFavorites';
 import { useZoomPan } from '../hooks/useZoomPan';
 import { ZoomControls } from '../components/ui/ZoomControls';
 import { useEventNavigation } from '../hooks/useEventNavigation';
-import { useTvKeyHandler } from '../hooks/useTvKeyHandler';
 import { cn } from '../lib/utils';
 
 export default function EventDetail() {
@@ -42,12 +43,18 @@ export default function EventDetail() {
   const location = useLocation();
   const { t } = useTranslation();
   const { fmtDate, fmtTime } = useDateTimeFormat();
+  const { isTvMode } = useTvMode();
 
   // Check if user came from another page (navigation state tracking)
   const referrer = location.state?.from as string | undefined;
   const canGoBack = referrer || window.history.length > 1;
   const goBack = () => referrer ? navigate(referrer) : canGoBack ? navigate(-1) : navigate('/events');
-  const [useZmsFallback, setUseZmsFallback] = useState(false);
+  const [useZmsFallback, setUseZmsFallback] = useState(isTvMode || Platform.isTVDevice);
+
+  // On TV devices, use ZMS stream instead of MP4 (Fire Stick WebView has video rendering issues)
+  useEffect(() => {
+    if (isTvMode) setUseZmsFallback(true);
+  }, [isTvMode]);
 
   const { data: event, isLoading, error } = useQuery({
     queryKey: ['event', id],
@@ -71,12 +78,6 @@ export default function EventDetail() {
   } = useEventNavigation({
     currentEventId: id,
     currentStartDateTime: event?.Event.StartDateTime,
-  });
-
-  // TV D-pad: left/right navigate between events
-  useTvKeyHandler({
-    ArrowLeft: goToPrevEvent,
-    ArrowRight: goToNextEvent,
   });
 
   const isFav = currentProfile && event ? isFavorited(currentProfile.id, event.Event.Id) : false;

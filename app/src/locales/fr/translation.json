@@ -818,7 +818,8 @@
     "notifications": "Notifications",
     "profiles": "Profils",
     "logs": "Journaux",
-    "switch_language": "Changer de Langue"
+    "switch_language": "Changer de Langue",
+    "tv_mode": "Mode TV"
   },
   "server": {
     "title": "Serveur",

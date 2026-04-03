@@ -818,7 +818,8 @@
     "notifications": "通知",
     "profiles": "配置",
     "logs": "日志",
-    "switch_language": "切换语言"
+    "switch_language": "切换语言",
+    "tv_mode": "TV模式"
   },
   "server": {
     "title": "服务器",

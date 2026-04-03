@@ -35,7 +35,7 @@ import { useZoomPan } from '../hooks/useZoomPan';
 
 // Extracted hooks and components
 import { usePTZControl, useAlarmControl, useModeControl, useMonitorNavigation } from './hooks';
-import { useTvKeyHandler } from '../hooks/useTvKeyHandler';
+
 import { MonitorSettingsDialog } from '../components/monitor-detail/MonitorSettingsDialog';
 import { MonitorControlsCard } from '../components/monitor-detail/MonitorControlsCard';
 import { ZoomControls } from '../components/ui/ZoomControls';
@@ -92,12 +92,6 @@ export default function MonitorDetail() {
   const { isSliding, enabledMonitors, hasPrev, hasNext, onSwipeLeft, onSwipeRight } = useMonitorNavigation({
     currentMonitorId: id,
     cycleSeconds: settings.monitorDetailCycleSeconds,
-  });
-
-  // TV D-pad: left/right navigate between monitors
-  useTvKeyHandler({
-    ArrowLeft: onSwipeRight,   // swipeRight goes to prev monitor
-    ArrowRight: onSwipeLeft,   // swipeLeft goes to next monitor
   });
 
   // Pinch-to-zoom and pan (zooms around focal point, pan when zoomed, swipe when not)

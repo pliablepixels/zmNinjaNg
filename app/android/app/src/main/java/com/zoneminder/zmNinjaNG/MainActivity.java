@@ -4,12 +4,11 @@ import android.app.UiModeManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.view.KeyEvent;
+import android.view.ViewGroup;
 import android.webkit.WebView;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
-    private boolean isTV = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -18,38 +17,13 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(TvDetectorPlugin.class);
         super.onCreate(savedInstanceState);
 
-        isTV = isTVDevice();
-        if (isTV) {
-            enableSpatialNavigationOnWebView();
-        }
-    }
-
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-        if (isTV && event.getAction() == KeyEvent.ACTION_DOWN) {
-            String jsKey = mapKeyToJs(event.getKeyCode());
-            if (jsKey != null) {
-                WebView webView = getBridge().getWebView();
-                String js = String.format(
-                    "window.dispatchEvent(new KeyboardEvent('keydown', {key:'%s', bubbles:true}));",
-                    jsKey
-                );
-                webView.evaluateJavascript(js, null);
-                return true;
-            }
-        }
-        return super.dispatchKeyEvent(event);
-    }
-
-    private String mapKeyToJs(int keyCode) {
-        switch (keyCode) {
-            case KeyEvent.KEYCODE_DPAD_UP:     return "ArrowUp";
-            case KeyEvent.KEYCODE_DPAD_DOWN:   return "ArrowDown";
-            case KeyEvent.KEYCODE_DPAD_LEFT:   return "ArrowLeft";
-            case KeyEvent.KEYCODE_DPAD_RIGHT:  return "ArrowRight";
-            case KeyEvent.KEYCODE_DPAD_CENTER:
-            case KeyEvent.KEYCODE_ENTER:       return "Enter";
-            default: return null;
+        if (isTVDevice()) {
+            // Inject JS global before web content loads so the web layer
+            // knows it's TV from the very first render
+            getBridge().getWebView().evaluateJavascript(
+                "window.__ZMNINJA_IS_TV__ = true;", null
+            );
+            wrapWebViewWithCursor();
         }
     }
 
@@ -59,18 +33,34 @@ public class MainActivity extends BridgeActivity {
             && uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION;
     }
 
-    private void enableSpatialNavigationOnWebView() {
+    private void wrapWebViewWithCursor() {
+        // Post to ensure the WebView is fully initialized
         getBridge().getWebView().post(() -> {
-            try {
-                WebView webView = getBridge().getWebView();
-                java.lang.reflect.Method method = android.webkit.WebSettings.class
-                    .getMethod("setSpatialNavigationEnabled", boolean.class);
-                method.invoke(webView.getSettings(), true);
-                webView.setFocusableInTouchMode(true);
-                webView.requestFocus();
-            } catch (Exception e) {
-                // setSpatialNavigationEnabled not available
-            }
+            WebView webView = getBridge().getWebView();
+            ViewGroup parent = (ViewGroup) webView.getParent();
+            if (parent == null) return;
+
+            int index = parent.indexOfChild(webView);
+            ViewGroup.LayoutParams params = webView.getLayoutParams();
+
+            // Remove WebView from its parent
+            parent.removeView(webView);
+
+            // Create the cursor layout and add WebView as its child
+            TvCursorLayout cursorLayout = new TvCursorLayout(this);
+            cursorLayout.setLayoutParams(params);
+            cursorLayout.addView(webView, new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            ));
+
+            // Put the cursor layout where the WebView was
+            parent.addView(cursorLayout, index);
+
+            // Request focus so D-pad events are received
+            cursorLayout.setFocusable(true);
+            cursorLayout.setFocusableInTouchMode(true);
+            cursorLayout.requestFocus();
         });
     }
 }

@@ -325,7 +325,7 @@ export default function ProfileForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-y-auto p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-y-auto p-4" data-tv-region="setup-screen">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:20px_20px]" />
       <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/20 rounded-full blur-3xl opacity-50 animate-pulse" />
