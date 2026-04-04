@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertCircle,
+  VideoOff,
 } from 'lucide-react';
 import { getEventImageUrl } from '../../api/events';
 import { useTranslation } from 'react-i18next';
@@ -260,7 +261,14 @@ export function ZmsEventPlayer({
               src={zmsUrl}
               alt={t('event_detail.event_playback')}
               className="w-full h-full object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              onLoad={(e) => { (e.target as HTMLImageElement).style.display = ''; }}
             />
+          </div>
+
+          {/* No-video placeholder behind the stream image */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <VideoOff className="h-10 w-10 text-muted-foreground/30" />
           </div>
 
           {/* Status Badge */}
