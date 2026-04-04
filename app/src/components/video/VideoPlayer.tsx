@@ -99,6 +99,7 @@ export function VideoPlayer({
 
   const mjpegStream = useMonitorStream({
     monitorId: monitor.Id,
+    serverId: monitor.ServerId,
     streamOptions: {
       maxfps: rawSettings?.streamMaxFps,
       scale: rawSettings?.streamScale,

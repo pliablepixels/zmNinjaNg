@@ -49,6 +49,7 @@ function SingleMonitor({ monitorId, objectFit }: { monitorId: string; objectFit:
     // The hook is disabled until the monitor query has loaded.
     const { displayedImageUrl, streamUrl, imgRef } = useMonitorStream({
         monitorId,
+        serverId: monitor?.Monitor.ServerId,
         enabled: !!monitor,
     });
 

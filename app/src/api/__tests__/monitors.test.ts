@@ -117,8 +117,8 @@ describe('Monitors API', () => {
     await triggerAlarm('5');
     await cancelAlarm('5');
 
-    expect(mockGet).toHaveBeenCalledWith('/monitors/alarm/id:5/command:on.json');
-    expect(mockGet).toHaveBeenCalledWith('/monitors/alarm/id:5/command:off.json');
+    expect(mockGet).toHaveBeenCalledWith('/monitors/alarm/id:5/command:on.json', undefined);
+    expect(mockGet).toHaveBeenCalledWith('/monitors/alarm/id:5/command:off.json', undefined);
   });
 
   it('gets alarm status', async () => {
@@ -126,7 +126,7 @@ describe('Monitors API', () => {
 
     const status = await getAlarmStatus('6');
 
-    expect(mockGet).toHaveBeenCalledWith('/monitors/alarm/id:6/command:status.json');
+    expect(mockGet).toHaveBeenCalledWith('/monitors/alarm/id:6/command:status.json', undefined);
     expect(status.status).toBe('on');
   });
 
@@ -140,9 +140,72 @@ describe('Monitors API', () => {
 
     const status = await getDaemonStatus('7', 'zmc');
 
-    expect(mockGet).toHaveBeenCalledWith('/monitors/daemonStatus/id:7/daemon:zmc.json');
+    expect(mockGet).toHaveBeenCalledWith('/monitors/daemonStatus/id:7/daemon:zmc.json', undefined);
     expect(status.status).toBe('ok');
     expect(status.statustext).toBe('running');
+  });
+
+  it('routes triggerAlarm to alternate server when apiBaseUrl provided', async () => {
+    mockGet.mockResolvedValue({
+      data: { status: 'ok', output: 'Command sent' },
+    });
+
+    await triggerAlarm('5', 'https://pseudo.example.com/api');
+
+    expect(mockGet).toHaveBeenCalledWith(
+      '/monitors/alarm/id:5/command:on.json',
+      { baseURL: 'https://pseudo.example.com/api' }
+    );
+  });
+
+  it('routes cancelAlarm to alternate server when apiBaseUrl provided', async () => {
+    mockGet.mockResolvedValue({
+      data: { status: 'ok', output: 'Command sent' },
+    });
+
+    await cancelAlarm('5', 'https://pseudo.example.com/api');
+
+    expect(mockGet).toHaveBeenCalledWith(
+      '/monitors/alarm/id:5/command:off.json',
+      { baseURL: 'https://pseudo.example.com/api' }
+    );
+  });
+
+  it('routes getAlarmStatus to alternate server when apiBaseUrl provided', async () => {
+    mockGet.mockResolvedValue({ data: { status: 'on' } });
+
+    await getAlarmStatus('6', 'https://pseudo.example.com/api');
+
+    expect(mockGet).toHaveBeenCalledWith(
+      '/monitors/alarm/id:6/command:status.json',
+      { baseURL: 'https://pseudo.example.com/api' }
+    );
+  });
+
+  it('routes getDaemonStatus to alternate server when apiBaseUrl provided', async () => {
+    mockGet.mockResolvedValue({
+      data: { status: 'ok', statustext: 'running' },
+    });
+
+    await getDaemonStatus('7', 'zmc', 'https://pseudo.example.com/api');
+
+    expect(mockGet).toHaveBeenCalledWith(
+      '/monitors/daemonStatus/id:7/daemon:zmc.json',
+      { baseURL: 'https://pseudo.example.com/api' }
+    );
+  });
+
+  it('uses default client baseURL when apiBaseUrl is undefined', async () => {
+    mockGet.mockResolvedValue({
+      data: { status: 'ok', statustext: 'running' },
+    });
+
+    await getDaemonStatus('7', 'zmc');
+
+    expect(mockGet).toHaveBeenCalledWith(
+      '/monitors/daemonStatus/id:7/daemon:zmc.json',
+      undefined
+    );
   });
 
   it('builds monitor stream URL via url builder', () => {

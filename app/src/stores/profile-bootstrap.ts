@@ -215,8 +215,35 @@ export async function bootstrapMultiPortStreaming(
 }
 
 /**
- * Run all bootstrap steps in sequence
+ * Bootstrap multi-server map from /servers.json
  */
+export async function bootstrapServerMap(): Promise<void> {
+  try {
+    const { getServers } = await import('../api/server');
+    const { buildServerMap, setServerMap } = await import('../lib/server-resolver');
+
+    log.profileService('Fetching server list for multi-server routing', LogLevel.DEBUG);
+    const servers = await getServers();
+
+    if (servers.length === 0) {
+      log.profileService('No servers returned, single-server mode', LogLevel.DEBUG);
+      return;
+    }
+
+    const serverMap = buildServerMap(servers);
+    setServerMap(serverMap);
+
+    log.profileService('Multi-server map initialized', LogLevel.INFO, {
+      serverCount: servers.length,
+      mappedCount: serverMap.size,
+    });
+  } catch (error) {
+    log.profileService('Failed to fetch servers, single-server fallback', LogLevel.WARN, {
+      error,
+    });
+  }
+}
+
 /**
  * Bootstrap SSL trust setting before any API calls.
  * If self-signed certs are enabled but no fingerprint is stored (upgrade migration),
@@ -259,9 +286,12 @@ export async function performBootstrap(
   profile: Profile,
   context: BootstrapContext
 ): Promise<void> {
+  const { clearServerMap } = await import('../lib/server-resolver');
+  clearServerMap();
   // SSL trust must be configured before any API calls
   await bootstrapSSLTrust(profile);
   await bootstrapAuth(profile, context);
+  await bootstrapServerMap();
   await bootstrapTimezone(profile, context);
   await bootstrapZmsPath(profile, context);
   await bootstrapGo2RTCPath(profile, context);

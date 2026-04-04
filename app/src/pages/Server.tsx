@@ -1,8 +1,8 @@
 /**
  * Server Page
  *
- * Displays server information, status, and controls for the ZoneMinder server.
- * Includes version info, load metrics, disk usage, and run state management.
+ * Displays all servers in the cluster, their health metrics, storage areas,
+ * version info, and ZoneMinder run state controls.
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -24,10 +24,12 @@ import {
   Play,
   Square,
   RotateCw,
+  Database,
+  MemoryStick,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getServers, getLoad, getDiskPercent, getDaemonCheck } from '../api/server';
+import { getServers, getLoad, getDiskPercent, getDaemonCheck, getStorages } from '../api/server';
 import { getServerTimeZone } from '../api/time';
 import { getStates, changeState } from '../api/states';
 import { useToast } from '../hooks/use-toast';
@@ -60,7 +62,7 @@ export default function Server() {
   // Fetch daemon status
   const { data: isDaemonRunning, isLoading: daemonLoading } = useQuery({
     queryKey: ['daemon-check', currentProfile?.id],
-    queryFn: getDaemonCheck,
+    queryFn: () => getDaemonCheck(),
     enabled: !!currentProfile && isAuthenticated,
     refetchInterval: bandwidth.daemonCheckInterval,
   });
@@ -68,14 +70,14 @@ export default function Server() {
   // Fetch load average
   const { data: loadData, isLoading: loadLoading } = useQuery({
     queryKey: ['server-load', currentProfile?.id],
-    queryFn: getLoad,
+    queryFn: () => getLoad(),
     enabled: !!currentProfile && isAuthenticated,
   });
 
   // Fetch disk usage
   const { data: diskData, isLoading: diskLoading } = useQuery({
     queryKey: ['disk-usage', currentProfile?.id],
-    queryFn: getDiskPercent,
+    queryFn: () => getDiskPercent(),
     enabled: !!currentProfile && isAuthenticated,
   });
 
@@ -90,6 +92,13 @@ export default function Server() {
   const { data: timezone, isLoading: timezoneLoading } = useQuery({
     queryKey: ['timezone', currentProfile?.id],
     queryFn: () => getServerTimeZone(),
+    enabled: !!currentProfile && isAuthenticated,
+  });
+
+  // Fetch storages
+  const { data: storages } = useQuery({
+    queryKey: ['storages', currentProfile?.id],
+    queryFn: getStorages,
     enabled: !!currentProfile && isAuthenticated,
   });
 
@@ -137,6 +146,7 @@ export default function Server() {
     queryClient.invalidateQueries({ queryKey: ['disk-usage', currentProfile?.id] });
     queryClient.invalidateQueries({ queryKey: ['states', currentProfile?.id] });
     queryClient.invalidateQueries({ queryKey: ['timezone', currentProfile?.id] });
+    queryClient.invalidateQueries({ queryKey: ['storages', currentProfile?.id] });
   };
 
   const isRefreshing = serversLoading || daemonLoading || loadLoading || diskLoading || statesLoading || timezoneLoading;
@@ -147,7 +157,7 @@ export default function Server() {
     return `${gb.toFixed(2)} GB`;
   };
 
-  const primaryServer = servers && servers.length > 0 ? servers[0] : null;
+  const isMultiServer = servers && servers.length > 1;
   const diskUsageGB = diskData?.usage;
 
   return (
@@ -210,127 +220,292 @@ export default function Server() {
         </CardContent>
       </Card>
 
-      {/* Server Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Load Average */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Cpu className="h-4 w-4 text-primary" />
-                <CardTitle className="text-base">{t('server.load_average')}</CardTitle>
+      {/* Server Metrics — single-server mode */}
+      {!isMultiServer && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Load Average */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Cpu className="h-4 w-4 text-primary" />
+                  <CardTitle className="text-base">{t('server.load_average')}</CardTitle>
+                </div>
+                {loadLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
               </div>
-              {loadLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {loadData?.load !== undefined
-                ? (Array.isArray(loadData.load)
-                    ? loadData.load[0]
-                    : loadData.load
-                  ).toFixed(2)
-                : '--'}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">{t('server.load_desc')}</p>
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {loadData?.load !== undefined
+                  ? (Array.isArray(loadData.load)
+                      ? loadData.load[0]
+                      : loadData.load
+                    ).toFixed(2)
+                  : '--'}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{t('server.load_desc')}</p>
+            </CardContent>
+          </Card>
 
-        {/* Disk Usage */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <HardDrive className="h-4 w-4 text-primary" />
-                <CardTitle className="text-base">{t('server.disk_usage')}</CardTitle>
+          {/* Disk Usage */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <HardDrive className="h-4 w-4 text-primary" />
+                  <CardTitle className="text-base">{t('server.disk_usage')}</CardTitle>
+                </div>
+                {diskLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
               </div>
-              {diskLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {diskUsageGB !== undefined ? `${diskUsageGB.toFixed(1)} GB` : '--'}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">{t('server.disk_desc')}</p>
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {diskUsageGB !== undefined ? `${diskUsageGB.toFixed(1)} GB` : '--'}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{t('server.disk_desc')}</p>
+            </CardContent>
+          </Card>
 
-        {/* Server Status */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-primary" />
-                <CardTitle className="text-base">{t('server.status')}</CardTitle>
+          {/* Server Status */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-primary" />
+                  <CardTitle className="text-base">{t('server.status')}</CardTitle>
+                </div>
+                {(serversLoading || daemonLoading) && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
               </div>
-              {(serversLoading || daemonLoading) && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Badge variant={isDaemonRunning ? 'default' : 'destructive'}>
-                  {isDaemonRunning ? t('common.running') : t('common.stopped')}
-                </Badge>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Badge variant={isDaemonRunning ? 'default' : 'destructive'}>
+                    {isDaemonRunning ? t('common.running') : t('common.stopped')}
+                  </Badge>
+                </div>
+                {servers?.[0]?.Hostname && (
+                  <p className="text-xs text-muted-foreground">
+                    {t('server.hostname')}: {servers[0].Hostname}
+                  </p>
+                )}
               </div>
-              {primaryServer?.Hostname && (
-                <p className="text-xs text-muted-foreground">
-                  {t('server.hostname')}: {primaryServer.Hostname}
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-      {/* Server Details */}
-      {primaryServer && (
+      {/* Server Details — all servers */}
+      {servers && servers.length > 0 && (
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
               <ServerIcon className="h-5 w-5 text-primary" />
-              <CardTitle>{t('server.details')}</CardTitle>
+              <CardTitle>
+                {isMultiServer ? t('server.servers_title') : t('server.details')}
+              </CardTitle>
             </div>
-            <CardDescription>{t('server.details_desc')}</CardDescription>
+            <CardDescription>
+              {isMultiServer ? t('server.servers_desc') : t('server.details_desc')}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <div className="text-sm font-medium text-muted-foreground">
-                  {t('server.server_name')}
-                </div>
-                <div className="text-base font-semibold">{primaryServer.Name}</div>
-              </div>
-              {primaryServer.TotalMem && (
-                <div className="space-y-1">
-                  <div className="text-sm font-medium text-muted-foreground">
-                    {t('server.total_memory')}
+            <div className="space-y-4" data-testid="server-details-list">
+              {servers.map((srv) => {
+                const statusRunning = srv.Status === 'Running';
+                return (
+                  <div
+                    key={srv.Id}
+                    className="p-4 rounded-lg bg-muted/50 border"
+                    data-testid={`server-card-${srv.Id}`}
+                  >
+                    {/* Header row: name + status */}
+                    <div className="flex items-center justify-between mb-3 min-w-0">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-base truncate" title={srv.Name}>
+                          {srv.Name}
+                        </div>
+                        {srv.Hostname && (
+                          <div className="text-xs text-muted-foreground truncate" title={srv.Hostname}>
+                            {srv.Hostname}
+                          </div>
+                        )}
+                      </div>
+                      <Badge
+                        variant={statusRunning ? 'default' : 'destructive'}
+                        className="ml-2 flex-shrink-0"
+                      >
+                        {srv.Status || t('common.unknown')}
+                      </Badge>
+                    </div>
+
+                    {/* Metrics grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {/* CPU */}
+                      {srv.CpuUsagePercent !== undefined && (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Cpu className="h-3 w-3" />
+                            <span>{t('server.cpu_load')}</span>
+                          </div>
+                          <div className="text-sm font-semibold">
+                            {srv.CpuUsagePercent.toFixed(1)}%
+                          </div>
+                        </div>
+                      )}
+                      {srv.CpuUsagePercent === undefined && srv.CpuLoad !== undefined && (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Cpu className="h-3 w-3" />
+                            <span>{t('server.cpu_load')}</span>
+                          </div>
+                          <div className="text-sm font-semibold">
+                            {(srv.CpuLoad * 100).toFixed(1)}%
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Total Memory */}
+                      {srv.TotalMem !== undefined && (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <MemoryStick className="h-3 w-3" />
+                            <span>{t('server.total_memory')}</span>
+                          </div>
+                          <div className="text-sm font-semibold">
+                            {formatMemory(srv.TotalMem)}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Free Memory */}
+                      {srv.FreeMem !== undefined && (
+                        <div className="space-y-1">
+                          <div className="text-xs text-muted-foreground">
+                            {t('server.free_memory')}
+                          </div>
+                          <div className="text-sm font-semibold">
+                            {formatMemory(srv.FreeMem)}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Swap */}
+                      {srv.TotalSwap !== undefined && srv.FreeSwap !== undefined && (
+                        <div className="space-y-1">
+                          <div className="text-xs text-muted-foreground">Swap</div>
+                          <div className="text-sm font-semibold">
+                            {formatMemory(srv.FreeSwap)} / {formatMemory(srv.TotalSwap)}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* ZM service badges */}
+                    {(srv.zmstats !== undefined || srv.zmaudit !== undefined ||
+                      srv.zmtrigger !== undefined || srv.zmeventnotification !== undefined) && (
+                      <div className="flex flex-wrap gap-1.5 mt-3">
+                        {srv.zmstats !== undefined && (
+                          <Badge variant={srv.zmstats ? 'default' : 'secondary'} className="text-xs">
+                            zmstats
+                          </Badge>
+                        )}
+                        {srv.zmaudit !== undefined && (
+                          <Badge variant={srv.zmaudit ? 'default' : 'secondary'} className="text-xs">
+                            zmaudit
+                          </Badge>
+                        )}
+                        {srv.zmtrigger !== undefined && (
+                          <Badge variant={srv.zmtrigger ? 'default' : 'secondary'} className="text-xs">
+                            zmtrigger
+                          </Badge>
+                        )}
+                        {srv.zmeventnotification !== undefined && (
+                          <Badge variant={srv.zmeventnotification ? 'default' : 'secondary'} className="text-xs">
+                            zmeventnotification
+                          </Badge>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <div className="text-base font-semibold">
-                    {formatMemory(primaryServer.TotalMem)}
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Storage Areas */}
+      {storages && storages.length > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Database className="h-5 w-5 text-primary" />
+              <CardTitle>{t('server.storage_title')}</CardTitle>
+            </div>
+            <CardDescription>{t('server.storage_desc')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3" data-testid="storage-list">
+              {storages.filter((s) => s.Enabled).map((storage) => {
+                const serverName = servers?.find((s) => s.Id === storage.ServerId)?.Name;
+                const totalGB = storage.DiskTotalSpace
+                  ? (storage.DiskTotalSpace / (1024 * 1024 * 1024)).toFixed(1)
+                  : null;
+                const usedGB = storage.DiskUsedSpace
+                  ? (storage.DiskUsedSpace / (1024 * 1024 * 1024)).toFixed(1)
+                  : null;
+                const usagePercent =
+                  storage.DiskTotalSpace && storage.DiskUsedSpace
+                    ? ((storage.DiskUsedSpace / storage.DiskTotalSpace) * 100).toFixed(0)
+                    : null;
+
+                return (
+                  <div
+                    key={storage.Id}
+                    className="p-3 rounded-lg bg-muted/50 border"
+                    data-testid={`storage-card-${storage.Id}`}
+                  >
+                    <div className="flex items-center justify-between mb-1 min-w-0">
+                      <div className="font-medium text-sm truncate min-w-0" title={storage.Name}>
+                        {storage.Name}
+                      </div>
+                      {serverName && (
+                        <Badge variant="outline" className="text-xs ml-2 flex-shrink-0">
+                          {serverName}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground truncate" title={storage.Path ?? undefined}>
+                      {storage.Path}
+                    </div>
+                    {totalGB && usedGB && (
+                      <div className="mt-2">
+                        <div className="flex justify-between text-xs mb-1">
+                          <span>
+                            {usedGB} GB {t('server.storage_used')}
+                          </span>
+                          <span>
+                            {totalGB} GB {t('server.storage_total')}
+                          </span>
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full ${
+                              Number(usagePercent) > 90
+                                ? 'bg-red-500'
+                                : Number(usagePercent) > 75
+                                  ? 'bg-yellow-500'
+                                  : 'bg-primary'
+                            }`}
+                            style={{ width: `${Math.min(Number(usagePercent), 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
-              {primaryServer.FreeMem && (
-                <div className="space-y-1">
-                  <div className="text-sm font-medium text-muted-foreground">
-                    {t('server.free_memory')}
-                  </div>
-                  <div className="text-base font-semibold">
-                    {formatMemory(primaryServer.FreeMem)}
-                  </div>
-                </div>
-              )}
-              {primaryServer.CpuLoad !== undefined && (
-                <div className="space-y-1">
-                  <div className="text-sm font-medium text-muted-foreground">
-                    {t('server.cpu_load')}
-                  </div>
-                  <div className="text-base font-semibold">
-                    {(primaryServer.CpuLoad * 100).toFixed(1)}%
-                  </div>
-                </div>
-              )}
+                );
+              })}
             </div>
           </CardContent>
         </Card>

@@ -855,7 +855,18 @@
     "active": "Aktiv",
     "executing_action": "Aktion wird ausgeführt...",
     "state_applied": "Status/Aktion erfolgreich angewendet",
-    "state_apply_failed": "Fehler beim Anwenden von Status/Aktion"
+    "state_apply_failed": "Fehler beim Anwenden von Status/Aktion",
+    "servers_title": "Server",
+    "servers_desc": "Alle Server im Cluster",
+    "storage_title": "Speicher",
+    "storage_desc": "Speicherbereiche und Nutzung",
+    "storage_name": "Name",
+    "storage_path": "Pfad",
+    "storage_type": "Typ",
+    "storage_server": "Server",
+    "storage_used": "Belegt",
+    "storage_total": "Gesamt",
+    "no_storage": "Kein Speicherinfo"
   },
   "eventMontage": {
     "title": "Ereignis-Montage",

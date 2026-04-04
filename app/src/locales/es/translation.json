@@ -855,7 +855,18 @@
     "active": "Activo",
     "executing_action": "Ejecutando acción...",
     "state_applied": "Estado/acción aplicado exitosamente",
-    "state_apply_failed": "Error al aplicar estado/acción"
+    "state_apply_failed": "Error al aplicar estado/acción",
+    "servers_title": "Servidores",
+    "servers_desc": "Servidores del clúster",
+    "storage_title": "Almacenamiento",
+    "storage_desc": "Áreas de almacenamiento",
+    "storage_name": "Nombre",
+    "storage_path": "Ruta",
+    "storage_type": "Tipo",
+    "storage_server": "Servidor",
+    "storage_used": "Usado",
+    "storage_total": "Total",
+    "no_storage": "Sin almacenamiento"
   },
   "eventMontage": {
     "title": "Montaje de Eventos",

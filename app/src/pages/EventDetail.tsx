@@ -35,6 +35,7 @@ import { useEventFavoritesStore } from '../stores/eventFavorites';
 import { useZoomPan } from '../hooks/useZoomPan';
 import { ZoomControls } from '../components/ui/ZoomControls';
 import { useEventNavigation } from '../hooks/useEventNavigation';
+import { useServerUrls } from '../hooks/useServerUrls';
 import { cn } from '../lib/utils';
 
 export default function EventDetail() {
@@ -69,6 +70,10 @@ export default function EventDetail() {
 
   const { currentProfile, settings } = useCurrentProfile();
   const accessToken = useAuthStore((state) => state.accessToken);
+
+  // Resolve portal URL for the monitor's server (multi-server support)
+  const { portalPath } = useServerUrls(monitorData?.Monitor?.ServerId);
+  const resolvedPortalUrl = portalPath ? portalPath.replace(/\/index\.php$/, '') : currentProfile?.portalUrl || '';
   const { isFavorited, toggleFavorite } = useEventFavoritesStore();
   const {
     goToPrevEvent,
@@ -189,11 +194,11 @@ export default function EventDetail() {
   });
 
   const videoUrl = currentProfile && hasVideo
-    ? getEventVideoUrl(currentProfile.portalUrl, event.Event.Id, accessToken || undefined, currentProfile.apiUrl)
+    ? getEventVideoUrl(resolvedPortalUrl, event.Event.Id, accessToken || undefined, currentProfile.apiUrl)
     : '';
 
   const posterUrl = currentProfile
-    ? getEventImageUrl(currentProfile.portalUrl, event.Event.Id, 'snapshot', {
+    ? getEventImageUrl(resolvedPortalUrl, event.Event.Id, 'snapshot', {
       token: accessToken || undefined,
       apiUrl: currentProfile.apiUrl,
     })
@@ -296,7 +301,7 @@ export default function EventDetail() {
               onClick={() => {
                 if (hasVideo && currentProfile) {
                   downloadEventVideo(
-                    currentProfile.portalUrl,
+                    resolvedPortalUrl,
                     event.Event.Id,
                     event.Event.Name,
                     accessToken || undefined
@@ -330,7 +335,7 @@ export default function EventDetail() {
               // ZMS playback with controls
               currentProfile && (
                 <ZmsEventPlayer
-                  portalUrl={currentProfile.portalUrl}
+                  portalUrl={resolvedPortalUrl}
                   eventId={event.Event.Id}
                   token={accessToken || undefined}
                   apiUrl={currentProfile.apiUrl}

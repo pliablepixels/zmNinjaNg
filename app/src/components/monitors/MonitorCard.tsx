@@ -63,6 +63,7 @@ function MonitorCardComponent({
     regenerateConnection,
   } = useMonitorStream({
     monitorId: monitor.Id,
+    serverId: monitor.ServerId,
   });
 
 

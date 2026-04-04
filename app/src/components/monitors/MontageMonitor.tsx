@@ -19,6 +19,7 @@ import type { Monitor, MonitorStatus, Profile } from '../../api/types';
 import { useAuthStore } from '../../stores/auth';
 import { getMonitorRunState, monitorDotColor } from '../../lib/monitor-status';
 import { useStreamLifecycle } from '../../hooks/useStreamLifecycle';
+import { useServerUrls } from '../../hooks/useServerUrls';
 import { useSettingsStore } from '../../stores/settings';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
@@ -68,12 +69,14 @@ function MontageMonitorComponent({
   const [imageLoaded, setImageLoaded] = useState(false);
   const mediaRef = useRef<HTMLImageElement | HTMLVideoElement>(null);
   const resolvedFit = objectFit ?? 'cover';
+  const { portalPath } = useServerUrls(monitor.ServerId);
+  const resolvedPortalUrl = portalPath ? portalPath.replace(/\/index\.php$/, '') : currentProfile?.portalUrl;
 
   // Stream lifecycle: connKey generation, CMD_QUIT on regen/unmount, media abort
   const { connKey } = useStreamLifecycle({
     monitorId: monitor.Id,
     monitorName: monitor.Name,
-    portalUrl: currentProfile?.portalUrl,
+    portalUrl: resolvedPortalUrl,
     accessToken,
     viewMode: settings.viewMode,
     mediaRef,

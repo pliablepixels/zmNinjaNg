@@ -9,6 +9,7 @@
 import { getEvents, getEventImageUrl } from '../api/events';
 import type { EventFilters } from '../api/events';
 import { getMonitors } from '../api/monitors';
+import { getPortalUrlForEvent } from '../lib/server-resolver';
 import { useNotificationStore } from '../stores/notifications';
 import { useProfileStore } from '../stores/profile';
 import { useAuthStore } from '../stores/auth';
@@ -26,6 +27,7 @@ class EventPollerService {
   private seenEventIds = new Set<number>();
   private isFirstPoll = true;
   private monitorNames = new Map<string, string>();
+  private monitorData: Array<{ Monitor: { Id: string; ServerId: string | null } }> = [];
 
   /**
    * Start polling for new events.
@@ -59,6 +61,7 @@ class EventPollerService {
     this.seenEventIds.clear();
     this.isFirstPoll = true;
     this.monitorNames.clear();
+    this.monitorData = [];
 
     log.notifications('Stopped event poller', LogLevel.INFO);
   }
@@ -74,6 +77,9 @@ class EventPollerService {
     try {
       const result = await getMonitors();
       this.monitorNames.clear();
+      this.monitorData = result.monitors.map((m) => ({
+        Monitor: { Id: m.Monitor.Id, ServerId: m.Monitor.ServerId ?? null },
+      }));
       for (const m of result.monitors) {
         this.monitorNames.set(m.Monitor.Id, m.Monitor.Name);
       }
@@ -147,8 +153,11 @@ class EventPollerService {
         const monitorName = this.monitorNames.get(String(event.Event.MonitorId)) || `Monitor ${monitorId}`;
         const cause = event.Event.Cause || 'Motion';
 
-        const imageUrl = currentProfile && accessToken
-          ? getEventImageUrl(currentProfile.portalUrl, String(eventId), 'snapshot', { token: accessToken, width: 600 })
+        const eventPortalUrl = currentProfile
+          ? getPortalUrlForEvent(String(event.Event.MonitorId), this.monitorData, currentProfile.portalUrl)
+          : undefined;
+        const imageUrl = eventPortalUrl && accessToken
+          ? getEventImageUrl(eventPortalUrl, String(eventId), 'snapshot', { token: accessToken, width: 600 })
           : undefined;
 
         log.notifications('Event poller found new event', LogLevel.INFO, {

@@ -61,6 +61,15 @@ vi.mock('../../video/VideoPlayer', () => ({
   VideoPlayer: () => <div data-testid="video-player">Mock VideoPlayer</div>,
 }));
 
+vi.mock('../../../hooks/useServerUrls', () => ({
+  useServerUrls: () => ({
+    recordingUrl: '',
+    portalPath: '',
+    apiBaseUrl: '',
+    isMultiServer: false,
+  }),
+}));
+
 vi.mock('../../../stores/auth', () => ({
   useAuthStore: (selector: (state: { version: string }) => unknown) =>
     selector({ version: '1.38.0' }),

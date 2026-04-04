@@ -18,11 +18,13 @@ import { useCurrentProfile } from './useCurrentProfile';
 import { useBandwidthSettings } from './useBandwidthSettings';
 import { useStreamLifecycle } from './useStreamLifecycle';
 import { useAuthStore } from '../stores/auth';
+import { useServerUrls } from './useServerUrls';
 import { log, LogLevel } from '../lib/logger';
 import type { StreamOptions } from '../api/types';
 
 interface UseMonitorStreamOptions {
   monitorId: string;
+  serverId?: string | null;
   streamOptions?: Partial<StreamOptions>;
   enabled?: boolean; // Enable/disable stream management (default: true)
 }
@@ -43,12 +45,16 @@ interface UseMonitorStreamReturn {
  */
 export function useMonitorStream({
   monitorId,
+  serverId,
   streamOptions = {},
   enabled = true,
 }: UseMonitorStreamOptions): UseMonitorStreamReturn {
   const { currentProfile, settings } = useCurrentProfile();
   const bandwidth = useBandwidthSettings();
   const accessToken = useAuthStore((state) => state.accessToken);
+  const { recordingUrl, portalPath } = useServerUrls(serverId);
+  // portalUrl for stream lifecycle = portalPath without /index.php
+  const resolvedPortalUrl = portalPath ? portalPath.replace(/\/index\.php$/, '') : currentProfile?.portalUrl;
 
   const [cacheBuster, setCacheBuster] = useState(Date.now());
   const [displayedImageUrl, setDisplayedImageUrl] = useState<string>('');
@@ -57,7 +63,7 @@ export function useMonitorStream({
   // Stream lifecycle: connKey generation, CMD_QUIT on regen/unmount, media abort
   const { connKey, forceRegenerate } = useStreamLifecycle({
     monitorId,
-    portalUrl: currentProfile?.portalUrl,
+    portalUrl: resolvedPortalUrl,
     accessToken,
     viewMode: settings.viewMode,
     mediaRef: imgRef,
@@ -85,7 +91,7 @@ export function useMonitorStream({
 
   // Build stream URL - ONLY when we have a valid connKey to prevent zombie streams
   const streamUrl = currentProfile && connKey !== 0
-    ? getStreamUrl(currentProfile.cgiUrl, monitorId, {
+    ? getStreamUrl(recordingUrl || currentProfile.cgiUrl, monitorId, {
       mode: settings.viewMode === 'snapshot' ? 'single' : 'jpeg',
       scale: bandwidth.imageScale,
       maxfps:

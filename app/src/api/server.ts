@@ -22,10 +22,25 @@ const ServerSchema = z.object({
   CpuLoad: z.coerce.number().optional(),
   TotalMem: z.coerce.number().optional(),
   FreeMem: z.coerce.number().optional(),
+  Protocol: z.string().optional(),
+  Port: z.coerce.number().optional(),
+  PathToIndex: z.string().optional(),
+  PathToZMS: z.string().optional(),
+  PathToApi: z.string().optional(),
+  CpuUserPercent: z.coerce.number().optional(),
+  CpuSystemPercent: z.coerce.number().optional(),
+  CpuIdlePercent: z.coerce.number().optional(),
+  CpuUsagePercent: z.coerce.number().optional(),
+  TotalSwap: z.coerce.number().optional(),
+  FreeSwap: z.coerce.number().optional(),
+  zmstats: z.boolean().optional(),
+  zmaudit: z.boolean().optional(),
+  zmtrigger: z.boolean().optional(),
+  zmeventnotification: z.boolean().optional(),
 });
 
 const ServersResponseSchema = z.object({
-  servers: z.array(ServerSchema),
+  servers: z.array(z.object({ Server: ServerSchema })),
 });
 
 const LoadSchema = z.object({
@@ -60,11 +75,31 @@ const DaemonCheckSchema = z.object({
   result: z.coerce.number(),
 });
 
+const StorageSchema = z.object({
+  Id: z.coerce.string(),
+  Path: z.string().nullable(),
+  Name: z.string(),
+  Type: z.string(),
+  Url: z.string().nullable(),
+  DiskSpace: z.coerce.number().nullable(),
+  Scheme: z.string().nullable(),
+  ServerId: z.coerce.string().nullable(),
+  DoDelete: z.coerce.boolean().optional(),
+  Enabled: z.coerce.boolean().optional(),
+  DiskTotalSpace: z.coerce.number().nullable(),
+  DiskUsedSpace: z.coerce.number().nullable(),
+});
+
+const StoragesResponseSchema = z.object({
+  storage: z.array(z.object({ Storage: StorageSchema })),
+});
+
 
 // ========== Types ==========
 
 export type Server = z.infer<typeof ServerSchema>;
 export type ServersResponse = z.infer<typeof ServersResponseSchema>;
+export type Storage = z.infer<typeof StorageSchema>;
 
 export interface ServerLoad {
   load: number | number[];
@@ -95,7 +130,27 @@ export async function getServers(): Promise<Server[]> {
     method: 'GET',
   });
 
-  return validated.servers;
+  return validated.servers.map((s) => s.Server);
+}
+
+/**
+ * Get all storages
+ *
+ * Fetches storage configuration from ZoneMinder, including paths,
+ * disk space, and server associations.
+ *
+ * @returns Promise resolving to array of Storage objects
+ */
+export async function getStorages(): Promise<Storage[]> {
+  const client = getApiClient();
+  const response = await client.get('/storage.json');
+
+  const validated = validateApiResponse(StoragesResponseSchema, response.data, {
+    endpoint: '/storage.json',
+    method: 'GET',
+  });
+
+  return validated.storage.map((s) => s.Storage);
 }
 
 /**
@@ -105,9 +160,10 @@ export async function getServers(): Promise<Server[]> {
  *
  * @returns Promise resolving to boolean (true = running, false = stopped)
  */
-export async function getDaemonCheck(): Promise<boolean> {
+export async function getDaemonCheck(apiBaseUrl?: string): Promise<boolean> {
   const client = getApiClient();
-  const response = await client.get('/host/daemonCheck.json');
+  const config = apiBaseUrl ? { baseURL: apiBaseUrl } : undefined;
+  const response = await client.get('/host/daemonCheck.json', config);
 
   const validated = validateApiResponse(DaemonCheckSchema, response.data, {
     endpoint: '/host/daemonCheck.json',
@@ -129,9 +185,10 @@ export async function getDaemonCheck(): Promise<boolean> {
  *
  * @returns Promise resolving to ServerLoad object with load value
  */
-export async function getLoad(): Promise<ServerLoad> {
+export async function getLoad(apiBaseUrl?: string): Promise<ServerLoad> {
   const client = getApiClient();
-  const response = await client.get('/host/getLoad.json');
+  const config = apiBaseUrl ? { baseURL: apiBaseUrl } : undefined;
+  const response = await client.get('/host/getLoad.json', config);
 
   const validated = validateApiResponse(LoadSchema, response.data, {
     endpoint: '/host/getLoad.json',
@@ -151,9 +208,10 @@ export async function getLoad(): Promise<ServerLoad> {
  *
  * @returns Promise resolving to DiskUsage object with usage percentage
  */
-export async function getDiskPercent(): Promise<DiskUsage> {
+export async function getDiskPercent(apiBaseUrl?: string): Promise<DiskUsage> {
   const client = getApiClient();
-  const response = await client.get('/host/getDiskPercent.json');
+  const config = apiBaseUrl ? { baseURL: apiBaseUrl } : undefined;
+  const response = await client.get('/host/getDiskPercent.json', config);
 
   const validated = validateApiResponse(DiskPercentSchema, response.data, {
     endpoint: '/host/getDiskPercent.json',

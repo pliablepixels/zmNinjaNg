@@ -32,6 +32,7 @@ import { getOrientedResolution, parseMonitorRotation } from '../lib/monitor-rota
 import { isZmVersionAtLeast } from '../lib/zm-version';
 import { getMonitorRunState, monitorDotColor } from '../lib/monitor-status';
 import { useZoomPan } from '../hooks/useZoomPan';
+import { useServerUrls } from '../hooks/useServerUrls';
 
 // Extracted hooks and components
 import { usePTZControl, useAlarmControl, useModeControl, useMonitorNavigation } from './hooks';
@@ -103,8 +104,11 @@ export default function MonitorDetail() {
     onSwipeRight,
   });
 
+  const { portalPath, apiBaseUrl } = useServerUrls(monitor?.Monitor.ServerId);
+  const resolvedPortalUrl = portalPath ? portalPath.replace(/\/index\.php$/, '') : currentProfile?.portalUrl || '';
+
   const { handlePTZCommand } = usePTZControl({
-    portalUrl: currentProfile?.portalUrl || '',
+    portalUrl: resolvedPortalUrl,
     monitorId: monitor?.Monitor.Id || '',
     accessToken,
     isContinuous,
@@ -120,6 +124,7 @@ export default function MonitorDetail() {
     handleAlarmToggle,
   } = useAlarmControl({
     monitorId: monitor?.Monitor.Id,
+    apiBaseUrl,
   });
 
   const { isModeUpdating, handleModeChange } = useModeControl({

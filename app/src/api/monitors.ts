@@ -179,11 +179,12 @@ export async function setMonitorEnabled(monitorId: string, enabled: boolean): Pr
  * @param monitorId - The ID of the monitor
  * @throws Error if alarm trigger fails (ZM returns status: 'false' with error)
  */
-export async function triggerAlarm(monitorId: string): Promise<void> {
-  log.api('Triggering monitor alarm', LogLevel.INFO, { monitorId });
+export async function triggerAlarm(monitorId: string, apiBaseUrl?: string): Promise<void> {
+  log.api('Triggering monitor alarm', LogLevel.INFO, { monitorId, apiBaseUrl });
 
   const client = getApiClient();
-  const response = await client.get(`/monitors/alarm/id:${monitorId}/command:on.json`);
+  const config = apiBaseUrl ? { baseURL: apiBaseUrl } : undefined;
+  const response = await client.get(`/monitors/alarm/id:${monitorId}/command:on.json`, config);
 
   // Validate response with Zod to catch failures
   const validated = validateApiResponse(AlarmStatusResponseSchema, response.data, {
@@ -205,11 +206,12 @@ export async function triggerAlarm(monitorId: string): Promise<void> {
  * @param monitorId - The ID of the monitor
  * @throws Error if alarm cancel fails (ZM returns status: 'false' with error)
  */
-export async function cancelAlarm(monitorId: string): Promise<void> {
-  log.api('Cancelling monitor alarm', LogLevel.INFO, { monitorId });
+export async function cancelAlarm(monitorId: string, apiBaseUrl?: string): Promise<void> {
+  log.api('Cancelling monitor alarm', LogLevel.INFO, { monitorId, apiBaseUrl });
 
   const client = getApiClient();
-  const response = await client.get(`/monitors/alarm/id:${monitorId}/command:off.json`);
+  const config = apiBaseUrl ? { baseURL: apiBaseUrl } : undefined;
+  const response = await client.get(`/monitors/alarm/id:${monitorId}/command:off.json`, config);
 
   // Validate response with Zod to catch failures
   const validated = validateApiResponse(AlarmStatusResponseSchema, response.data, {
@@ -231,11 +233,12 @@ export async function cancelAlarm(monitorId: string): Promise<void> {
  * @param monitorId - The ID of the monitor
  * @returns Promise resolving to object with status string
  */
-export async function getAlarmStatus(monitorId: string): Promise<AlarmStatusResponse> {
-  log.api('Fetching alarm status', LogLevel.INFO, { monitorId });
+export async function getAlarmStatus(monitorId: string, apiBaseUrl?: string): Promise<AlarmStatusResponse> {
+  log.api('Fetching alarm status', LogLevel.INFO, { monitorId, apiBaseUrl });
 
   const client = getApiClient();
-  const response = await client.get(`/monitors/alarm/id:${monitorId}/command:status.json`);
+  const config = apiBaseUrl ? { baseURL: apiBaseUrl } : undefined;
+  const response = await client.get(`/monitors/alarm/id:${monitorId}/command:status.json`, config);
 
   // Validate response with Zod
   const validated = validateApiResponse(AlarmStatusResponseSchema, response.data, {
@@ -257,12 +260,14 @@ export async function getAlarmStatus(monitorId: string): Promise<AlarmStatusResp
  */
 export async function getDaemonStatus(
   monitorId: string,
-  daemon: 'zmc' | 'zma'
+  daemon: 'zmc' | 'zma',
+  apiBaseUrl?: string
 ): Promise<DaemonStatusResponse> {
-  log.api('Fetching daemon status', LogLevel.INFO, { monitorId, daemon });
+  log.api('Fetching daemon status', LogLevel.INFO, { monitorId, daemon, apiBaseUrl });
 
   const client = getApiClient();
-  const response = await client.get(`/monitors/daemonStatus/id:${monitorId}/daemon:${daemon}.json`);
+  const config = apiBaseUrl ? { baseURL: apiBaseUrl } : undefined;
+  const response = await client.get(`/monitors/daemonStatus/id:${monitorId}/daemon:${daemon}.json`, config);
 
   // Validate response with Zod
   const validated = validateApiResponse(DaemonStatusResponseSchema, response.data, {

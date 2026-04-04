@@ -855,7 +855,18 @@
     "active": "Active",
     "executing_action": "Executing action...",
     "state_applied": "State/action applied successfully",
-    "state_apply_failed": "Failed to apply state/action"
+    "state_apply_failed": "Failed to apply state/action",
+    "servers_title": "Servers",
+    "servers_desc": "All servers in this cluster",
+    "storage_title": "Storage",
+    "storage_desc": "Storage areas and disk usage",
+    "storage_name": "Name",
+    "storage_path": "Path",
+    "storage_type": "Type",
+    "storage_server": "Server",
+    "storage_used": "Used",
+    "storage_total": "Total",
+    "no_storage": "No storage info"
   },
   "eventMontage": {
     "title": "Event Montage",

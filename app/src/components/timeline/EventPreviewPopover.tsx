@@ -10,11 +10,14 @@ import { memo, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Play, Clock, AlertTriangle, Tag, VideoOff, Camera } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { getEventImageUrl } from '../../api/events';
+import { getPortalUrlForEvent } from '../../lib/server-resolver';
 import { useCurrentProfile } from '../../hooks/useCurrentProfile';
 import { useAuthStore } from '../../stores/auth';
+import type { MonitorsResponse } from '../../api/types';
 
 interface EventPreviewPopoverProps {
   event: {
@@ -60,8 +63,11 @@ export const EventPreviewPopover = memo(function EventPreviewPopover({
   const { t } = useTranslation();
   const { currentProfile } = useCurrentProfile();
   const accessToken = useAuthStore((s) => s.accessToken);
+  const queryClient = useQueryClient();
 
-  const portalUrl = currentProfile?.portalUrl ?? '';
+  const profilePortalUrl = currentProfile?.portalUrl ?? '';
+  const monitors = (queryClient.getQueryData<MonitorsResponse>(['monitors']))?.monitors ?? [];
+  const portalUrl = getPortalUrlForEvent(event.monitorId, monitors, profilePortalUrl);
   const tokenOpts = { token: accessToken ?? undefined };
   type FrameType = 'objdetect' | 'alarm' | 'snapshot';
   const frameTypes: FrameType[] = ['objdetect', 'alarm', 'snapshot'];

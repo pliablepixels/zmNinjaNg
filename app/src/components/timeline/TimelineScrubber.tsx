@@ -8,9 +8,12 @@
 
 import { memo, useState, useCallback, useRef, useEffect } from 'react';
 import { VideoOff } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { getEventImageUrl } from '../../api/events';
+import { getPortalUrlForEvent } from '../../lib/server-resolver';
 import { useCurrentProfile } from '../../hooks/useCurrentProfile';
 import { useAuthStore } from '../../stores/auth';
+import type { MonitorsResponse } from '../../api/types';
 import { useDateTimeFormat } from '../../hooks/useDateTimeFormat';
 import { LAYOUT, type TimelineEvent } from './timeline-layout';
 import type { MonitorRow } from './timeline-renderer';
@@ -84,9 +87,12 @@ function ScrubberThumbnail({
   const { currentProfile } = useCurrentProfile();
   const accessToken = useAuthStore((s) => s.accessToken);
   const { fmtTimeShort } = useDateTimeFormat();
+  const queryClient = useQueryClient();
   const [failed, setFailed] = useState(false);
 
-  const portalUrl = currentProfile?.portalUrl ?? '';
+  const profilePortalUrl = currentProfile?.portalUrl ?? '';
+  const monitors = (queryClient.getQueryData<MonitorsResponse>(['monitors']))?.monitors ?? [];
+  const portalUrl = getPortalUrlForEvent(event.monitorId, monitors, profilePortalUrl);
   const imageUrl = getEventImageUrl(portalUrl, event.id, 'alarm', {
     token: accessToken ?? undefined,
   });

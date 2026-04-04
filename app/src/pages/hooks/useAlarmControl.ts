@@ -14,6 +14,7 @@ import { useBandwidthSettings } from '../../hooks/useBandwidthSettings';
 
 interface UseAlarmControlOptions {
   monitorId: string | undefined;
+  apiBaseUrl?: string;
 }
 
 interface UseAlarmControlReturn {
@@ -27,7 +28,7 @@ interface UseAlarmControlReturn {
   handleAlarmToggle: (nextValue: boolean) => Promise<void>;
 }
 
-export function useAlarmControl({ monitorId }: UseAlarmControlOptions): UseAlarmControlReturn {
+export function useAlarmControl({ monitorId, apiBaseUrl }: UseAlarmControlOptions): UseAlarmControlReturn {
   const { t } = useTranslation();
   const bandwidth = useBandwidthSettings();
   const [isAlarmUpdating, setIsAlarmUpdating] = useState(false);
@@ -40,7 +41,7 @@ export function useAlarmControl({ monitorId }: UseAlarmControlOptions): UseAlarm
     refetch: refetchAlarmStatus,
   } = useQuery({
     queryKey: ['monitor-alarm-status', monitorId],
-    queryFn: () => getAlarmStatus(monitorId!),
+    queryFn: () => getAlarmStatus(monitorId!, apiBaseUrl),
     enabled: !!monitorId,
     refetchInterval: bandwidth.alarmStatusInterval,
     refetchIntervalInBackground: true,
@@ -114,9 +115,9 @@ export function useAlarmControl({ monitorId }: UseAlarmControlOptions): UseAlarm
 
       try {
         if (nextValue) {
-          await triggerAlarm(monitorId);
+          await triggerAlarm(monitorId, apiBaseUrl);
         } else {
-          await cancelAlarm(monitorId);
+          await cancelAlarm(monitorId, apiBaseUrl);
         }
         await refetchAlarmStatus();
         setTimeout(() => {
@@ -140,7 +141,7 @@ export function useAlarmControl({ monitorId }: UseAlarmControlOptions): UseAlarm
         setIsAlarmUpdating(false);
       }
     },
-    [monitorId, alarmToggleValue, refetchAlarmStatus, t]
+    [monitorId, apiBaseUrl, alarmToggleValue, refetchAlarmStatus, t]
   );
 
   return {

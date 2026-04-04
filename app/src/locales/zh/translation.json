@@ -855,7 +855,18 @@
     "active": "活动",
     "executing_action": "执行操作中...",
     "state_applied": "状态/操作应用成功",
-    "state_apply_failed": "应用状态/操作失败"
+    "state_apply_failed": "应用状态/操作失败",
+    "servers_title": "服务器",
+    "servers_desc": "集群中的所有服务器",
+    "storage_title": "存储",
+    "storage_desc": "存储区域和磁盘使用",
+    "storage_name": "名称",
+    "storage_path": "路径",
+    "storage_type": "类型",
+    "storage_server": "服务器",
+    "storage_used": "已用",
+    "storage_total": "总共",
+    "no_storage": "无存储信息"
   },
   "eventMontage": {
     "title": "事件蒙太奇",
