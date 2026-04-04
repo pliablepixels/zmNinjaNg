@@ -313,15 +313,15 @@ export function VideoPlayer({
 
       {/* Protocol status badge */}
       {showStatus && (
-        <div className="absolute top-2 left-2 flex gap-1.5" data-testid="video-player-status">
-          <Badge variant={statusBadgeVariant} className="text-[10px] px-1.5 py-0 h-4">
-            {protocolLabel}
-          </Badge>
+        <div className="absolute bottom-1.5 right-1.5 flex gap-1.5" data-testid="video-player-status">
           {isWaitingForVideo && (
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 animate-pulse">
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 animate-pulse bg-black/40 text-white border-white/20">
               {t('video.connecting')}
             </Badge>
           )}
+          <Badge variant={statusBadgeVariant} className="text-[10px] px-1.5 py-0 h-4 bg-black/40 text-white border-white/20">
+            {protocolLabel}
+          </Badge>
         </div>
       )}
 
