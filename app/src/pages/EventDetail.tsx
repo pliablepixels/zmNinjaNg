@@ -36,6 +36,7 @@ import { useZoomPan } from '../hooks/useZoomPan';
 import { ZoomControls } from '../components/ui/ZoomControls';
 import { useEventNavigation } from '../hooks/useEventNavigation';
 import { useServerUrls } from '../hooks/useServerUrls';
+import { wrapWithImageProxy } from '../lib/proxy-utils';
 
 import { cn } from '../lib/utils';
 
@@ -199,12 +200,12 @@ export default function EventDetail() {
   const isHlsEvent = event.Event.DefaultVideo?.endsWith('.m3u8') === true;
   const videoMimeType = isHlsEvent ? 'application/x-mpegURL' : 'video/mp4';
 
-  // Video.js uses XHR for HLS/MP4 which enforces CORS — use primary portal
-  // (the server the user configured, which allows the app's origin).
-  // ZMS and images use <img> tags or Tauri HTTP client, so CORS doesn't apply.
-  const videoUrl = currentProfile && hasVideo
-    ? getEventVideoUrl(currentProfile.portalUrl, event.Event.Id, accessToken || undefined, currentProfile.apiUrl, isHlsEvent)
+  // Video.js uses XHR which enforces CORS. In dev mode, route through
+  // the dev proxy. In production Tauri, CORS isn't enforced.
+  const rawVideoUrl = currentProfile && hasVideo
+    ? getEventVideoUrl(resolvedPortalUrl, event.Event.Id, accessToken || undefined, currentProfile.apiUrl, isHlsEvent)
     : '';
+  const videoUrl = wrapWithImageProxy(rawVideoUrl);
 
   const posterUrl = currentProfile
     ? getEventImageUrl(resolvedPortalUrl, event.Event.Id, 'snapshot', {
