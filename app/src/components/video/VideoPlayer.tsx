@@ -188,18 +188,15 @@ export function VideoPlayer({
     enabled: effectiveStreamingMethod === 'mjpeg',
   });
 
-  // Track when MJPEG image loads or fails
-  const [mjpegLoaded, setMjpegLoaded] = useState(false);
+  // Track MJPEG image error state
   const [mjpegError, setMjpegError] = useState(false);
   useEffect(() => {
     if (effectiveStreamingMethod === 'mjpeg') {
-      setMjpegLoaded(false);
       setMjpegError(false);
     }
   }, [effectiveStreamingMethod, monitor.Id]);
 
   const handleMjpegLoad = useCallback(() => {
-    setMjpegLoaded(true);
     setMjpegError(false);
     onLoad?.();
   }, [onLoad]);

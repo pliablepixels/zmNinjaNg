@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { Activity, Settings, Download, Clock, Video, VideoOff, Eye, Disc } from 'lucide-react';
+import { Activity, Settings, Download, Clock, Video, Eye, Disc } from 'lucide-react';
 import { cn, formatEventCount } from '../../lib/utils';
 import { handleKeyClick } from '../../lib/tv-a11y';
 import { downloadSnapshotFromElement } from '../../lib/download';
@@ -24,7 +24,6 @@ import { useTranslation } from 'react-i18next';
 import { getMonitorAspectRatio } from '../../lib/monitor-rotation';
 import { getMonitorRunState, monitorDotColor } from '../../lib/monitor-status';
 import { useAuthStore } from '../../stores/auth';
-import type { CSSProperties } from 'react';
 
 interface MonitorCardComponentProps extends MonitorCardProps {
   /** Callback to open the settings dialog for this monitor */
@@ -53,7 +52,7 @@ function MonitorCardComponent({
   const { t } = useTranslation();
   const { currentProfile } = useCurrentProfile();
   const zmVersion = useAuthStore((s) => s.version);
-  const resolvedFit: CSSProperties['objectFit'] = objectFit === 'flex' ? 'cover' : (objectFit ?? 'cover');
+  const resolvedFit = (objectFit === 'flex' ? 'cover' : (objectFit ?? 'cover')) as 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
   const runState = getMonitorRunState(monitor, status, zmVersion);
   const aspectRatio = getMonitorAspectRatio(monitor.Width, monitor.Height, monitor.Orientation);
   const mediaRef = useRef<HTMLImageElement | HTMLVideoElement | null>(null);
