@@ -6,7 +6,7 @@
  * It handles stream connection regeneration and snapshot downloading.
  */
 
-import { memo } from 'react';
+import { memo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
@@ -16,7 +16,8 @@ import { cn, formatEventCount } from '../../lib/utils';
 import { handleKeyClick } from '../../lib/tv-a11y';
 import { downloadSnapshotFromElement } from '../../lib/download';
 import { toast } from 'sonner';
-import { useMonitorStream } from '../../hooks/useMonitorStream';
+import { VideoPlayer } from '../video/VideoPlayer';
+import { useCurrentProfile } from '../../hooks/useCurrentProfile';
 import type { MonitorCardProps } from '../../api/types';
 import { log, LogLevel } from '../../lib/logger';
 import { useTranslation } from 'react-i18next';
@@ -50,57 +51,21 @@ function MonitorCardComponent({
 }: MonitorCardComponentProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { currentProfile } = useCurrentProfile();
   const zmVersion = useAuthStore((s) => s.version);
   const resolvedFit: CSSProperties['objectFit'] = objectFit === 'flex' ? 'cover' : (objectFit ?? 'cover');
   const runState = getMonitorRunState(monitor, status, zmVersion);
   const aspectRatio = getMonitorAspectRatio(monitor.Width, monitor.Height, monitor.Orientation);
-
-  // Use the custom hook to manage the monitor stream URL and connection state
-  const {
-    streamUrl,
-    displayedImageUrl,
-    imgRef,
-    regenerateConnection,
-  } = useMonitorStream({
-    monitorId: monitor.Id,
-    serverId: monitor.ServerId,
-  });
-
-
-  /**
-   * Handles image load errors.
-   * Attempts to regenerate the connection key once before showing a fallback placeholder.
-   */
-  const handleImageError = () => {
-    const img = imgRef.current;
-    if (!img) return;
-
-    // Only retry if we haven't retried too recently
-    if (!img.dataset.retrying) {
-      img.dataset.retrying = 'true';
-      log.monitorCard(`Stream failed for ${monitor.Name}, regenerating connkey...`, LogLevel.WARN);
-      regenerateConnection();
-      toast.error(t('monitors.stream_connection_lost', { name: monitor.Name }));
-
-      setTimeout(() => {
-        if (img) {
-          delete img.dataset.retrying;
-        }
-      }, 5000);
-    } else {
-      img.src =
-        `data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="320" height="240"%3E%3Crect fill="%231a1a1a" width="320" height="240"/%3E%3Ctext fill="%23444" x="50%" y="50%" text-anchor="middle" font-family="sans-serif"%3E${t('monitors.no_signal')}%3C/text%3E%3C/svg%3E`;
-    }
-  };
+  const mediaRef = useRef<HTMLImageElement | HTMLVideoElement | null>(null);
 
   /**
    * Downloads a snapshot of the current stream frame.
    */
   const handleDownloadSnapshot = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (imgRef.current) {
+    if (mediaRef.current) {
       try {
-        await downloadSnapshotFromElement(imgRef.current, monitor.Name);
+        await downloadSnapshotFromElement(mediaRef.current, monitor.Name);
         toast.success(t('monitors.snapshot_downloaded'));
       } catch (error) {
         log.monitorCard('Failed to download snapshot', LogLevel.ERROR, error);
@@ -128,18 +93,13 @@ function MonitorCardComponent({
           tabIndex={0}
           role="button"
         >
-          {/* VideoOff sits behind the stream; the img covers it once loaded */}
-          <div className="absolute inset-0 flex items-center justify-center bg-muted/30">
-            <VideoOff className="h-8 w-8 text-muted-foreground/40" />
-          </div>
-          <img
-            ref={imgRef}
-            src={displayedImageUrl || streamUrl}
-            alt={monitor.Name}
-            className="relative w-full h-full"
-            style={{ objectFit: resolvedFit }}
-            onError={handleImageError}
-            data-testid="monitor-player"
+          <VideoPlayer
+            monitor={monitor}
+            profile={currentProfile}
+            className="w-full h-full"
+            objectFit={resolvedFit}
+            showStatus
+            externalMediaRef={mediaRef}
           />
           <div className="absolute top-1.5 left-1.5 z-10">
             <span
@@ -256,18 +216,13 @@ function MonitorCardComponent({
           tabIndex={0}
           aria-label={`${t('monitors.view_live')}: ${monitor.Name}`}
         >
-          {/* VideoOff sits behind the stream; the img covers it once loaded */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <VideoOff className="h-8 w-8 text-muted-foreground/40" />
-          </div>
-          <img
-            ref={imgRef}
-            src={displayedImageUrl || streamUrl}
-            alt={monitor.Name}
-            className="relative w-full h-full"
-            style={{ objectFit: resolvedFit }}
-            onError={handleImageError}
-            data-testid="monitor-player"
+          <VideoPlayer
+            monitor={monitor}
+            profile={currentProfile}
+            className="w-full h-full"
+            objectFit={resolvedFit}
+            showStatus
+            externalMediaRef={mediaRef}
           />
         </div>
 

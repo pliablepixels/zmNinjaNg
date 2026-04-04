@@ -4,12 +4,16 @@ import userEvent from '@testing-library/user-event';
 import { MonitorCard } from '../MonitorCard';
 import type { Monitor, MonitorStatus } from '../../../api/types';
 
-vi.mock('../../../hooks/useMonitorStream', () => ({
-  useMonitorStream: () => ({
-    streamUrl: 'https://stream.test',
-    displayedImageUrl: '',
-    imgRef: { current: null },
-    regenerateConnection: vi.fn(),
+vi.mock('../../video/VideoPlayer', () => ({
+  VideoPlayer: ({ monitor }: { monitor: { Name: string } }) => (
+    <div data-testid="video-player">{monitor.Name}</div>
+  ),
+}));
+
+vi.mock('../../../hooks/useCurrentProfile', () => ({
+  useCurrentProfile: () => ({
+    currentProfile: { id: 'test', portalUrl: 'https://test', cgiUrl: 'https://test/cgi', apiUrl: 'https://test/api' },
+    settings: { viewMode: 'streaming' },
   }),
 }));
 
@@ -25,8 +29,7 @@ vi.mock('react-i18next', () => ({
 
 vi.mock('../../../lib/logger', () => ({
   log: {
-    warn: vi.fn(),
-    error: vi.fn(),
+    monitorCard: vi.fn(),
   },
   LogLevel: {
     DEBUG: 0,
