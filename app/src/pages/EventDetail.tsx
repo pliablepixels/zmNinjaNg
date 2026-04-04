@@ -35,6 +35,7 @@ import { useEventFavoritesStore } from '../stores/eventFavorites';
 import { useZoomPan } from '../hooks/useZoomPan';
 import { ZoomControls } from '../components/ui/ZoomControls';
 import { useEventNavigation } from '../hooks/useEventNavigation';
+import { useServerUrls } from '../hooks/useServerUrls';
 
 import { cn } from '../lib/utils';
 
@@ -71,7 +72,10 @@ export default function EventDetail() {
   const { currentProfile, settings } = useCurrentProfile();
   const accessToken = useAuthStore((state) => state.accessToken);
 
-  // Events use the primary portal — ZM serves event files from shared storage
+  // Resolve portal URL for the monitor's server (multi-server support)
+  const { portalPath } = useServerUrls(monitorData?.Monitor?.ServerId);
+  const resolvedPortalUrl = portalPath ? portalPath.replace(/\/index\.php$/, '') : currentProfile?.portalUrl || '';
+
   const { isFavorited, toggleFavorite } = useEventFavoritesStore();
   const {
     goToPrevEvent,
@@ -191,16 +195,16 @@ export default function EventDetail() {
     hasJPEGs
   });
 
-  // Event video/images use the primary portal URL — the primary server's index.php
-  // serves events from shared storage regardless of which server the monitor runs on.
-  const primaryPortalUrl = currentProfile?.portalUrl || '';
+  // Detect HLS vs MP4 from DefaultVideo field
+  const isHlsEvent = event.Event.DefaultVideo?.endsWith('.m3u8') === true;
+  const videoMimeType = isHlsEvent ? 'application/x-mpegURL' : 'video/mp4';
 
   const videoUrl = currentProfile && hasVideo
-    ? getEventVideoUrl(primaryPortalUrl, event.Event.Id, accessToken || undefined, currentProfile.apiUrl)
+    ? getEventVideoUrl(resolvedPortalUrl, event.Event.Id, accessToken || undefined, currentProfile.apiUrl, isHlsEvent)
     : '';
 
   const posterUrl = currentProfile
-    ? getEventImageUrl(primaryPortalUrl, event.Event.Id, 'snapshot', {
+    ? getEventImageUrl(resolvedPortalUrl, event.Event.Id, 'snapshot', {
       token: accessToken || undefined,
       apiUrl: currentProfile.apiUrl,
     })
@@ -303,7 +307,7 @@ export default function EventDetail() {
               onClick={() => {
                 if (hasVideo && currentProfile) {
                   downloadEventVideo(
-                    primaryPortalUrl,
+                    resolvedPortalUrl,
                     event.Event.Id,
                     event.Event.Name,
                     accessToken || undefined
@@ -337,7 +341,7 @@ export default function EventDetail() {
               // ZMS playback with controls
               currentProfile && (
                 <ZmsEventPlayer
-                  portalUrl={primaryPortalUrl}
+                  portalUrl={resolvedPortalUrl}
                   eventId={event.Event.Id}
                   token={accessToken || undefined}
                   apiUrl={currentProfile.apiUrl}
@@ -359,7 +363,7 @@ export default function EventDetail() {
                   <div ref={zoomPan.innerRef}>
                     <VideoPlayer
                       src={videoUrl}
-                      type="video/mp4"
+                      type={videoMimeType}
                       className="w-full h-full"
                       poster={posterUrl}
                       autoplay={settings.eventVideoAutoplay}

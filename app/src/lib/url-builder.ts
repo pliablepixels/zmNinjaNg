@@ -248,16 +248,24 @@ export function getEventVideoUrl(
     token?: string;
     apiUrl?: string;
     format?: 'h264' | 'h265';
+    /** When true, use HLS mode (mode=hls&view=view_event_hls) instead of MP4 */
+    hls?: boolean;
   } = {}
 ): string {
-  const { token, apiUrl, format = 'h264' } = options;
+  const { token, apiUrl, format = 'h264', hls = false } = options;
 
-  const params: Record<string, string> = {
-    mode: 'mpeg',
-    format,
-    eid: eventId,
-    view: 'view_video',
-  };
+  const params: Record<string, string> = hls
+    ? {
+        mode: 'hls',
+        eid: eventId,
+        view: 'view_event_hls',
+      }
+    : {
+        mode: 'mpeg',
+        format,
+        eid: eventId,
+        view: 'view_video',
+      };
 
   return buildUrl(portalUrl, '/index.php', params, token, apiUrl);
 }

@@ -339,21 +339,26 @@ export function getEventImageUrl(
 }
 
 /**
- * Construct event video URL (for MP4 playback).
+ * Construct event video URL.
+ *
+ * Supports both MP4 (mode=mpeg) and HLS (mode=hls) depending on the
+ * event's DefaultVideo field. HLS events use view_event_hls.
  *
  * @param portalUrl - Base portal URL
  * @param eventId - The ID of the event
  * @param token - Auth token
  * @param apiUrl - API URL override
+ * @param hls - Use HLS mode when DefaultVideo is an m3u8 manifest
  * @returns Full URL string for the video
  */
 export function getEventVideoUrl(
   portalUrl: string,
   eventId: string,
   token?: string,
-  apiUrl?: string
+  apiUrl?: string,
+  hls?: boolean
 ): string {
-  return buildEventVideoUrl(portalUrl, eventId, { token, apiUrl });
+  return buildEventVideoUrl(portalUrl, eventId, { token, apiUrl, hls });
 }
 
 /**
