@@ -232,15 +232,6 @@ function MontageMonitorComponent({
         tabIndex={isEditing ? -1 : 0}
         role="button"
       >
-        {/* Skeleton loader */}
-        {!imageLoaded && (
-          <div
-            className="absolute inset-0 bg-muted/20 animate-pulse flex items-center justify-center"
-          >
-            <div className="text-muted-foreground text-xs">{monitor.Width} × {monitor.Height}</div>
-          </div>
-        )}
-
         <VideoPlayer
           monitor={monitor}
           profile={currentProfile}
