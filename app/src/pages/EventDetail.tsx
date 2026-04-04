@@ -35,7 +35,7 @@ import { useEventFavoritesStore } from '../stores/eventFavorites';
 import { useZoomPan } from '../hooks/useZoomPan';
 import { ZoomControls } from '../components/ui/ZoomControls';
 import { useEventNavigation } from '../hooks/useEventNavigation';
-import { useServerUrls } from '../hooks/useServerUrls';
+
 import { cn } from '../lib/utils';
 
 export default function EventDetail() {
@@ -71,9 +71,7 @@ export default function EventDetail() {
   const { currentProfile, settings } = useCurrentProfile();
   const accessToken = useAuthStore((state) => state.accessToken);
 
-  // Resolve portal URL for the monitor's server (multi-server support)
-  const { portalPath } = useServerUrls(monitorData?.Monitor?.ServerId);
-  const resolvedPortalUrl = portalPath ? portalPath.replace(/\/index\.php$/, '') : currentProfile?.portalUrl || '';
+  // Events use the primary portal — ZM serves event files from shared storage
   const { isFavorited, toggleFavorite } = useEventFavoritesStore();
   const {
     goToPrevEvent,
@@ -193,12 +191,16 @@ export default function EventDetail() {
     hasJPEGs
   });
 
+  // Event video/images use the primary portal URL — the primary server's index.php
+  // serves events from shared storage regardless of which server the monitor runs on.
+  const primaryPortalUrl = currentProfile?.portalUrl || '';
+
   const videoUrl = currentProfile && hasVideo
-    ? getEventVideoUrl(resolvedPortalUrl, event.Event.Id, accessToken || undefined, currentProfile.apiUrl)
+    ? getEventVideoUrl(primaryPortalUrl, event.Event.Id, accessToken || undefined, currentProfile.apiUrl)
     : '';
 
   const posterUrl = currentProfile
-    ? getEventImageUrl(resolvedPortalUrl, event.Event.Id, 'snapshot', {
+    ? getEventImageUrl(primaryPortalUrl, event.Event.Id, 'snapshot', {
       token: accessToken || undefined,
       apiUrl: currentProfile.apiUrl,
     })
@@ -301,7 +303,7 @@ export default function EventDetail() {
               onClick={() => {
                 if (hasVideo && currentProfile) {
                   downloadEventVideo(
-                    resolvedPortalUrl,
+                    primaryPortalUrl,
                     event.Event.Id,
                     event.Event.Name,
                     accessToken || undefined
@@ -335,7 +337,7 @@ export default function EventDetail() {
               // ZMS playback with controls
               currentProfile && (
                 <ZmsEventPlayer
-                  portalUrl={resolvedPortalUrl}
+                  portalUrl={primaryPortalUrl}
                   eventId={event.Event.Id}
                   token={accessToken || undefined}
                   apiUrl={currentProfile.apiUrl}
