@@ -199,8 +199,11 @@ export default function EventDetail() {
   const isHlsEvent = event.Event.DefaultVideo?.endsWith('.m3u8') === true;
   const videoMimeType = isHlsEvent ? 'application/x-mpegURL' : 'video/mp4';
 
+  // Video.js uses XHR for HLS/MP4 which enforces CORS — use primary portal
+  // (the server the user configured, which allows the app's origin).
+  // ZMS and images use <img> tags or Tauri HTTP client, so CORS doesn't apply.
   const videoUrl = currentProfile && hasVideo
-    ? getEventVideoUrl(resolvedPortalUrl, event.Event.Id, accessToken || undefined, currentProfile.apiUrl, isHlsEvent)
+    ? getEventVideoUrl(currentProfile.portalUrl, event.Event.Id, accessToken || undefined, currentProfile.apiUrl, isHlsEvent)
     : '';
 
   const posterUrl = currentProfile
