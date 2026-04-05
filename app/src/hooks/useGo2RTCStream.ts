@@ -132,8 +132,7 @@ export function useGo2RTCStream(options: UseGo2RTCStreamOptions): UseGo2RTCStrea
       videoRtc.oninit = () => {
         originalOninit();
         if (videoRtc.video) {
-          videoRtc.video.controls = true;
-          videoRtc.video.controlsList = 'noplaybackrate nodownload';
+          videoRtc.video.controls = false;
           videoRtc.video.disablePictureInPicture = true;
           videoRtc.video.playsInline = true;
         }

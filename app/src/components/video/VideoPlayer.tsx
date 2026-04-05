@@ -17,7 +17,7 @@ import { useMonitorStream } from '../../hooks/useMonitorStream';
 import { log, LogLevel } from '../../lib/logger';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { VideoOff } from 'lucide-react';
+import { VideoOff, Volume2, VolumeX, Maximize } from 'lucide-react';
 
 /** Seconds to wait for video frames after Go2RTC reports "connected" */
 const GO2RTC_VIDEO_TIMEOUT_S = 8;
@@ -244,6 +244,27 @@ export function VideoPlayer({
     protocol: isWebRTC ? (go2rtcStream.activeProtocol || 'go2rtc') : 'mjpeg',
   }), [isWebRTC, go2rtcStream.state, go2rtcStream.error, go2rtcStream.activeProtocol, mjpegStream.streamUrl]);
 
+  // Custom controls state
+  const [isMutedState, setIsMutedState] = useState(muted);
+
+  const handleMuteToggle = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newMuted = go2rtcStream.toggleMute();
+    setIsMutedState(newMuted);
+  }, [go2rtcStream]);
+
+  const handleFullscreen = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    const video = go2rtcStream.getVideoElement();
+    if (video) {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        video.requestFullscreen().catch(() => {});
+      }
+    }
+  }, [go2rtcStream]);
+
   const handleRetry = () => {
     log.videoPlayer('Retry requested', LogLevel.INFO, { monitorId: monitor.Id, go2rtcFailed });
 
@@ -310,13 +331,40 @@ export function VideoPlayer({
       )}
 
       {isWebRTC && (
-        <div
-          ref={containerRef}
-          className={`w-full h-full ${className}`}
-          style={{ objectFit } as React.CSSProperties}
-          onClick={(e) => e.stopPropagation()}
-          data-testid="video-player-webrtc-container"
-        />
+        <>
+          <div
+            ref={containerRef}
+            className={`w-full h-full ${className}`}
+            style={{ objectFit } as React.CSSProperties}
+            onClick={(e) => e.stopPropagation()}
+            data-testid="video-player-webrtc-container"
+          />
+          {/* Minimal controls overlay — visible on hover */}
+          <div
+            className="absolute bottom-0 left-0 right-0 flex items-center gap-1 p-1 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity z-20"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={handleMuteToggle}
+              className="p-1 rounded hover:bg-white/20 text-white/80 hover:text-white"
+              title={isMutedState ? 'Unmute' : 'Mute'}
+              data-testid="video-mute-toggle"
+            >
+              {isMutedState ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            </button>
+            <div className="flex-1" />
+            <button
+              type="button"
+              onClick={handleFullscreen}
+              className="p-1 rounded hover:bg-white/20 text-white/80 hover:text-white"
+              title="Fullscreen"
+              data-testid="video-fullscreen"
+            >
+              <Maximize className="h-4 w-4" />
+            </button>
+          </div>
+        </>
       )}
 
       {!isWebRTC && mjpegStream.streamUrl && (
