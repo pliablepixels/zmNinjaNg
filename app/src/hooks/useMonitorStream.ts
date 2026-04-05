@@ -69,6 +69,7 @@ export function useMonitorStream({
     mediaRef: imgRef,
     logFn: log.monitor,
     enabled,
+    minStreamingPort: settings.viewMode === 'streaming' ? currentProfile?.minStreamingPort : undefined,
   });
 
   // Reset cacheBuster when connKey changes (new connection)

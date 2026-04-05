@@ -40,6 +40,8 @@ export interface UseStreamLifecycleOptions {
    * generation and cleanup param tracking. Defaults to true.
    */
   enabled?: boolean;
+  /** Base port for multi-port streaming (port = minStreamingPort + monitorId). */
+  minStreamingPort?: number;
 }
 
 export interface UseStreamLifecycleReturn {
@@ -69,6 +71,7 @@ export function useStreamLifecycle({
   mediaRef,
   logFn,
   enabled = true,
+  minStreamingPort,
 }: UseStreamLifecycleOptions): UseStreamLifecycleReturn {
   const regenerateConnKey = useMonitorStore((state) => state.regenerateConnKey);
 
@@ -93,14 +96,11 @@ export function useStreamLifecycle({
       viewMode === 'streaming' &&
       portalUrl
     ) {
-      // CMD_QUIT goes via httpGet (Tauri HTTP client) — don't apply multi-port
-      // as Tauri's scope may block non-standard ports. Standard port works fine
-      // since index.php routes the command internally.
       const controlUrl = getZmsControlUrl(
         portalUrl,
         ZMS_COMMANDS.cmdQuit,
         prevConnKeyRef.current.toString(),
-        { token: accessToken || undefined },
+        { token: accessToken || undefined, minStreamingPort, monitorId },
       );
 
       logFn('Sending CMD_QUIT before regenerating connkey', LogLevel.DEBUG, {
@@ -132,6 +132,7 @@ export function useStreamLifecycle({
     portalUrl,
     token: accessToken,
     viewMode,
+    minStreamingPort,
   });
 
   // Update cleanup params whenever they change
@@ -144,8 +145,9 @@ export function useStreamLifecycle({
       portalUrl,
       token: accessToken,
       viewMode,
+      minStreamingPort,
     };
-  }, [enabled, monitorId, monitorName, connKey, portalUrl, accessToken, viewMode]);
+  }, [enabled, monitorId, monitorName, connKey, portalUrl, accessToken, viewMode, minStreamingPort]);
 
   // Cleanup: send CMD_QUIT and abort image loading on unmount ONLY
   useEffect(() => {
@@ -163,7 +165,7 @@ export function useStreamLifecycle({
           params.portalUrl,
           ZMS_COMMANDS.cmdQuit,
           params.connKey.toString(),
-          { token: params.token || undefined },
+          { token: params.token || undefined, minStreamingPort: params.minStreamingPort, monitorId: params.monitorId },
         );
 
         logFn('Sending CMD_QUIT on unmount', LogLevel.DEBUG, {
