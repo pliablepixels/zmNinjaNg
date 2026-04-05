@@ -407,7 +407,7 @@ function ComponentLogLevels({
     (value: number) => {
       if (!currentProfile) return;
       updateSettings(currentProfile.id, {
-        logLevel: value,
+        logLevel: value as LogLevel,
         componentLogLevels: {},
       });
     },
