@@ -314,6 +314,7 @@ export function VideoPlayer({
           ref={containerRef}
           className={`w-full h-full ${className}`}
           style={{ objectFit } as React.CSSProperties}
+          onClick={(e) => e.stopPropagation()}
           data-testid="video-player-webrtc-container"
         />
       )}
