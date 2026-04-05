@@ -15,7 +15,6 @@ import { useSettingsStore } from '../../stores/settings';
 import { useGo2RTCStream } from '../../hooks/useGo2RTCStream';
 import { useMonitorStream } from '../../hooks/useMonitorStream';
 import { log, LogLevel } from '../../lib/logger';
-import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { VideoOff } from 'lucide-react';
 
@@ -335,14 +334,16 @@ export function VideoPlayer({
         />
       )}
 
-      {/* Protocol status badge */}
-      {showStatus && (
-        <div className="absolute bottom-1.5 right-1.5 z-20" data-testid="video-player-status">
-          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-black/50 text-white/90 border-0">
-            {protocolLabel}
-          </Badge>
-        </div>
-      )}
+      {/* Protocol status badge — always in DOM, visibility toggled to prevent flash on re-render */}
+      <div
+        className="absolute bottom-1.5 right-1.5 z-20"
+        style={{ visibility: showStatus ? 'visible' : 'hidden' }}
+        data-testid="video-player-status"
+      >
+        <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/50 text-white/90 font-medium">
+          {protocolLabel}
+        </span>
+      </div>
 
       {/* Error overlay */}
       {status.state === 'error' && status.error && (
