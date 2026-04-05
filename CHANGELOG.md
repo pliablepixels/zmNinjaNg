@@ -1,5 +1,19 @@
 # Changelog
 
+## [zmNinjaNG-1.1.8](https://github.com/pliablepixels/zmNinjaNG/tree/zmNinjaNG-1.1.8) (2026-04-05)
+
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNG/compare/zmNinjaNG-1.1.7...zmNinjaNG-1.1.8)
+
+**Implemented enhancements:**
+
+- feat: per-component log level control in settings [\#101](https://github.com/pliablepixels/zmNinjaNG/issues/101)
+- feat: timeline view UX improvements [\#99](https://github.com/pliablepixels/zmNinjaNG/issues/99)
+- android TV/Firestick app [\#96](https://github.com/pliablepixels/zmNinjaNG/issues/96)
+
+**Fixed bugs:**
+
+- fix: multi-server routing for ZMS streams, daemon checks, and event URLs [\#100](https://github.com/pliablepixels/zmNinjaNG/issues/100)
+
 ## [zmNinjaNG-1.1.7](https://github.com/pliablepixels/zmNinjaNG/tree/zmNinjaNG-1.1.7) (2026-04-03)
 
 [Full Changelog](https://github.com/pliablepixels/zmNinjaNG/compare/zmNinjaNG-1.1.6...zmNinjaNG-1.1.7)
