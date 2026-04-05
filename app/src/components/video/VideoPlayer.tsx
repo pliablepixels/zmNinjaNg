@@ -101,6 +101,19 @@ export function VideoPlayer({
 
   const [go2rtcFailed, setGo2rtcFailed] = useState(() => isGo2rtcCachedFailure(monitor.Id));
   const [hasVideoFrames, setHasVideoFrames] = useState(false);
+
+  // When user explicitly enables Go2RTC (streamingMethod changes to webrtc),
+  // clear the failure cache so it retries immediately
+  const prevStreamingMethodRef = useRef(streamingMethod);
+  if (streamingMethod === 'webrtc' && prevStreamingMethodRef.current === 'mjpeg') {
+    go2rtcFailureCache.delete(monitor.Id);
+    if (go2rtcFailed) {
+      setGo2rtcFailed(false);
+      setHasVideoFrames(false);
+    }
+  }
+  prevStreamingMethodRef.current = streamingMethod;
+
   const effectiveStreamingMethod = go2rtcFailed ? 'mjpeg' : streamingMethod;
 
   const go2rtcStream = useGo2RTCStream({
