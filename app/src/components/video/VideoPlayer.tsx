@@ -51,6 +51,8 @@ export interface VideoPlayerProps {
   externalMediaRef?: React.RefObject<HTMLImageElement | HTMLVideoElement | null>;
   muted?: boolean;
   onLoad?: () => void;
+  /** Called when the effective streaming protocol changes (e.g., 'MSE', 'WebRTC', 'MJPEG') */
+  onProtocolChange?: (protocol: string) => void;
 }
 
 export function VideoPlayer({
@@ -62,6 +64,7 @@ export function VideoPlayer({
   externalMediaRef,
   muted = true,
   onLoad,
+  onProtocolChange,
 }: VideoPlayerProps) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -258,6 +261,16 @@ export function VideoPlayer({
       mjpegStream.regenerateConnection();
     }
   };
+
+  // Derive display protocol label
+  const displayProtocol = isWebRTC
+    ? (go2rtcStream.activeProtocol?.toUpperCase() || 'Go2RTC')
+    : 'MJPEG';
+
+  // Notify parent when protocol changes
+  useEffect(() => {
+    onProtocolChange?.(displayProtocol);
+  }, [displayProtocol, onProtocolChange]);
 
   // Log status changes
   useEffect(() => {

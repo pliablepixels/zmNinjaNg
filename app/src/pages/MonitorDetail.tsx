@@ -52,6 +52,7 @@ export default function MonitorDetail() {
   const [showPTZ, setShowPTZ] = useState(true);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showZones, setShowZones] = useState(false);
+  const [protocol, setProtocol] = useState('MJPEG');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const mediaRef = useRef<HTMLImageElement | HTMLVideoElement>(null);
 
@@ -375,6 +376,7 @@ export default function MonitorDetail() {
               objectFit={isFullscreen ? 'contain' : settings.monitorDetailFeedFit}
               showControls={true}
               className="data-[testid=monitor-player]"
+              onProtocolChange={setProtocol}
             />
             <ZoneOverlay
               zones={zones}
@@ -386,7 +388,7 @@ export default function MonitorDetail() {
             />
           </div>
           <span className="absolute bottom-2 right-2 z-10 text-[10px] px-1.5 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
-            {monitor.Monitor.Go2RTCEnabled && currentProfile?.go2rtcUrl ? 'Go2RTC' : 'MJPEG'}
+            {protocol}
           </span>
           <ZoomControls
             onZoomIn={zoomPan.zoomIn}

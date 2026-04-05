@@ -67,6 +67,7 @@ function MontageMonitorComponent({
     useShallow((state) => state.getProfileSettings(currentProfile?.id || ''))
   );
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [protocol, setProtocol] = useState('MJPEG');
   const mediaRef = useRef<HTMLImageElement | HTMLVideoElement>(null);
   const resolvedFit = objectFit ?? 'cover';
   const { portalPath } = useServerUrls(monitor.ServerId);
@@ -240,11 +241,11 @@ function MontageMonitorComponent({
           muted={true}
           className="w-full h-full"
           onLoad={() => setImageLoaded(true)}
+          onProtocolChange={setProtocol}
         />
-        {/* Protocol label — rendered outside VideoPlayer to avoid Go2RTC DOM mutation flash */}
         {settings.montageShowToolbar && (
           <span className="absolute bottom-1.5 right-1.5 z-30 text-[10px] px-1.5 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
-            {monitor.Go2RTCEnabled && currentProfile?.go2rtcUrl ? 'Go2RTC' : 'MJPEG'}
+            {protocol}
           </span>
         )}
       </div>

@@ -6,7 +6,7 @@
  * It handles stream connection regeneration and snapshot downloading.
  */
 
-import { memo, useRef } from 'react';
+import { memo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
@@ -53,6 +53,7 @@ function MonitorCardComponent({
   const { currentProfile } = useCurrentProfile();
   const zmVersion = useAuthStore((s) => s.version);
   const resolvedFit = (objectFit === 'flex' ? 'cover' : (objectFit ?? 'cover')) as 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
+  const [protocol, setProtocol] = useState('MJPEG');
   const runState = getMonitorRunState(monitor, status, zmVersion);
   const aspectRatio = getMonitorAspectRatio(monitor.Width, monitor.Height, monitor.Orientation);
   const mediaRef = useRef<HTMLImageElement | HTMLVideoElement | null>(null);
@@ -98,6 +99,7 @@ function MonitorCardComponent({
             className="w-full h-full"
             objectFit={resolvedFit}
             externalMediaRef={mediaRef}
+            onProtocolChange={setProtocol}
           />
           <div className="absolute top-1.5 left-1.5 z-10">
             <span
@@ -105,7 +107,7 @@ function MonitorCardComponent({
             />
           </div>
           <span className="absolute bottom-1 right-1 z-10 text-[9px] px-1 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
-            {monitor.Go2RTCEnabled && currentProfile?.go2rtcUrl ? 'Go2RTC' : 'MJPEG'}
+            {protocol}
           </span>
         </div>
         <div className="p-2 space-y-1.5">
@@ -223,9 +225,10 @@ function MonitorCardComponent({
             className="w-full h-full"
             objectFit={resolvedFit}
             externalMediaRef={mediaRef}
+            onProtocolChange={setProtocol}
           />
           <span className="absolute bottom-1 right-1 z-10 text-[9px] px-1 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
-            {monitor.Go2RTCEnabled && currentProfile?.go2rtcUrl ? 'Go2RTC' : 'MJPEG'}
+            {protocol}
           </span>
         </div>
 

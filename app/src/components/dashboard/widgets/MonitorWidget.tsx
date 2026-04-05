@@ -17,8 +17,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { getMonitor, getMonitors } from '../../../api/monitors';
 import type { MonitorFeedFit } from '../../../stores/settings';
-import { useMonitorStream } from '../../../hooks/useMonitorStream';
-import { AlertTriangle, VideoOff } from 'lucide-react';
+import { VideoPlayer } from '../../video/VideoPlayer';
+import { useCurrentProfile } from '../../../hooks/useCurrentProfile';
+import { AlertTriangle } from 'lucide-react';
 import { Skeleton } from '../../ui/skeleton';
 import { useTranslation } from 'react-i18next';
 import { calculateGridDimensions } from '../../../lib/grid-utils';
@@ -38,19 +39,11 @@ interface MonitorWidgetProps {
 function SingleMonitor({ monitorId, objectFit }: { monitorId: string; objectFit: MonitorFeedFit }) {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { currentProfile } = useCurrentProfile();
     const { data: monitor, isLoading, error } = useQuery({
         queryKey: ['monitor', monitorId],
         queryFn: () => getMonitor(monitorId),
         enabled: !!monitorId,
-    });
-
-    // Delegate all streaming logic (connKey, cacheBuster, URL construction,
-    // snapshot refresh interval, image preloading) to the shared hook.
-    // The hook is disabled until the monitor query has loaded.
-    const { displayedImageUrl, streamUrl, imgRef } = useMonitorStream({
-        monitorId,
-        serverId: monitor?.Monitor.ServerId,
-        enabled: !!monitor,
     });
 
     if (isLoading) {
@@ -66,7 +59,6 @@ function SingleMonitor({ monitorId, objectFit }: { monitorId: string; objectFit:
         );
     }
 
-    // Don't show deleted monitors
     if (monitor.Monitor.Deleted === true) {
         return null;
     }
@@ -76,20 +68,12 @@ function SingleMonitor({ monitorId, objectFit }: { monitorId: string; objectFit:
             className="w-full h-full bg-black relative group overflow-hidden cursor-pointer"
             onClick={() => navigate(`/monitors/${monitor.Monitor.Id}`, { state: { from: '/dashboard' } })}
         >
-            {/* VideoOff sits behind the stream; the img covers it once loaded */}
-            <div className="absolute inset-0 flex items-center justify-center text-white/50 bg-zinc-900">
-                <VideoOff className="h-8 w-8" />
-            </div>
-            {(displayedImageUrl || streamUrl) && (
-                <img
-                    ref={imgRef}
-                    src={displayedImageUrl || streamUrl}
-                    alt={monitor.Monitor.Name}
-                    className="relative w-full h-full"
-                    style={{ objectFit }}
-                    data-testid="monitor-player"
-                />
-            )}
+            <VideoPlayer
+                monitor={monitor.Monitor}
+                profile={currentProfile}
+                className="w-full h-full"
+                objectFit={objectFit}
+            />
             <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 <p className="text-white text-xs font-medium truncate">{monitor.Monitor.Name}</p>
             </div>
