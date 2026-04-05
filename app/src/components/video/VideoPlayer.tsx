@@ -331,35 +331,36 @@ export function VideoPlayer({
       )}
 
       {isWebRTC && (
-        <>
-          <div
-            ref={containerRef}
-            className={`w-full h-full ${className}`}
-            style={{ objectFit } as React.CSSProperties}
-            data-testid="video-player-webrtc-container"
-          />
-          {/* Persistent minimal controls */}
-          <div className="absolute bottom-1 left-1 z-20 flex gap-0.5">
-            <button
-              type="button"
-              onClick={handleMuteToggle}
-              className="p-1 rounded-full bg-black/50 text-white/80 hover:bg-black/70 hover:text-white"
-              title={isMutedState ? 'Unmute' : 'Mute'}
-              data-testid="video-mute-toggle"
-            >
-              {isMutedState ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-            </button>
-            <button
-              type="button"
-              onClick={handleFullscreen}
-              className="p-1 rounded-full bg-black/50 text-white/80 hover:bg-black/70 hover:text-white"
-              title="Fullscreen"
-              data-testid="video-fullscreen"
-            >
-              <Maximize className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        </>
+        <div
+          ref={containerRef}
+          className={`w-full h-full ${className}`}
+          style={{ objectFit } as React.CSSProperties}
+          data-testid="video-player-webrtc-container"
+        />
+      )}
+
+      {/* Go2RTC controls — rendered outside the container so video can't overlap them */}
+      {isWebRTC && (
+        <div className="absolute bottom-1 left-1 flex gap-0.5" style={{ zIndex: 9999 }}>
+          <button
+            type="button"
+            onClick={handleMuteToggle}
+            className="p-1 rounded-full bg-black/50 text-white/80 hover:bg-black/70 hover:text-white"
+            title={isMutedState ? 'Unmute' : 'Mute'}
+            data-testid="video-mute-toggle"
+          >
+            {isMutedState ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+          </button>
+          <button
+            type="button"
+            onClick={handleFullscreen}
+            className="p-1 rounded-full bg-black/50 text-white/80 hover:bg-black/70 hover:text-white"
+            title="Fullscreen"
+            data-testid="video-fullscreen"
+          >
+            <Maximize className="h-3.5 w-3.5" />
+          </button>
+        </div>
       )}
 
       {!isWebRTC && mjpegStream.streamUrl && (
