@@ -60,7 +60,7 @@ export function VideoPlayer({
   objectFit = 'contain',
   showStatus = false,
   externalMediaRef,
-  muted = false,
+  muted = true,
   onLoad,
 }: VideoPlayerProps) {
   const { t } = useTranslation();

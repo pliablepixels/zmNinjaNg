@@ -127,12 +127,13 @@ export function useGo2RTCStream(options: UseGo2RTCStreamOptions): UseGo2RTCStrea
       videoRtc.media = 'video,audio';
       videoRtc.background = true;
 
-      // Apply muted and suppress native controls after video element creation
+      // Apply muted and configure video element after creation
       const originalOninit = videoRtc.oninit.bind(videoRtc);
       videoRtc.oninit = () => {
         originalOninit();
         if (videoRtc.video) {
-          videoRtc.video.controls = false;
+          videoRtc.video.controls = true;
+          videoRtc.video.controlsList = 'noplaybackrate nodownload';
           videoRtc.video.disablePictureInPicture = true;
           videoRtc.video.playsInline = true;
         }
