@@ -194,6 +194,20 @@ export function LiveStreamingSection({
           </div>
         )}
 
+        {/* Protocol Label */}
+        <SettingsRow>
+          <RowLabel
+            label={t('settings.show_protocol_label')}
+            desc={t('settings.show_protocol_label_desc')}
+          />
+          <Switch
+            id="protocol-label"
+            checked={settings.showProtocolLabel ?? true}
+            onCheckedChange={(checked) => update('showProtocolLabel', checked)}
+            data-testid="settings-protocol-label-switch"
+          />
+        </SettingsRow>
+
         {/* Snapshot Refresh Interval (only in snapshot mode) */}
         {settings.viewMode === 'snapshot' && (
           <div className="px-4 py-3 space-y-2">

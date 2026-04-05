@@ -243,7 +243,7 @@ function MontageMonitorComponent({
           onLoad={() => setImageLoaded(true)}
           onProtocolChange={setProtocol}
         />
-        {settings.montageShowToolbar && (
+        {settings.montageShowToolbar && settings.showProtocolLabel && (
           <span className="absolute bottom-1.5 right-1.5 z-30 text-[10px] px-1.5 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
             {protocol}
           </span>

@@ -98,6 +98,8 @@ export interface ProfileSettings {
   sidebarWidth: number;
   // TV mode — enables D-pad navigation and larger UI
   tvMode: boolean;
+  // Show protocol label (MJPEG/MSE/WebRTC) on video streams
+  showProtocolLabel: boolean;
   // Per-monitor streaming method overrides (monitorId → 'auto' | 'mjpeg')
   // When absent, the monitor uses the profile-level streamingMethod.
   monitorStreamingOverrides: Record<string, StreamingMethod>;
@@ -204,6 +206,7 @@ export const DEFAULT_SETTINGS: ProfileSettings = {
   montageActiveLayoutName: null,
   sidebarWidth: 256,
   tvMode: false,
+  showProtocolLabel: true,
   monitorStreamingOverrides: {},
 };
 

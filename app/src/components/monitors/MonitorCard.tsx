@@ -50,7 +50,7 @@ function MonitorCardComponent({
 }: MonitorCardComponentProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { currentProfile } = useCurrentProfile();
+  const { currentProfile, settings } = useCurrentProfile();
   const zmVersion = useAuthStore((s) => s.version);
   const resolvedFit = (objectFit === 'flex' ? 'cover' : (objectFit ?? 'cover')) as 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
   const [protocol, setProtocol] = useState('MJPEG');
@@ -106,9 +106,11 @@ function MonitorCardComponent({
               className={cn('block h-2 w-2 rounded-full shadow-sm', monitorDotColor(runState))}
             />
           </div>
-          <span className="absolute bottom-1 right-1 z-10 text-[9px] px-1 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
-            {protocol}
-          </span>
+          {settings.showProtocolLabel && (
+            <span className="absolute bottom-1 right-1 z-10 text-[9px] px-1 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
+              {protocol}
+            </span>
+          )}
         </div>
         <div className="p-2 space-y-1.5">
           <div className="flex items-center gap-1.5">
@@ -227,9 +229,11 @@ function MonitorCardComponent({
             externalMediaRef={mediaRef}
             onProtocolChange={setProtocol}
           />
-          <span className="absolute bottom-1 right-1 z-10 text-[9px] px-1 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
-            {protocol}
-          </span>
+          {settings.showProtocolLabel && (
+            <span className="absolute bottom-1 right-1 z-10 text-[9px] px-1 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
+              {protocol}
+            </span>
+          )}
         </div>
 
         {/* Monitor Info & Controls */}

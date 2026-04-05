@@ -343,6 +343,8 @@
     "enable_go2rtc_desc": "Go2RTC 低延迟流媒体。关闭 = 仅 MJPEG。",
     "go2rtc_enabled_note": "尝试 WebRTC → MSE → HLS，回退到 MJPEG。",
     "go2rtc_disabled_note": "所有监控使用 MJPEG。",
+    "show_protocol_label": "协议标签",
+    "show_protocol_label_desc": "在视频源上显示流协议",
     "webrtc_protocols": "流媒体协议",
     "webrtc_protocols_desc": "并行尝试的协议 — 首先产生视频的获胜。",
     "protocol_webrtc_desc": "低延迟点对点流媒体（推荐）",

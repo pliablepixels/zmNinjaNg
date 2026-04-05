@@ -39,7 +39,7 @@ interface MonitorWidgetProps {
 function SingleMonitor({ monitorId, objectFit }: { monitorId: string; objectFit: MonitorFeedFit }) {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { currentProfile } = useCurrentProfile();
+    const { currentProfile, settings } = useCurrentProfile();
     const [protocol, setProtocol] = useState('MJPEG');
     const { data: monitor, isLoading, error } = useQuery({
         queryKey: ['monitor', monitorId],
@@ -76,9 +76,11 @@ function SingleMonitor({ monitorId, objectFit }: { monitorId: string; objectFit:
                 objectFit={objectFit}
                 onProtocolChange={setProtocol}
             />
-            <span className="absolute bottom-1 right-1 z-10 text-[9px] px-1 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
-                {protocol}
-            </span>
+            {settings.showProtocolLabel && (
+                <span className="absolute bottom-1 right-1 z-10 text-[9px] px-1 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
+                    {protocol}
+                </span>
+            )}
             <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 <p className="text-white text-xs font-medium truncate">{monitor.Monitor.Name}</p>
             </div>

@@ -343,6 +343,8 @@
     "enable_go2rtc_desc": "Latenzarmes Streaming via Go2RTC. Aus = nur MJPEG.",
     "go2rtc_enabled_note": "Versucht WebRTC → MSE → HLS, Fallback auf MJPEG.",
     "go2rtc_disabled_note": "Alle Monitore verwenden MJPEG.",
+    "show_protocol_label": "Protokoll",
+    "show_protocol_label_desc": "Streaming-Protokoll auf Videofeeds anzeigen",
     "webrtc_protocols": "Streaming-Protokolle",
     "webrtc_protocols_desc": "Protokolle parallel ausprobieren — das erste mit Video gewinnt.",
     "protocol_webrtc_desc": "Niedriglatenz Peer-to-Peer-Streaming (empfohlen)",

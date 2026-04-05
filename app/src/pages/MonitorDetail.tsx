@@ -387,9 +387,11 @@ export default function MonitorDetail() {
               visible={showZones && !isZonesLoading}
             />
           </div>
-          <span className="absolute bottom-2 right-2 z-10 text-[10px] px-1.5 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
-            {protocol}
-          </span>
+          {settings.showProtocolLabel && (
+            <span className="absolute bottom-2 right-2 z-10 text-[10px] px-1.5 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
+              {protocol}
+            </span>
+          )}
           <ZoomControls
             onZoomIn={zoomPan.zoomIn}
             onZoomOut={zoomPan.zoomOut}
