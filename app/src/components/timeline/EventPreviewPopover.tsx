@@ -68,7 +68,11 @@ export const EventPreviewPopover = memo(function EventPreviewPopover({
   const profilePortalUrl = currentProfile?.portalUrl ?? '';
   const monitors = (queryClient.getQueryData<MonitorsResponse>(['monitors']))?.monitors ?? [];
   const portalUrl = getPortalUrlForEvent(event.monitorId, monitors, profilePortalUrl);
-  const tokenOpts = { token: accessToken ?? undefined };
+  const tokenOpts = {
+    token: accessToken ?? undefined,
+    minStreamingPort: currentProfile?.minStreamingPort,
+    monitorId: event.monitorId,
+  };
   type FrameType = 'objdetect' | 'alarm' | 'snapshot';
   const frameTypes: FrameType[] = ['objdetect', 'alarm', 'snapshot'];
   const candidates = frameTypes.map((f) => ({

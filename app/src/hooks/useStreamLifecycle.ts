@@ -40,6 +40,8 @@ export interface UseStreamLifecycleOptions {
    * generation and cleanup param tracking. Defaults to true.
    */
   enabled?: boolean;
+  /** Base port for multi-port streaming (port = minStreamingPort + monitorId). */
+  minStreamingPort?: number;
 }
 
 export interface UseStreamLifecycleReturn {
@@ -69,6 +71,7 @@ export function useStreamLifecycle({
   mediaRef,
   logFn,
   enabled = true,
+  minStreamingPort,
 }: UseStreamLifecycleOptions): UseStreamLifecycleReturn {
   const regenerateConnKey = useMonitorStore((state) => state.regenerateConnKey);
 
@@ -97,7 +100,7 @@ export function useStreamLifecycle({
         portalUrl,
         ZMS_COMMANDS.cmdQuit,
         prevConnKeyRef.current.toString(),
-        { token: accessToken || undefined },
+        { token: accessToken || undefined, minStreamingPort, monitorId },
       );
 
       logFn('Sending CMD_QUIT before regenerating connkey', LogLevel.DEBUG, {
@@ -129,6 +132,7 @@ export function useStreamLifecycle({
     portalUrl,
     token: accessToken,
     viewMode,
+    minStreamingPort,
   });
 
   // Update cleanup params whenever they change
@@ -141,8 +145,9 @@ export function useStreamLifecycle({
       portalUrl,
       token: accessToken,
       viewMode,
+      minStreamingPort,
     };
-  }, [enabled, monitorId, monitorName, connKey, portalUrl, accessToken, viewMode]);
+  }, [enabled, monitorId, monitorName, connKey, portalUrl, accessToken, viewMode, minStreamingPort]);
 
   // Cleanup: send CMD_QUIT and abort image loading on unmount ONLY
   useEffect(() => {
@@ -160,7 +165,7 @@ export function useStreamLifecycle({
           params.portalUrl,
           ZMS_COMMANDS.cmdQuit,
           params.connKey.toString(),
-          { token: params.token || undefined },
+          { token: params.token || undefined, minStreamingPort: params.minStreamingPort, monitorId: params.monitorId },
         );
 
         logFn('Sending CMD_QUIT on unmount', LogLevel.DEBUG, {

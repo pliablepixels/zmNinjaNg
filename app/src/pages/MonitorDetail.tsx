@@ -112,6 +112,7 @@ export default function MonitorDetail() {
     monitorId: monitor?.Monitor.Id || '',
     accessToken,
     isContinuous,
+    minStreamingPort: currentProfile?.minStreamingPort,
   });
 
   const {

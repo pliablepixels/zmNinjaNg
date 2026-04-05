@@ -501,6 +501,7 @@ export default function Events() {
             onLoadMore={loadNextPage}
             eventTagMap={eventTagMap}
             eventFilters={serverFilters}
+            minStreamingPort={currentProfile?.minStreamingPort}
           />
         ) : (
           <EventListView
@@ -516,6 +517,7 @@ export default function Events() {
             onLoadMore={loadNextPage}
             eventTagMap={eventTagMap}
             eventFilters={serverFilters}
+            minStreamingPort={currentProfile?.minStreamingPort}
           />
         )}
       </div>

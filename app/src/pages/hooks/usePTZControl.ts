@@ -15,6 +15,7 @@ interface UsePTZControlOptions {
   monitorId: string;
   accessToken: string | null;
   isContinuous: boolean;
+  minStreamingPort?: number;
 }
 
 interface UsePTZControlReturn {
@@ -26,6 +27,7 @@ export function usePTZControl({
   monitorId,
   accessToken,
   isContinuous,
+  minStreamingPort,
 }: UsePTZControlOptions): UsePTZControlReturn {
   const { t } = useTranslation();
 
@@ -34,14 +36,14 @@ export function usePTZControl({
       if (!portalUrl || !monitorId) return;
 
       try {
-        await controlMonitor(portalUrl, monitorId, command, accessToken || undefined);
+        await controlMonitor(portalUrl, monitorId, command, accessToken || undefined, minStreamingPort);
 
         // Auto-stop logic for non-continuous mode
         // Only apply to moveCon* and zoomCon* commands
         if (!isContinuous && (command.startsWith('moveCon') || command.startsWith('zoomCon'))) {
           setTimeout(async () => {
             try {
-              await controlMonitor(portalUrl, monitorId, 'moveStop', accessToken || undefined);
+              await controlMonitor(portalUrl, monitorId, 'moveStop', accessToken || undefined, minStreamingPort);
             } catch (e) {
               log.monitorDetail('Auto-stop command failed', LogLevel.WARN, { error: e });
             }
@@ -52,7 +54,7 @@ export function usePTZControl({
         toast.error(t('monitor_detail.ptz_failed'));
       }
     },
-    [portalUrl, monitorId, accessToken, isContinuous, t]
+    [portalUrl, monitorId, accessToken, isContinuous, minStreamingPort, t]
   );
 
   return { handlePTZCommand };

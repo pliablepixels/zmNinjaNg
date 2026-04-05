@@ -199,7 +199,7 @@ export default function EventDetail() {
   const videoMimeType = isHlsEvent ? 'application/x-mpegURL' : 'video/mp4';
 
   const videoUrl = currentProfile && hasVideo
-    ? getEventVideoUrl(resolvedPortalUrl, event.Event.Id, accessToken || undefined, currentProfile.apiUrl, isHlsEvent)
+    ? getEventVideoUrl(resolvedPortalUrl, event.Event.Id, accessToken || undefined, currentProfile.apiUrl, isHlsEvent, currentProfile.minStreamingPort, event.Event.MonitorId)
     : '';
 
 
@@ -207,6 +207,8 @@ export default function EventDetail() {
     ? getEventImageUrl(resolvedPortalUrl, event.Event.Id, 'snapshot', {
       token: accessToken || undefined,
       apiUrl: currentProfile.apiUrl,
+      minStreamingPort: currentProfile.minStreamingPort,
+      monitorId: event.Event.MonitorId,
     })
     : undefined;
 
@@ -310,7 +312,9 @@ export default function EventDetail() {
                     resolvedPortalUrl,
                     event.Event.Id,
                     event.Event.Name,
-                    accessToken || undefined
+                    accessToken || undefined,
+                    currentProfile?.minStreamingPort,
+                    event.Event.MonitorId,
                   );
                   // Background task drawer will show download progress
                 }
@@ -350,6 +354,8 @@ export default function EventDetail() {
                   alarmFrameId={event.Event.AlarmFrameId}
                   maxScoreFrameId={event.Event.MaxScoreFrameId}
                   eventLength={parseFloat(event.Event.Length)}
+                  minStreamingPort={currentProfile.minStreamingPort}
+                  monitorId={event.Event.MonitorId}
                   className="space-y-4"
                 />
               )
@@ -405,6 +411,8 @@ export default function EventDetail() {
                 alarmFrameId={event.Event.AlarmFrameId}
                 maxScoreFrameId={event.Event.MaxScoreFrameId}
                 eventLength={parseFloat(event.Event.Length)}
+                minStreamingPort={currentProfile.minStreamingPort}
+                monitorId={event.Event.MonitorId}
                 className="space-y-4"
               />
             )

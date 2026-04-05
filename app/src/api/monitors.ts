@@ -325,11 +325,12 @@ export async function controlMonitor(
   portalUrl: string,
   monitorId: string,
   command: string,
-  token?: string
+  token?: string,
+  minStreamingPort?: number,
 ): Promise<void> {
   log.api('Sending PTZ control command', LogLevel.INFO, { monitorId, command });
 
-  const url = buildMonitorControlUrl(portalUrl, monitorId, command, { token });
+  const url = buildMonitorControlUrl(portalUrl, monitorId, command, { token, minStreamingPort });
 
   // In dev mode on web, use proxy server to avoid CORS issues
   const proxiedUrl = wrapWithImageProxy(url);

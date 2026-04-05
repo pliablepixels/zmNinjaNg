@@ -157,7 +157,12 @@ class EventPollerService {
           ? getPortalUrlForEvent(String(event.Event.MonitorId), this.monitorData, currentProfile.portalUrl)
           : undefined;
         const imageUrl = eventPortalUrl && accessToken
-          ? getEventImageUrl(eventPortalUrl, String(eventId), 'snapshot', { token: accessToken, width: 600 })
+          ? getEventImageUrl(eventPortalUrl, String(eventId), 'snapshot', {
+              token: accessToken,
+              width: 600,
+              minStreamingPort: currentProfile?.minStreamingPort,
+              monitorId: String(event.Event.MonitorId),
+            })
           : undefined;
 
         log.notifications('Event poller found new event', LogLevel.INFO, {

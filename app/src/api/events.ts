@@ -330,6 +330,8 @@ export function getEventImageUrl(
     width?: number;
     height?: number;
     apiUrl?: string;
+    minStreamingPort?: number;
+    monitorId?: string;
   } = {}
 ): string {
   const fullUrl = buildEventImageUrl(portalUrl, eventId, frame, options);
@@ -356,9 +358,11 @@ export function getEventVideoUrl(
   eventId: string,
   token?: string,
   apiUrl?: string,
-  hls?: boolean
+  hls?: boolean,
+  minStreamingPort?: number,
+  monitorId?: string,
 ): string {
-  return buildEventVideoUrl(portalUrl, eventId, { token, apiUrl, hls });
+  return buildEventVideoUrl(portalUrl, eventId, { token, apiUrl, hls, minStreamingPort, monitorId });
 }
 
 /**
@@ -380,6 +384,8 @@ export function getEventZmsUrl(
     maxfps?: number;       // Maximum frames per second
     replay?: 'single' | 'all' | 'gapless' | 'none';  // Replay mode
     scale?: number;        // Scale percentage (50 = 50%, 100 = 100%)
+    minStreamingPort?: number;
+    monitorId?: string;
   } = {}
 ): string {
   return buildEventZmsUrl(portalUrl, eventId, options);

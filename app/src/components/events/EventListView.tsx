@@ -26,6 +26,7 @@ interface EventListViewProps {
   onLoadMore: () => void;
   eventTagMap?: Map<string, Tag[]>;
   eventFilters?: EventFilters;
+  minStreamingPort?: number;
 }
 
 // Helper to render a single event item
@@ -37,6 +38,7 @@ const EventItem = ({
   accessToken,
   eventTagMap,
   eventFilters,
+  minStreamingPort,
 }: {
   event: EventData;
   monitors: Array<{ Monitor: Monitor }>;
@@ -45,6 +47,7 @@ const EventItem = ({
   accessToken?: string;
   eventTagMap?: Map<string, Tag[]>;
   eventFilters?: EventFilters;
+  minStreamingPort?: number;
 }) => {
   const { Event } = event;
   const monitorData = monitors.find((m) => m.Monitor.Id === Event.MonitorId)?.Monitor;
@@ -63,6 +66,8 @@ const EventItem = ({
     token: accessToken,
     width: thumbnailWidth,
     height: thumbnailHeight,
+    minStreamingPort,
+    monitorId: Event.MonitorId,
   });
 
   const monitorName = monitorData?.Name || `Camera ${Event.MonitorId}`;
@@ -96,6 +101,7 @@ export const EventListView = ({
   onLoadMore,
   eventTagMap,
   eventFilters,
+  minStreamingPort,
 }: EventListViewProps) => {
   const { t } = useTranslation();
 
@@ -149,6 +155,7 @@ export const EventListView = ({
           accessToken={accessToken}
           eventTagMap={eventTagMap}
           eventFilters={eventFilters}
+          minStreamingPort={minStreamingPort}
         />
       ))}
       {footer}

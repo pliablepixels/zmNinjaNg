@@ -424,9 +424,11 @@ async function downloadFromDataUrlWeb(dataUrl: string, filename: string): Promis
 export function getEventVideoDownloadUrl(
   portalUrl: string,
   eventId: string,
-  token?: string
+  token?: string,
+  minStreamingPort?: number,
+  monitorId?: string,
 ): string {
-  return buildEventVideoUrl(portalUrl, eventId, { token });
+  return buildEventVideoUrl(portalUrl, eventId, { token, minStreamingPort, monitorId });
 }
 
 /**
@@ -436,9 +438,11 @@ export function downloadEventVideo(
   portalUrl: string,
   eventId: string,
   eventName: string,
-  token?: string
+  token?: string,
+  minStreamingPort?: number,
+  monitorId?: string,
 ): string {
-  const videoUrl = getEventVideoDownloadUrl(portalUrl, eventId, token);
+  const videoUrl = getEventVideoDownloadUrl(portalUrl, eventId, token, minStreamingPort, monitorId);
 
   // Sanitize event name for filename
   const sanitizedName = eventName.replace(/[^a-zA-Z0-9-_]/g, '_');

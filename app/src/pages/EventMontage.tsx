@@ -297,6 +297,7 @@ export default function EventMontage() {
           totalCount={eventsData?.pagination?.totalCount}
           isLoadingMore={isLoadingMore}
           onLoadMore={loadNextPage}
+          minStreamingPort={currentProfile?.minStreamingPort}
         />
       )}
     </div>

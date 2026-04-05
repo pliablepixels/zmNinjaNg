@@ -62,6 +62,26 @@ export function buildQueryString(
 }
 
 /**
+ * Apply multi-port streaming to a URL.
+ * When minStreamingPort is configured, the port is set to minStreamingPort + monitorId.
+ * This matches ZoneMinder's per-monitor port routing.
+ */
+function applyMultiPort(url: string, monitorId: string, minStreamingPort?: number): string {
+  if (!minStreamingPort) return url;
+  try {
+    const parsed = new URL(url);
+    const monitorIdNum = parseInt(monitorId, 10);
+    if (!isNaN(monitorIdNum) && minStreamingPort > 0) {
+      parsed.port = (minStreamingPort + monitorIdNum).toString();
+      return parsed.toString();
+    }
+  } catch {
+    // Fallback to original URL if parsing fails
+  }
+  return url;
+}
+
+/**
  * Build a complete URL with normalized base and query parameters.
  *
  * @param portalUrl - Base portal URL
@@ -130,20 +150,11 @@ export function getMonitorStreamUrl(
   const queryString = new URLSearchParams(params).toString();
 
   // cgiUrl already includes /nph-zms (from discovery or ZM_PATH_ZMS API)
-  // If minStreamingPort is set, we need to construct a new base URL
+  // If minStreamingPort is set, apply per-monitor port routing
   if (options.minStreamingPort) {
-    try {
-      const url = new URL(cgiUrl);
-      const basePort = options.minStreamingPort;
-      const monitorIdNum = parseInt(monitorId, 10);
-
-      if (!isNaN(basePort) && basePort > 0 && !isNaN(monitorIdNum)) {
-        url.port = (basePort + monitorIdNum).toString();
-        return `${url.toString()}?${queryString}`;
-      }
-    } catch (e) {
-      // Fallback to standard URL if parsing fails
-      log.http('Failed to construct multi-port URL', LogLevel.WARN, { error: e });
+    const multiPortUrl = applyMultiPort(cgiUrl, monitorId, options.minStreamingPort);
+    if (multiPortUrl !== cgiUrl) {
+      return `${multiPortUrl}?${queryString}`;
     }
   }
 
@@ -167,11 +178,12 @@ export function getMonitorControlUrl(
   options: {
     token?: string;
     apiUrl?: string;
+    minStreamingPort?: number;
   } = {}
 ): string {
-  const { token, apiUrl } = options;
+  const { token, apiUrl, minStreamingPort } = options;
 
-  return buildUrl(
+  const url = buildUrl(
     portalUrl,
     '/index.php',
     {
@@ -185,6 +197,8 @@ export function getMonitorControlUrl(
     token,
     apiUrl
   );
+
+  return applyMultiPort(url, monitorId, minStreamingPort);
 }
 
 /**
@@ -205,9 +219,11 @@ export function getEventImageUrl(
     width?: number;
     height?: number;
     apiUrl?: string;
+    minStreamingPort?: number;
+    monitorId?: string;
   } = {}
 ): string {
-  const { token, width, height, apiUrl } = options;
+  const { token, width, height, apiUrl, minStreamingPort, monitorId } = options;
 
   const params: Record<string, string | number> = {
     view: 'image',
@@ -218,7 +234,8 @@ export function getEventImageUrl(
   if (width) params.width = width;
   if (height) params.height = height;
 
-  return buildUrl(portalUrl, '/index.php', params, token, apiUrl);
+  const url = buildUrl(portalUrl, '/index.php', params, token, apiUrl);
+  return applyMultiPort(url, monitorId || '', minStreamingPort);
 }
 
 /**
@@ -250,9 +267,11 @@ export function getEventVideoUrl(
     format?: 'h264' | 'h265';
     /** When true, use HLS mode (mode=hls&view=view_event_hls) instead of MP4 */
     hls?: boolean;
+    minStreamingPort?: number;
+    monitorId?: string;
   } = {}
 ): string {
-  const { token, apiUrl, format = 'h264', hls = false } = options;
+  const { token, apiUrl, format = 'h264', hls = false, minStreamingPort, monitorId } = options;
 
   const params: Record<string, string> = hls
     ? {
@@ -267,7 +286,8 @@ export function getEventVideoUrl(
         view: 'view_video',
       };
 
-  return buildUrl(portalUrl, '/index.php', params, token, apiUrl);
+  const url = buildUrl(portalUrl, '/index.php', params, token, apiUrl);
+  return applyMultiPort(url, monitorId || '', minStreamingPort);
 }
 
 /**
@@ -290,6 +310,8 @@ export function getEventZmsUrl(
     replay?: 'single' | 'all' | 'gapless' | 'none';
     scale?: number;
     connkey?: string;
+    minStreamingPort?: number;
+    monitorId?: string;
   } = {}
 ): string {
   const {
@@ -301,6 +323,8 @@ export function getEventZmsUrl(
     replay = 'single',
     scale = 100,
     connkey,
+    minStreamingPort,
+    monitorId,
   } = options;
 
   const params: Record<string, string | number> = {
@@ -316,7 +340,8 @@ export function getEventZmsUrl(
 
   if (connkey) params.connkey = connkey;
 
-  return buildUrl(portalUrl, '/cgi-bin/nph-zms', params, token, apiUrl);
+  const url = buildUrl(portalUrl, '/cgi-bin/nph-zms', params, token, apiUrl);
+  return applyMultiPort(url, monitorId || '', minStreamingPort);
 }
 
 /**
@@ -336,9 +361,11 @@ export function getZmsControlUrl(
     token?: string;
     apiUrl?: string;
     offset?: number;
+    minStreamingPort?: number;
+    monitorId?: string;
   } = {}
 ): string {
-  const { token, apiUrl, offset } = options;
+  const { token, apiUrl, offset, minStreamingPort, monitorId } = options;
 
   const params: Record<string, string | number> = {
     command: command.toString(),
@@ -349,7 +376,8 @@ export function getZmsControlUrl(
 
   if (offset !== undefined) params.offset = offset;
 
-  return buildUrl(portalUrl, '/index.php', params, token, apiUrl);
+  const url = buildUrl(portalUrl, '/index.php', params, token, apiUrl);
+  return applyMultiPort(url, monitorId || '', minStreamingPort);
 }
 
 /**

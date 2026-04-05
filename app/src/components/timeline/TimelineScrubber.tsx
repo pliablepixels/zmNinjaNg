@@ -95,6 +95,8 @@ function ScrubberThumbnail({
   const portalUrl = getPortalUrlForEvent(event.monitorId, monitors, profilePortalUrl);
   const imageUrl = getEventImageUrl(portalUrl, event.id, 'alarm', {
     token: accessToken ?? undefined,
+    minStreamingPort: currentProfile?.minStreamingPort,
+    monitorId: event.monitorId,
   });
 
   return (
