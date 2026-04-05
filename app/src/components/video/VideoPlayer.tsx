@@ -160,15 +160,21 @@ export function VideoPlayer({
       videoTimeoutRef.current = setTimeout(() => {
         // Check for video frames by inspecting the video element
         const video = go2rtcStream.getVideoElement();
-        const hasFrames = video && video.videoWidth > 0 && video.videoHeight > 0 && !video.paused;
+        const hasFrames = video && video.videoWidth > 0 && video.videoHeight > 0;
 
-        if (!hasFrames) {
+        if (hasFrames && video.paused) {
+          // Autoplay was blocked — try to play programmatically
+          log.videoPlayer('Go2RTC has frames but paused, attempting play', LogLevel.INFO, { monitorId: monitor.Id });
+          video.play().catch(() => {
+            // Play failed — still has frames so mark as success
+          });
+          setHasVideoFrames(true);
+        } else if (!hasFrames) {
           log.videoPlayer('Go2RTC connected but no video frames, falling back to MJPEG', LogLevel.WARN, {
             monitorId: monitor.Id,
             protocol: go2rtcStream.activeProtocol,
             videoWidth: video?.videoWidth,
             videoHeight: video?.videoHeight,
-            paused: video?.paused,
           });
           markGo2rtcFailed(monitor.Id);
           setGo2rtcFailed(true);

@@ -81,7 +81,6 @@ function MontageMonitorComponent({
     viewMode: settings.viewMode,
     mediaRef,
     logFn: log.montageMonitor,
-    minStreamingPort: settings.viewMode === 'streaming' ? currentProfile?.minStreamingPort : undefined,
   });
 
   // Reset image loaded state when connKey changes (new stream connection)

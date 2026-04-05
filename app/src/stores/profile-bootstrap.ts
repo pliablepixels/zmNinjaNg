@@ -222,7 +222,7 @@ export async function bootstrapServerMap(): Promise<void> {
     const { getServers } = await import('../api/server');
     const { buildServerMap, setServerMap } = await import('../lib/server-resolver');
 
-    log.profileService('Fetching server list for multi-server routing', LogLevel.DEBUG);
+    log.profileService('Fetching server list for multi-server routing', LogLevel.INFO);
     const servers = await getServers();
 
     if (servers.length === 0) {
