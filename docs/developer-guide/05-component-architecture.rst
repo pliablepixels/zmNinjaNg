@@ -37,6 +37,9 @@ Key Directories Explained
   - ``useNotificationAutoConnect``: Auto-connects the notification WebSocket on profile load and network reconnection.
   - ``useNotificationPushSetup``: FCM token initialization on mobile.
   - ``useNotificationDelivered``: Processes delivered notifications on cold start and resume.
+  - ``useServerUrls(serverId)``: Wraps ``server-resolver`` cache via ``useSyncExternalStore`` for reactive per-server URL resolution.
+  - ``useMonitorStream({ monitorId, serverId })``: MJPEG stream with server-resolved URLs.
+  - ``useGo2RTCStream({ go2rtcUrl, monitorId, channel, controls })``: Go2RTC streaming. ``channel`` accepts a string (the ``StreamChannel`` field, e.g. ``"CameraDirectPrimary"``).
 
   Note: ``usePTZControl`` lives in ``pages/hooks/usePTZControl.ts``, not
   in ``src/hooks/``.
@@ -631,19 +634,44 @@ This fetches the image with credentials, converts to a blob, and creates
 a local URL. Necessary for servers that require authentication on all
 requests.
 
-VideoPlayer
-~~~~~~~~~~~
+VideoPlayer (Smart Streaming Component)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Location**: ``src/components/ui/video-player.tsx``
+**Location**: ``src/components/video/VideoPlayer.tsx``
 
-Wrapper around HTML5 video with Ionic integration.
+Unified player that selects Go2RTC (WebRTC/MSE/HLS) or MJPEG based on
+monitor capabilities and user settings.
 
-**Features:**
+**Props:**
 
-- Autoplay control
-- Play/pause callbacks
-- Error handling
-- Fullscreen support
+- ``monitor`` — monitor data object
+- ``profile`` — active profile
+- ``showControls`` — enables native video controls (used on MonitorDetail)
+- ``onProtocolChange`` — callback when streaming protocol changes
+- ``externalMediaRef`` — external ref for the video/img element
+
+**Streaming selection:** VideoPlayer checks the user's streaming method
+preference, whether Go2RTC is available, and per-monitor overrides
+(``monitorStreamingOverrides`` in settings store) to decide between
+Go2RTC and MJPEG.
+
+**Go2RTC failure cache:** Monitors that fail Go2RTC connection are
+cached and skipped for 5 minutes to avoid repeated connection attempts
+in montage views.
+
+**Video frame timeout:** 8 seconds after reaching "connected" state,
+VideoPlayer checks ``videoWidth``/``videoHeight``. If no frames have
+arrived, it falls back to MJPEG.
+
+**Autoplay handling:** If the video element reports paused but has valid
+dimensions, VideoPlayer calls ``video.play()`` to recover from
+browser autoplay restrictions.
+
+**Controls:** When ``showControls`` is true (MonitorDetail only), native
+video controls are enabled with
+``controlsList='nodownload noplaybackrate'`` and
+``disablePictureInPicture=true``. Click on the video element calls
+``stopPropagation`` to prevent navigation.
 
 **Picture-in-Picture integration:**
 
@@ -658,6 +686,21 @@ Wrapper around HTML5 video with Ionic integration.
   portal for inline resume.
 - On remount with a different ``eventId``, closes the existing PiP
   session first.
+
+VideoPlayer (Event Playback)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Location**: ``src/components/ui/video-player.tsx``
+
+Wrapper around HTML5 video for event playback with Ionic integration.
+Separate from the live streaming VideoPlayer above.
+
+**Features:**
+
+- Autoplay control
+- Play/pause callbacks
+- Error handling
+- Fullscreen support
 
 PipContext
 ~~~~~~~~~~

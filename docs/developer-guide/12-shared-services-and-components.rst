@@ -360,6 +360,55 @@ client
 
 --------------
 
+Server Resolver (``lib/server-resolver.ts``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Maps ZoneMinder ServerId values to per-server URLs for multi-server
+routing. In single-server setups the map is empty and all lookups return
+profile defaults.
+
+**Key functions:**
+
+.. code:: typescript
+
+   import {
+     buildServerMap,
+     resolveMonitorUrls,
+     getPortalUrlForMonitor,
+     getPortalUrlForEvent,
+     setServerMap,
+   } from '../lib/server-resolver';
+
+   // Build the map from /servers.json response
+   const serverMap = buildServerMap(servers);
+   // Each entry contains: recordingUrl, portalPath, apiBaseUrl
+
+   // Store in module-level cache (called during bootstrap)
+   setServerMap(serverMap);
+
+   // Resolve URLs for a monitor by its ServerId
+   const urls = resolveMonitorUrls(monitor.ServerId, serverMap, {
+     portalUrl: profile.portalUrl,
+     apiUrl: profile.apiUrl,
+   });
+
+   // Quick lookups for list renderers
+   const portalUrl = getPortalUrlForMonitor(monitor.ServerId, profile.portalUrl);
+   const eventPortalUrl = getPortalUrlForEvent(monitorId, monitors, profile.portalUrl);
+
+**Caching:** The module maintains a module-level cache updated via
+``setServerMap()`` during bootstrap and cleared on profile switch.
+React components access the cache reactively via ``useSyncExternalStore``
+through the ``useServerUrls`` hook.
+
+**Fallback:** When no servers exist or a ServerId is not found in the
+map, all functions return the profile's default URLs.
+
+**Used By:** ``useServerUrls`` hook, ``useMonitorStream``, Server page,
+MonitorDetail, EventDetail
+
+--------------
+
 URL Builder (``lib/url-builder.ts``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -372,6 +421,24 @@ Centralized URL construction for ZoneMinder endpoints.
 - Control URLs for PTZ
 - Consistent parameter handling
 - Cache busting support
+- Multi-port routing via ``applyMultiPort``
+
+**Multi-port helper:**
+
+.. code:: typescript
+
+   import { applyMultiPort } from '../lib/url-builder';
+
+   // Shared helper for per-monitor port routing
+   // Formula: port = minStreamingPort + parseInt(monitorId)
+   const url = applyMultiPort('https://zm.example.com/cgi-bin/nph-zms', '4', 7100);
+   // → URL with port 7104
+
+All URL builder functions (``getMonitorStreamUrl``, ``getEventImageUrl``,
+``getEventVideoUrl``, ``getEventZmsUrl``) accept optional
+``minStreamingPort`` and ``monitorId`` parameters. When both are
+provided, the output URL's port is rewritten using the multi-port
+formula.
 
 **Implementation:**
 
@@ -402,6 +469,15 @@ Centralized URL construction for ZoneMinder endpoints.
    const videoUrl = getEventVideoUrl(portalUrl, eventId, {
      token: accessToken,
      format: 'mp4',
+   });
+
+   // With multi-port routing
+   const streamUrl = getMonitorStreamUrl(cgiUrl, monitorId, {
+     token: accessToken,
+     mode: 'jpeg',
+     connkey: 12345,
+     minStreamingPort: 7100,
+     monitorId: '4',
    });
 
 **Used By:** API functions, hooks (useMonitorStream, useEventPlayer),

@@ -243,6 +243,56 @@ Extended ``lib/discovery.ts`` to probe for Go2RTC at port 1984:
      result.go2rtcAvailable = false;
    }
 
+StreamChannel
+-------------
+
+Go2RTC stream names use the format ``{monitorId}_{StreamChannel}``
+(e.g., ``4_CameraDirectPrimary``). The ``StreamChannel`` field is part
+of the ``MonitorSchema`` and identifies which camera stream to use.
+
+Previously the stream name was hardcoded as ``{monitorId}_0``, which
+failed for monitors with non-default channels. The ``useGo2RTCStream``
+hook now reads the monitor's ``StreamChannel`` field to build the
+stream name.
+
+.. code:: typescript
+
+   // Stream name construction
+   const streamName = `${monitorId}_${monitor.StreamChannel || '0'}`;
+
+Fallback Chain
+--------------
+
+The full fallback sequence:
+
+1. Go2RTC connects via WebSocket signaling
+2. Negotiates WebRTC, MSE, or HLS (in that order)
+3. **8-second video frame timeout**: after reaching "connected" state,
+   checks ``videoWidth``/``videoHeight`` — falls back to MJPEG if no
+   frames arrived
+4. MJPEG fallback as last resort
+
+**Failure cache:** Monitors that fail Go2RTC are cached and skipped for
+5 minutes. This prevents repeated connection attempts in montage views
+with many monitors.
+
+**Per-monitor override:** The ``monitorStreamingOverrides`` map in the
+settings store allows forcing a specific streaming method per monitor,
+independent of the global setting.
+
+Controls
+--------
+
+Native video controls are enabled only on MonitorDetail (via the
+``showControls`` prop on ``VideoPlayer``):
+
+- ``controlsList='nodownload noplaybackrate'`` — hides download and
+  playback rate options
+- ``disablePictureInPicture=true`` — disabled because iOS shows an empty
+  window for streaming sources
+- Click on the video element calls ``stopPropagation()`` to prevent
+  navigation to monitor detail (relevant in montage)
+
 Type Definitions
 ----------------
 
@@ -259,6 +309,7 @@ Added to ``Monitor`` type in ``api/types.ts``:
      RTSP2WebEnabled?: boolean;    // Alternative: RTSP2Web support
      JanusEnabled?: boolean;       // Alternative: Janus Gateway support
      RTSPStreamName?: string;      // RTSP stream identifier for Go2RTC
+     StreamChannel?: string;       // Go2RTC stream channel (e.g., 'CameraDirectPrimary')
    }
 
 Profile Fields

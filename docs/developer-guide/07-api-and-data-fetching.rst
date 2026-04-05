@@ -1570,13 +1570,116 @@ API functions are thin wrappers around the HTTP client.
 
    src/api/
    ├── auth.ts          # login(), logout(), refreshAccessToken()
-   ├── monitors.ts      # fetchMonitors(), updateMonitor(), getAlarmStatus()
+   ├── monitors.ts      # fetchMonitors(), updateMonitor(), getAlarmStatus(), getDaemonStatus()
    ├── events.ts        # fetchEvents(), fetchEvent(), deleteEvent(), getAdjacentEvent()
    ├── groups.ts        # getGroups() - monitor groups for filtering
    ├── tags.ts          # getTags(), getEventTags() - event tagging (ZM 1.37+)
    ├── states.ts        # fetchStates(), changeState()
-   ├── server.ts        # getVersion(), getDaemonStatus(), fetchMinStreamingPort()
+   ├── server.ts        # getServers(), getStorages(), getDaemonCheck(), getLoad(), getDiskPercent()
    └── streaming.ts     # generateConnKey(), getStreamUrl()
+
+Server API (``api/server.ts``)
+------------------------------
+
+Functions for querying ZoneMinder server info, storage, and health
+checks. Several functions accept an optional ``apiBaseUrl`` parameter for
+multi-server routing (see ``lib/server-resolver.ts``).
+
+**Key functions:**
+
+.. code:: typescript
+
+   import {
+     getServers,
+     getStorages,
+     getDaemonCheck,
+     getLoad,
+     getDiskPercent,
+   } from '../api/server';
+
+   // Fetch all configured servers
+   const servers = await getServers();
+   // Returns Server[] with routing fields:
+   // Protocol, Hostname, Port, PathToIndex, PathToZMS, PathToApi
+
+   // Fetch storage info
+   const storages = await getStorages();
+   // Returns Storage[] with ServerId, DiskTotalSpace, DiskUsedSpace
+
+   // Health checks — optional apiBaseUrl routes to a specific server
+   const daemonOk = await getDaemonCheck();                     // default server
+   const daemonOk2 = await getDaemonCheck('https://server2/zm'); // specific server
+   const load = await getLoad(apiBaseUrl);
+   const disk = await getDiskPercent(apiBaseUrl);
+
+When ``apiBaseUrl`` is omitted, requests go to the profile's default API
+URL. When provided, the request is routed to that server directly. This
+is used by the Server page to display per-server health.
+
+Monitor API Updates (``api/monitors.ts``)
+-----------------------------------------
+
+Monitor functions that interact with per-monitor daemons or alarms now
+accept an optional ``apiBaseUrl`` for multi-server routing.
+
+**Multi-server-aware functions:**
+
+.. code:: typescript
+
+   import {
+     getDaemonStatus,
+     getAlarmStatus,
+     triggerAlarm,
+     cancelAlarm,
+     controlMonitor,
+   } from '../api/monitors';
+
+   // Daemon status — routes to the server hosting this monitor
+   const status = await getDaemonStatus(monitorId, 'zmc', apiBaseUrl);
+
+   // Alarm operations — same routing
+   const alarm = await getAlarmStatus(monitorId, apiBaseUrl);
+   await triggerAlarm(monitorId, apiBaseUrl);
+   await cancelAlarm(monitorId, apiBaseUrl);
+
+   // Control monitor — multi-port support
+   await controlMonitor(portalUrl, monitorId, command, token, minStreamingPort);
+
+``controlMonitor`` accepts ``minStreamingPort`` to calculate the
+per-monitor port using the formula
+``port = minStreamingPort + parseInt(monitorId)``.
+
+Event API Updates (``api/events.ts``)
+-------------------------------------
+
+Event URL helpers now support HLS detection and multi-port routing.
+
+**Updated functions:**
+
+.. code:: typescript
+
+   import {
+     getEventVideoUrl,
+     getEventImageUrl,
+     getEventZmsUrl,
+   } from '../api/events';
+
+   // Video URL — hls flag detects HLS vs MP4 from DefaultVideo field
+   const videoUrl = getEventVideoUrl(event, { hls: true });
+
+   // Image and ZMS URLs accept minStreamingPort and monitorId for multi-port
+   const imageUrl = getEventImageUrl(event, {
+     minStreamingPort: 7100,
+     monitorId: '4',
+   });
+   const zmsUrl = getEventZmsUrl(event, {
+     minStreamingPort: 7100,
+     monitorId: '4',
+   });
+
+When ``hls`` is true, ``getEventVideoUrl`` checks the event's
+``DefaultVideo`` field to determine whether the video is an HLS playlist
+or an MP4 file and returns the appropriate URL.
 
 Monitor Groups API
 ------------------

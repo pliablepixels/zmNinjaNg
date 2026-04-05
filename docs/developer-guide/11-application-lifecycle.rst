@@ -59,6 +59,23 @@ profile:
    - Fetch ZMS path from server config
    - Fetch Go2RTC path (if configured)
    - Check multi-port streaming configuration
+   - Bootstrap server map (``bootstrapServerMap()``)
+
+Bootstrap Server Map
+~~~~~~~~~~~~~~~~~~~~
+
+After authentication, the bootstrap process calls
+``bootstrapServerMap()``:
+
+1. Fetches ``/servers.json`` from the ZoneMinder API
+2. Builds a ServerId-to-URLs map via ``buildServerMap()`` from
+   ``lib/server-resolver.ts``
+3. Stores the map in the module-level cache via ``setServerMap()``
+4. The cache is cleared on profile switch
+
+For single-server setups the map is empty. All URL lookups in
+``resolveMonitorUrls`` and ``getPortalUrlForMonitor`` return the
+profile’s default URLs when the map is empty or a ServerId is not found.
 
 Bootstrap Cancellation
 ~~~~~~~~~~~~~~~~~~~~~~
