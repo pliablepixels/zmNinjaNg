@@ -291,14 +291,6 @@ export function VideoPlayer({
     return labels[status.protocol] || status.protocol;
   }, [status.protocol, go2rtcFailed, effectiveStreamingMethod, streamingMethod, t]);
 
-  // Status badge variant
-  const statusBadgeVariant = useMemo(() => {
-    if (go2rtcFailed) return 'outline' as const; // fell back
-    if (status.state === 'connected') return 'secondary' as const;
-    if (status.state === 'connecting') return 'outline' as const;
-    return 'destructive' as const;
-  }, [go2rtcFailed, status.state]);
-
   // Whether we're in a "waiting for video" state
   const isWaitingForVideo = isWebRTC && status.state === 'connected' && !hasVideoFrames;
   // Show VideoOff placeholder only when truly no video:
@@ -339,20 +331,14 @@ export function VideoPlayer({
         />
       )}
 
-      {/* Protocol status badge — always rendered when showStatus, hidden via opacity to avoid flash on re-render */}
-      <div
-        className={`absolute bottom-1.5 right-1.5 z-20 flex gap-1.5 transition-opacity duration-200 ${showStatus ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-        data-testid="video-player-status"
-      >
-        {isWaitingForVideo && (
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 animate-pulse bg-black/40 text-white border-white/20">
-            {t('video.connecting')}
+      {/* Protocol status badge */}
+      {showStatus && (
+        <div className="absolute bottom-1.5 right-1.5 z-20" data-testid="video-player-status">
+          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-black/50 text-white/90 border-0">
+            {protocolLabel}
           </Badge>
-        )}
-        <Badge variant={statusBadgeVariant} className="text-[10px] px-1.5 py-0 h-4 bg-black/40 text-white border-white/20">
-          {protocolLabel}
-        </Badge>
-      </div>
+        </div>
+      )}
 
       {/* Error overlay */}
       {status.state === 'error' && status.error && (
