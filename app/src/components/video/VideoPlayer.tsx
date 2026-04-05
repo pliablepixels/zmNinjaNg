@@ -17,7 +17,7 @@ import { useMonitorStream } from '../../hooks/useMonitorStream';
 import { log, LogLevel } from '../../lib/logger';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { VideoOff, Volume2, VolumeX, Maximize } from 'lucide-react';
+import { VideoOff } from 'lucide-react';
 
 /** Seconds to wait for video frames after Go2RTC reports "connected" */
 const GO2RTC_VIDEO_TIMEOUT_S = 8;
@@ -244,27 +244,6 @@ export function VideoPlayer({
     protocol: isWebRTC ? (go2rtcStream.activeProtocol || 'go2rtc') : 'mjpeg',
   }), [isWebRTC, go2rtcStream.state, go2rtcStream.error, go2rtcStream.activeProtocol, mjpegStream.streamUrl]);
 
-  // Custom controls state
-  const [isMutedState, setIsMutedState] = useState(muted);
-
-  const handleMuteToggle = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    const newMuted = go2rtcStream.toggleMute();
-    setIsMutedState(newMuted);
-  }, [go2rtcStream]);
-
-  const handleFullscreen = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    const video = go2rtcStream.getVideoElement();
-    if (video) {
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-      } else {
-        video.requestFullscreen().catch(() => {});
-      }
-    }
-  }, [go2rtcStream]);
-
   const handleRetry = () => {
     log.videoPlayer('Retry requested', LogLevel.INFO, { monitorId: monitor.Id, go2rtcFailed });
 
@@ -334,33 +313,9 @@ export function VideoPlayer({
         <div
           ref={containerRef}
           className={`w-full h-full ${className}`}
-          style={{ objectFit } as React.CSSProperties}
+          style={{ objectFit, position: 'relative', zIndex: 0 } as React.CSSProperties}
           data-testid="video-player-webrtc-container"
         />
-      )}
-
-      {/* Go2RTC controls — rendered outside the container so video can't overlap them */}
-      {isWebRTC && (
-        <div className="absolute bottom-1 left-1 flex gap-0.5" style={{ zIndex: 9999 }}>
-          <button
-            type="button"
-            onClick={handleMuteToggle}
-            className="p-1 rounded-full bg-black/50 text-white/80 hover:bg-black/70 hover:text-white"
-            title={isMutedState ? 'Unmute' : 'Mute'}
-            data-testid="video-mute-toggle"
-          >
-            {isMutedState ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-          </button>
-          <button
-            type="button"
-            onClick={handleFullscreen}
-            className="p-1 rounded-full bg-black/50 text-white/80 hover:bg-black/70 hover:text-white"
-            title="Fullscreen"
-            data-testid="video-fullscreen"
-          >
-            <Maximize className="h-3.5 w-3.5" />
-          </button>
-        </div>
       )}
 
       {!isWebRTC && mjpegStream.streamUrl && (
