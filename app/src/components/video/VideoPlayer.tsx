@@ -119,7 +119,7 @@ export function VideoPlayer({
   const go2rtcStream = useGo2RTCStream({
     go2rtcUrl: profile?.go2rtcUrl || '',
     monitorId: monitor.Id,
-    channel: 0,
+    channel: monitor.StreamChannel || 0,
     containerRef,
     protocols: rawSettings?.webrtcProtocols,
     enabled: streamingMethod === 'webrtc' && !!profile?.go2rtcUrl && !go2rtcFailed,

@@ -23,7 +23,7 @@ export type ConnectionState = 'idle' | 'connecting' | 'connected' | 'error' | 'd
 export interface UseGo2RTCStreamOptions {
   go2rtcUrl: string;
   monitorId: string;
-  channel?: number;
+  channel?: string | number;
   containerRef: React.RefObject<HTMLElement | null>;
   protocols?: StreamingProtocol[];
   token?: string;

@@ -172,6 +172,8 @@ export const MonitorSchema = z.object({
   RTSPServer: z.coerce.string().nullable(),
   RTSPStreamName: z.string().nullable(),
   Importance: z.string().nullable(),
+  // Stream channel for Go2RTC (e.g., 'CameraDirectPrimary', 'Restream')
+  StreamChannel: z.string().nullable().optional(),
   // Go2RTC fields (ZoneMinder 1.37+)
   Go2RTCEnabled: z.coerce.boolean().optional().default(false),
   Go2RTCType: z.preprocess(

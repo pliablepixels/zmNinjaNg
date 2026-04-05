@@ -378,7 +378,7 @@ export function getZmsControlUrl(
 export function getGo2RTCWebSocketUrl(
   go2rtcPath: string,
   monitorId: string,
-  channel: number = 0,
+  channel: string | number = 0,
   options: {
     token?: string;
   } = {}
@@ -437,7 +437,7 @@ export function getGo2RTCWebSocketUrl(
 export function getGo2RTCStreamUrl(
   go2rtcPath: string,
   monitorId: string,
-  channel: number = 0,
+  channel: string | number = 0,
   streamType: 'mse' | 'hls' | 'mp4' | 'mjpeg',
   options: {
     token?: string;
