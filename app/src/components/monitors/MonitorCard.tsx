@@ -97,7 +97,6 @@ function MonitorCardComponent({
             profile={currentProfile}
             className="w-full h-full"
             objectFit={resolvedFit}
-            showStatus
             externalMediaRef={mediaRef}
           />
           <div className="absolute top-1.5 left-1.5 z-10">
@@ -105,6 +104,9 @@ function MonitorCardComponent({
               className={cn('block h-2 w-2 rounded-full shadow-sm', monitorDotColor(runState))}
             />
           </div>
+          <span className="absolute bottom-1 right-1 z-10 text-[9px] px-1 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
+            {monitor.Go2RTCEnabled && currentProfile?.go2rtcUrl ? 'Go2RTC' : 'MJPEG'}
+          </span>
         </div>
         <div className="p-2 space-y-1.5">
           <div className="flex items-center gap-1.5">
@@ -220,9 +222,11 @@ function MonitorCardComponent({
             profile={currentProfile}
             className="w-full h-full"
             objectFit={resolvedFit}
-            showStatus
             externalMediaRef={mediaRef}
           />
+          <span className="absolute bottom-1 right-1 z-10 text-[9px] px-1 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
+            {monitor.Go2RTCEnabled && currentProfile?.go2rtcUrl ? 'Go2RTC' : 'MJPEG'}
+          </span>
         </div>
 
         {/* Monitor Info & Controls */}

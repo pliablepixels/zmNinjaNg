@@ -46,7 +46,6 @@ export interface VideoPlayerProps {
   profile: Profile | null;
   className?: string;
   objectFit?: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
-  showStatus?: boolean;
   /** Show native video controls on Go2RTC streams (mute, fullscreen) */
   showControls?: boolean;
   externalMediaRef?: React.RefObject<HTMLImageElement | HTMLVideoElement | null>;
@@ -59,7 +58,6 @@ export function VideoPlayer({
   profile,
   className = '',
   objectFit = 'contain',
-  showStatus = false,
   showControls = false,
   externalMediaRef,
   muted = true,
@@ -278,22 +276,6 @@ export function VideoPlayer({
     }
   }, [isWebRTC, status.state, hasVideoFrames, onLoad]);
 
-  // Protocol label for status badge
-  const protocolLabel = useMemo(() => {
-    if (go2rtcFailed && effectiveStreamingMethod === 'mjpeg' && streamingMethod === 'webrtc') {
-      // Fell back from Go2RTC to MJPEG
-      return t('video.streaming_mjpeg');
-    }
-    const labels: Record<string, string> = {
-      webrtc: 'WebRTC',
-      mse: 'MSE',
-      hls: 'HLS',
-      go2rtc: t('video.streaming_webrtc'),
-      mjpeg: t('video.streaming_mjpeg'),
-    };
-    return labels[status.protocol] || status.protocol;
-  }, [status.protocol, go2rtcFailed, effectiveStreamingMethod, streamingMethod, t]);
-
   // Whether we're in a "waiting for video" state
   const isWaitingForVideo = isWebRTC && status.state === 'connected' && !hasVideoFrames;
   // Show VideoOff placeholder only when truly no video:
@@ -333,17 +315,6 @@ export function VideoPlayer({
           onError={handleMjpegError}
         />
       )}
-
-      {/* Protocol status badge — always in DOM, visibility toggled to prevent flash on re-render */}
-      <div
-        className="absolute bottom-1.5 right-1.5 z-20"
-        style={{ visibility: showStatus ? 'visible' : 'hidden' }}
-        data-testid="video-player-status"
-      >
-        <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/50 text-white/90 font-medium">
-          {protocolLabel}
-        </span>
-      </div>
 
       {/* Error overlay */}
       {status.state === 'error' && status.error && (

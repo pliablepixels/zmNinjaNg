@@ -237,11 +237,16 @@ function MontageMonitorComponent({
           profile={currentProfile}
           externalMediaRef={mediaRef}
           objectFit={resolvedFit}
-          showStatus={settings.montageShowToolbar}
           muted={true}
           className="w-full h-full"
           onLoad={() => setImageLoaded(true)}
         />
+        {/* Protocol label — rendered outside VideoPlayer to avoid Go2RTC DOM mutation flash */}
+        {settings.montageShowToolbar && (
+          <span className="absolute bottom-1.5 right-1.5 z-30 text-[10px] px-1.5 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
+            {monitor.Go2RTCEnabled && currentProfile?.go2rtcUrl ? 'Go2RTC' : 'MJPEG'}
+          </span>
+        )}
       </div>
 
       {/* Pin button — bottom-left corner, outside drag handle, edit mode only */}

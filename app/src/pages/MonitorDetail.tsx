@@ -373,7 +373,6 @@ export default function MonitorDetail() {
               profile={currentProfile}
               externalMediaRef={mediaRef}
               objectFit={isFullscreen ? 'contain' : settings.monitorDetailFeedFit}
-              showStatus={true}
               showControls={true}
               className="data-[testid=monitor-player]"
             />
@@ -386,6 +385,9 @@ export default function MonitorDetail() {
               visible={showZones && !isZonesLoading}
             />
           </div>
+          <span className="absolute bottom-2 right-2 z-10 text-[10px] px-1.5 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
+            {monitor.Monitor.Go2RTCEnabled && currentProfile?.go2rtcUrl ? 'Go2RTC' : 'MJPEG'}
+          </span>
           <ZoomControls
             onZoomIn={zoomPan.zoomIn}
             onZoomOut={zoomPan.zoomOut}
