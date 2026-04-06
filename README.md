@@ -1,12 +1,12 @@
-# zmNinjaNG - Modern ZoneMinder Client
+# zmNinjaNg - Modern ZoneMinder Client
 
-[![Build Android](https://github.com/pliablepixels/zmNinjaNG/actions/workflows/build-android.yml/badge.svg)](https://github.com/pliablepixels/zmNinjaNG/actions/workflows/build-android.yml)
-[![Build macOS](https://github.com/pliablepixels/zmNinjaNG/actions/workflows/build-macos.yml/badge.svg)](https://github.com/pliablepixels/zmNinjaNG/actions/workflows/build-macos.yml)
-[![Build Windows](https://github.com/pliablepixels/zmNinjaNG/actions/workflows/build-windows.yml/badge.svg)](https://github.com/pliablepixels/zmNinjaNG/actions/workflows/build-windows.yml)
-[![Build Linux](https://github.com/pliablepixels/zmNinjaNG/actions/workflows/build-linux-amd64.yml/badge.svg)](https://github.com/pliablepixels/zmNinjaNG/actions/workflows/build-linux-amd64.yml)
-[![Tests](https://github.com/pliablepixels/zmNinjaNG/actions/workflows/test.yml/badge.svg)](https://github.com/pliablepixels/zmNinjaNG/actions/workflows/test.yml)
-[![GitHub release](https://img.shields.io/github/v/release/pliablepixels/zmNinjaNG)](https://github.com/pliablepixels/zmNinjaNG/releases)
-[![GitHub downloads](https://img.shields.io/github/downloads/pliablepixels/zmNinjaNG/total?cache=none)](https://github.com/pliablepixels/zmNinjaNG/releases)
+[![Build Android](https://github.com/pliablepixels/zmNinjaNg/actions/workflows/build-android.yml/badge.svg)](https://github.com/pliablepixels/zmNinjaNg/actions/workflows/build-android.yml)
+[![Build macOS](https://github.com/pliablepixels/zmNinjaNg/actions/workflows/build-macos.yml/badge.svg)](https://github.com/pliablepixels/zmNinjaNg/actions/workflows/build-macos.yml)
+[![Build Windows](https://github.com/pliablepixels/zmNinjaNg/actions/workflows/build-windows.yml/badge.svg)](https://github.com/pliablepixels/zmNinjaNg/actions/workflows/build-windows.yml)
+[![Build Linux](https://github.com/pliablepixels/zmNinjaNg/actions/workflows/build-linux-amd64.yml/badge.svg)](https://github.com/pliablepixels/zmNinjaNg/actions/workflows/build-linux-amd64.yml)
+[![Tests](https://github.com/pliablepixels/zmNinjaNg/actions/workflows/test.yml/badge.svg)](https://github.com/pliablepixels/zmNinjaNg/actions/workflows/test.yml)
+[![GitHub release](https://img.shields.io/github/v/release/pliablepixels/zmNinjaNg)](https://github.com/pliablepixels/zmNinjaNg/releases)
+[![GitHub downloads](https://img.shields.io/github/downloads/pliablepixels/zmNinjaNg/total?cache=none)](https://github.com/pliablepixels/zmNinjaNg/releases)
 
 <img src="app/assets/logo.png" align="right" width="120" />
 
@@ -16,11 +16,11 @@ A modern web and mobile application for ZoneMinder, providing a clean, intuitive
 
 ### Demo
 
-[Watch the demo](https://pliablepixels.github.io/zmNinjaNG/)
+[Watch the demo](https://pliablepixels.github.io/zmNinjaNg/)
 
 ### Important Notes:
-- zmNinjaNG supports self-signed certificates on mobile (iOS/Android). Enable it in Settings > Connection. On desktop, add your CA to the system trust store. Using proper certificates (e.g. [LetsEncrypt](https://letsencrypt.org/)) is still recommended.
-- zmNinjaNG has been tested with [ES7+](https://zmeventnotificationv7.readthedocs.io/en/latest/) - I'd recommend you switch to this new ecosystem
+- zmNinjaNg supports self-signed certificates on mobile (iOS/Android). Enable it in Settings > Connection. On desktop, add your CA to the system trust store. Using proper certificates (e.g. [LetsEncrypt](https://letsencrypt.org/)) is still recommended.
+- zmNinjaNg has been tested with [zmesNg](https://zmeventnotificationng.readthedocs.io/en/latest/) - I'd recommend you switch to this new ecosystem
 
 <details>
 <summary>Screenshots</summary>
@@ -46,10 +46,10 @@ A modern web and mobile application for ZoneMinder, providing a clean, intuitive
 
 ### Agentic AI, you and me
 
-Agentic AI and me: I built the very first version of zmNinja over several months and built in more features over multiple years. I built the first version of zmNinjaNG over 2.5 days with almost as many features as the last version of zmNinja. Thanks to Claude.
+Agentic AI and me: I built the very first version of zmNinja over several months and built in more features over multiple years. I built the first version of zmNinjaNg over 2.5 days with almost as many features as the last version of zmNinja. Thanks to Claude.
 
-Agentic AI and you: I don't plan to support zmNinjaNG with any urgency. Please don't ping me and expect quick answers. 
-Instead, treat this as "personal software" - i.e. download the code and fix it yourself. If you don't code, or do code, but aren't familiar with the environment of zmNinjaNG, I'd encourage you to use an agentic AI tool to help you along the way. Pick one you prefer. Personally, I'd recommend [Claude Code](https://claude.com/product/claude-code). In my experience, as of Mar 2026, its significantly ahead of others.
+Agentic AI and you: I don't plan to support zmNinjaNg with any urgency. Please don't ping me and expect quick answers. 
+Instead, treat this as "personal software" - i.e. download the code and fix it yourself. If you don't code, or do code, but aren't familiar with the environment of zmNinjaNg, I'd encourage you to use an agentic AI tool to help you along the way. Pick one you prefer. Personally, I'd recommend [Claude Code](https://claude.com/product/claude-code). In my experience, as of Mar 2026, its significantly ahead of others.
 
 
 #### Pull Requests
@@ -62,15 +62,15 @@ I am happy to accept PRs, but I don't want [AI slop](https://en.wikipedia.org/wi
 
 ### Limitations & Notes
 - Self-signed certificates are supported on mobile (iOS/Android) via Settings > Connection. On desktop, add your CA to the system trust store. Using proper certificates (e.g. [LetsEncrypt](https://letsencrypt.org/)) is still recommended.
-- If you want push notifications, you'll have to use a newer [Event Server](https://zmeventnotificationv7.readthedocs.io/en/latest/)
+- If you want push notifications, you'll have to use a newer [Event Server](https://zmeventnotificationng.readthedocs.io/en/latest/)
 
 
 ## Quick Start
 
 ### Binaries
-- Download binaries from [zmNinjaNG Releases](https://github.com/pliablepixels/zmNinjaNG/releases)
+- Download binaries from [zmNinjaNg Releases](https://github.com/pliablepixels/zmNinjaNg/releases)
 - iOS will be in the app store soon. Isaac is on it.
-- I use Github workflows and runners to automatically build release binaries [here](https://github.com/pliablepixels/zmNinjaNG/tree/main/.github/workflows). Binaries are built for specific platforms. If the binary doesn't work for your linux distro, look at those files
+- I use Github workflows and runners to automatically build release binaries [here](https://github.com/pliablepixels/zmNinjaNg/tree/main/.github/workflows). Binaries are built for specific platforms. If the binary doesn't work for your linux distro, look at those files
 
 ## Build from Source
 
@@ -94,8 +94,8 @@ This allows the workflows to create GitHub releases automatically when you push 
 ### Desktop Development
 
 ```bash
-git clone https://github.com/pliablepixels/zmNinjaNG
-cd zmNinjaNG/app
+git clone https://github.com/pliablepixels/zmNinjaNg
+cd zmNinjaNg/app
 npm install
 
 # Desktop development (Tauri - native app)

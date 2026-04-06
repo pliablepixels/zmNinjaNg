@@ -1,7 +1,7 @@
 API and Data Fetching
 =====================
 
-This chapter covers how zmNinjaNG interacts with ZoneMinder’s API and manages
+This chapter covers how zmNinjaNg interacts with ZoneMinder’s API and manages
 server data.
 
 API Architecture
@@ -330,7 +330,7 @@ always creates a fresh key (used on stream failure).
 Streaming Mechanics
 ~~~~~~~~~~~~~~~~~~~
 
-Video streaming in zmNinjaNG is more complex than simple API calls due to
+Video streaming in zmNinjaNg is more complex than simple API calls due to
 browser limitations and ZoneMinder's architecture.
 
 1. Cache Busting (``_t``)
@@ -433,7 +433,7 @@ Key Settings Explained
 ^^^^^^^^^^^^^^^^^^^^^^
 
 +---------------------+------------------------+---------------------------+
-| Setting             | zmNinjaNG Value        | What It Does              |
+| Setting             | zmNinjaNg Value        | What It Does              |
 +=====================+========================+===========================+
 | ``staleTime``       | ``0`` (default)        | How long data is “fresh”. |
 |                     |                        | At 0, data is immediately |
@@ -472,7 +472,7 @@ When Network Requests Happen
 | simultaneously          |                                              |
 +-------------------------+----------------------------------------------+
 | Window regains focus    | **No** - ``refetchOnWindowFocus: false``     |
-|                         | in zmNinjaNG                                 |
+|                         | in zmNinjaNg                                 |
 +-------------------------+----------------------------------------------+
 
 Example: Monitor Polling
@@ -605,7 +605,7 @@ Keep data fresh with automatic refetching:
 Complete Timer and Polling Reference
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-zmNinjaNG uses various timers and scheduled tasks across the application to
+zmNinjaNg uses various timers and scheduled tasks across the application to
 keep data fresh and maintain connections. Understanding these timers is
 crucial for debugging performance issues and optimizing resource usage.
 

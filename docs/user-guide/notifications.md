@@ -1,14 +1,14 @@
 # Notifications
 
-zmNinjaNG can notify you when ZoneMinder detects events. There are two notification modes, plus in-app toast notifications.
+zmNinjaNg can notify you when ZoneMinder detects events. There are two notification modes, plus in-app toast notifications.
 
 ## Notification Modes
 
-zmNinjaNG supports two notification modes. You choose the mode in **Notification Settings** based on your ZoneMinder setup.
+zmNinjaNg supports two notification modes. You choose the mode in **Notification Settings** based on your ZoneMinder setup.
 
 ### Event Server (ES) Mode
 
-Uses a WebSocket connection to the [ZoneMinder Event Notification Server](https://github.com/pliablepixels/zmeventnotification) (zmeventnotification). Choose this mode if you run ES.
+Uses a WebSocket connection to the [ZoneMinder Event Notification Server](https://github.com/pliablepixels/zmeventnotificationNg) (zmeventnotification). Choose this mode if you run ES.
 
 - **Desktop/Web**: WebSocket delivers events in real time while the app is open; toast notifications shown in-app.
 - **Mobile (iOS/Android)**: ES sends FCM push notifications for background delivery. When the app is in the foreground, events arrive via WebSocket and are shown as in-app toasts; FCM duplicates are suppressed automatically.
@@ -17,7 +17,7 @@ Uses a WebSocket connection to the [ZoneMinder Event Notification Server](https:
 
 Uses ZoneMinder's built-in Notifications REST API (no Event Server required). Choose this mode if you do not run ES but still want notifications. Requires ZoneMinder with the Notifications API (see ZM PR #4685).
 
-- **Desktop/Web**: zmNinjaNG polls the ZM events API at a configurable interval (10s–120s). Events appear as in-app toasts while the app is open.
+- **Desktop/Web**: zmNinjaNg polls the ZM events API at a configurable interval (10s–120s). Events appear as in-app toasts while the app is open.
 - **Mobile (iOS/Android)**: ZoneMinder sends FCM push notifications directly. Notifications work even when the app is closed or in the background. When the app is in the foreground, push events are shown as in-app toasts.
 
 ## Push Notifications (Mobile)
@@ -31,8 +31,8 @@ Push notifications require building the mobile app yourself with your own Fireba
 ### Requirements
 
 1. A Firebase project with Cloud Messaging enabled
-2. A custom-built zmNinjaNG mobile app with your Firebase credentials
-3. **ES mode**: The [Event Notification Server](https://github.com/pliablepixels/zmeventnotification) with FCM support
+2. A custom-built zmNinjaNg mobile app with your Firebase credentials
+3. **ES mode**: The [Event Notification Server](https://github.com/pliablepixels/zmeventnotificationNg) with FCM support
 4. **Direct mode**: ZoneMinder with the Notifications REST API
 
 ### Setup
@@ -41,7 +41,7 @@ Push notifications require building the mobile app yourself with your own Fireba
 2. Download the `google-services.json` (Android) or `GoogleService-Info.plist` (iOS)
 3. Place the file in the appropriate directory (see build guides)
 4. Build the app
-5. In zmNinjaNG **Notification Settings**, enable notifications and select your mode
+5. In zmNinjaNg **Notification Settings**, enable notifications and select your mode
 6. The app registers its FCM token with the appropriate backend (ES via WebSocket, or ZM via REST API)
 
 ### Per-Monitor Configuration
@@ -60,7 +60,7 @@ When using Direct mode, additional settings are available:
 
 ## Notification History
 
-zmNinjaNG keeps a history of the last 100 notifications received. Access it from the **View History** button on the Notification Settings page.
+zmNinjaNg keeps a history of the last 100 notifications received. Access it from the **View History** button on the Notification Settings page.
 
 Each history entry shows:
 

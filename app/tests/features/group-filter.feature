@@ -4,7 +4,7 @@ Feature: Monitor Group Filtering
   So that I can focus on specific camera groups
 
   Background:
-    Given I am logged into zmNinjaNG
+    Given I am logged into zmNinjaNg
 
   @all
   Scenario: Select group filters monitors on the Monitors page

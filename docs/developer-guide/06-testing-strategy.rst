@@ -1,13 +1,13 @@
 Testing Strategy
 ================
 
-This chapter covers zmNinjaNG's testing approach: unit tests, web E2E
+This chapter covers zmNinjaNg's testing approach: unit tests, web E2E
 tests, and cross-platform device tests.
 
 Testing Philosophy
 ------------------
 
-zmNinjaNG uses a three-tier testing strategy:
+zmNinjaNg uses a three-tier testing strategy:
 
 1. **Unit Tests**: Fast, isolated tests for logic and components
 2. **Web E2E Tests**: Full user journey tests in a browser against a real ZoneMinder server
@@ -329,7 +329,7 @@ Writing Gherkin Feature Files
    Feature: Monitor Management
 
      Background:
-       Given I am logged into zmNinjaNG
+       Given I am logged into zmNinjaNg
 
      @all @visual
      Scenario: View monitor list with live status

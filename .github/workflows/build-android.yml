@@ -9,7 +9,7 @@ on:
         type: string
   push:
     tags:
-      - 'zmNinjaNG-*'
+      - 'zmNinjaNg-*'
 
 permissions:
   contents: write
@@ -79,28 +79,28 @@ jobs:
       - name: Rename Android artifacts
         run: |
           VERSION="${{ github.event.inputs.version || github.ref_name }}"
-          VERSION="${VERSION#zmNinjaNG-}"
+          VERSION="${VERSION#zmNinjaNg-}"
           mkdir -p dist/android
-          cp app/android/app/build/outputs/apk/release/*.apk dist/android/zmNinjaNG-${VERSION}-android.apk
-          cp app/android/app/build/outputs/bundle/release/*.aab dist/android/zmNinjaNG-${VERSION}-android.aab
+          cp app/android/app/build/outputs/apk/release/*.apk dist/android/zmNinjaNg-${VERSION}-android.apk
+          cp app/android/app/build/outputs/bundle/release/*.aab dist/android/zmNinjaNg-${VERSION}-android.aab
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: zmNinjaNG-android-apk-${{ github.event.inputs.version || github.ref_name }}
+          name: zmNinjaNg-android-apk-${{ github.event.inputs.version || github.ref_name }}
           path: dist/android/*.apk
           retention-days: 30
 
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
         with:
-          name: zmNinjaNG-android-aab-${{ github.event.inputs.version || github.ref_name }}
+          name: zmNinjaNg-android-aab-${{ github.event.inputs.version || github.ref_name }}
           path: dist/android/*.aab
           retention-days: 30
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/zmNinjaNG-')
+        if: startsWith(github.ref, 'refs/tags/zmNinjaNg-')
         with:
           files: |
             dist/android/*.apk

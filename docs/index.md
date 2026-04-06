@@ -1,20 +1,20 @@
-# zmNinjaNG Documentation
+# zmNinjaNg Documentation
 
 ```{image} _static/img/logo.png
-:alt: zmNinjaNG Logo
+:alt: zmNinjaNg Logo
 :width: 150px
 :align: center
 ```
 
-**zmNinjaNG** is a modern, cross-platform client for [ZoneMinder](https://zoneminder.com/), the open-source video surveillance system. It is a ground-up rewrite of [zmNinja](https://zmninja.zoneminder.com/) using React, TypeScript, and Capacitor.
+**zmNinjaNg** is a modern, cross-platform client for [ZoneMinder](https://zoneminder.com/), the open-source video surveillance system. It is a ground-up rewrite of [zmNinja](https://zmninja.zoneminder.com/) using React, TypeScript, and Capacitor.
 
-zmNinjaNG runs on **Android**, **iOS**, **Windows**, **macOS**, **Linux**, and the **web** from a single codebase.
+zmNinjaNg runs on **Android**, **iOS**, **Windows**, **macOS**, **Linux**, and the **web** from a single codebase.
 
 ---
 
 ## User Guide
 
-Everything you need to install, configure, and use zmNinjaNG day-to-day.
+Everything you need to install, configure, and use zmNinjaNg day-to-day.
 
 ```{toctree}
 :maxdepth: 2
@@ -25,7 +25,7 @@ user-guide/index
 
 ## Developer Guide
 
-A 12-chapter guide covering React fundamentals, the zmNinjaNG architecture, testing, and how to contribute. Written for experienced programmers who may be new to React.
+A 12-chapter guide covering React fundamentals, the zmNinjaNg architecture, testing, and how to contribute. Written for experienced programmers who may be new to React.
 
 ```{toctree}
 :maxdepth: 2
@@ -47,8 +47,8 @@ building/index
 
 ## Links
 
-- [GitHub Repository](https://github.com/pliablepixels/zmNinjaNG)
-- [Releases & Downloads](https://github.com/pliablepixels/zmNinjaNG/releases)
-- [Issue Tracker](https://github.com/pliablepixels/zmNinjaNG/issues)
+- [GitHub Repository](https://github.com/pliablepixels/zmNinjaNg)
+- [Releases & Downloads](https://github.com/pliablepixels/zmNinjaNg/releases)
+- [Issue Tracker](https://github.com/pliablepixels/zmNinjaNg/issues)
 - [ZoneMinder](https://zoneminder.com/)
 - [Demo Video](https://youtu.be/ces_2ap-htc)

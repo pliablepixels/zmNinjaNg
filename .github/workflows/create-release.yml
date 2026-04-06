@@ -3,7 +3,7 @@ name: Create Release
 on:
   push:
     tags:
-      - 'zmNinjaNG-*'
+      - 'zmNinjaNg-*'
 
 permissions:
   contents: write

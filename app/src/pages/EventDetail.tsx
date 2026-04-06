@@ -136,7 +136,7 @@ export default function EventDetail() {
     document.title = monitorName
       ? `${monitorName} – Event ${id}`
       : `Event ${id}`;
-    return () => { document.title = 'zmNinjaNG'; };
+    return () => { document.title = 'zmNinjaNg'; };
   }, [id, monitorData]);
 
   // Pinch-to-zoom and pan for event video/image

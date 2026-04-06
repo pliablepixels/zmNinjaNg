@@ -6,7 +6,7 @@
 
 ## Goal
 
-Make zmNinjaNG fully usable on Android TV and Fire Stick devices with a D-pad remote. Same APK for phone, tablet, and TV. No degradation to existing platforms.
+Make zmNinjaNg fully usable on Android TV and Fire Stick devices with a D-pad remote. Same APK for phone, tablet, and TV. No degradation to existing platforms.
 
 ## TV Detection & Mode Toggle
 

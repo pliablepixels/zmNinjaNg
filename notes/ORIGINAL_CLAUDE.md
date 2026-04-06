@@ -1,6 +1,6 @@
 About the app
 --------------
-- zmNinjaNG is a next generation open source multi-platform client (Desktop and Mobile) for ZomeMinder NVR system
+- zmNinjaNg is a next generation open source multi-platform client (Desktop and Mobile) for ZomeMinder NVR system
 
 Your job
 ----------

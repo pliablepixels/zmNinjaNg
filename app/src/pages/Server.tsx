@@ -422,7 +422,7 @@ export default function Server() {
                         )}
                         {srv.zmeventnotification !== undefined && (
                           <Badge variant={srv.zmeventnotification ? 'default' : 'secondary'} className="text-xs">
-                            zmeventnotification
+                            zmeventnotificationNg
                           </Badge>
                         )}
                       </div>

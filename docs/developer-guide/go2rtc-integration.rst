@@ -4,7 +4,7 @@ Go2RTC WebRTC Streaming Integration
 Overview
 --------
 
-zmNinjaNG integrates `Go2RTC <https://github.com/AlexxIT/go2rtc>`__ for
+zmNinjaNg integrates `Go2RTC <https://github.com/AlexxIT/go2rtc>`__ for
 low-latency WebRTC video streaming as a modern alternative to
 traditional MJPEG (ZMS) streaming. This integration provides:
 
@@ -545,7 +545,7 @@ Example ``/etc/go2rtc.yaml``:
      candidates:
        - stun:8555  # Or public STUN server
 
-zmNinjaNG Profile Settings
+zmNinjaNg Profile Settings
 ~~~~~~~~~~~~~~~~~~~~~
 
 Users can configure streaming method in Settings → Profiles:
@@ -565,14 +565,14 @@ Authentication
 ~~~~~~~~~~~~~~
 
 - Go2RTC supports token-based authentication via query parameter
-- zmNinjaNG passes ``accessToken`` from profile to Go2RTC URLs
+- zmNinjaNg passes ``accessToken`` from profile to Go2RTC URLs
 - WebSocket connections include token:
   ``ws://server:1984/api/ws?src=stream&token=xyz``
 
 CORS
 ~~~~
 
-- Go2RTC must allow zmNinjaNG origin for WebSocket connections
+- Go2RTC must allow zmNinjaNg origin for WebSocket connections
 - Canvas-based snapshot capture may be blocked by CORS
 - Use ``wrapWithImageProxyIfNeeded()`` for cross-origin snapshots
 
@@ -580,7 +580,7 @@ HTTPS
 ~~~~~
 
 - WebRTC requires secure context (HTTPS) or localhost
-- Production deployments should use HTTPS for both zmNinjaNG and Go2RTC
+- Production deployments should use HTTPS for both zmNinjaNg and Go2RTC
 - Mixed content (HTTPS → HTTP) will fail for WebRTC
 
 References

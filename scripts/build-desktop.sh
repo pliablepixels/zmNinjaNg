@@ -12,7 +12,7 @@ cd "$APP_DIR"
 
 # Read version from tauri.conf.json
 VERSION=$(grep '"version"' src-tauri/tauri.conf.json | head -1 | sed 's/.*: *"\(.*\)".*/\1/')
-PRODUCT="zmNinjaNG"
+PRODUCT="zmNinjaNg"
 # Match Tauri's naming convention (aarch64 instead of arm64)
 ARCH=$(uname -m)
 [ "$ARCH" = "arm64" ] && ARCH="aarch64"

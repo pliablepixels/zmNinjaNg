@@ -45,8 +45,8 @@
     "server": "Server"
   },
   "app": {
-    "name": "zmNinjaNG",
-    "logo_alt": "zmNinjaNG Logo",
+    "name": "zmNinjaNg",
+    "logo_alt": "zmNinjaNg Logo",
     "navigation_menu": "Navigation menu",
     "navigation_menu_desc": "Primary application navigation."
   },
@@ -771,7 +771,7 @@
     "credentials_incomplete": "Please enter both username and password, or leave both empty."
   },
   "setup": {
-    "welcome": "Welcome to zmNinjaNG",
+    "welcome": "Welcome to zmNinjaNg",
     "subtitle": "Initial Configuration",
     "server_url": "Server URL",
     "server_url_hint": "e.g., https://demo.zoneminder.com",

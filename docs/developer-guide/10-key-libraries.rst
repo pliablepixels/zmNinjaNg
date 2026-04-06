@@ -2,7 +2,7 @@ Key Libraries
 =============
 
 This chapter documents the critical third-party libraries that power
-zmNinjaNG and how they are used.
+zmNinjaNg and how they are used.
 
 UI and Visualization
 --------------------
@@ -164,7 +164,7 @@ monitor control APIs.
 zmninja-ng-constants.ts
 ~~~~~~~~~~~~~~~~~
 
-**Application Configuration** - zmNinjaNG-specific settings and tuning
+**Application Configuration** - zmNinjaNg-specific settings and tuning
 parameters.
 
 .. code:: tsx

@@ -4,7 +4,7 @@ Feature: Dashboard Customization
   So that I can see the information I care about at a glance
 
   Background:
-    Given I am logged into zmNinjaNG
+    Given I am logged into zmNinjaNg
     When I navigate to the "Dashboard" page
 
   @all

@@ -44,7 +44,7 @@ Settings that control live camera feeds in the Monitor Detail view:
 
 ### Streaming Protocols
 
-When Go2RTC is enabled, zmNinjaNG tries WebRTC, MSE, and HLS in parallel. The first protocol to produce video wins and is used for the stream. If all Go2RTC protocols fail, the app falls back to MJPEG via ZoneMinder's ZMS. The protocol label (when enabled) shows which protocol is active on each feed.
+When Go2RTC is enabled, zmNinjaNg tries WebRTC, MSE, and HLS in parallel. The first protocol to produce video wins and is used for the stream. If all Go2RTC protocols fail, the app falls back to MJPEG via ZoneMinder's ZMS. The protocol label (when enabled) shows which protocol is active on each feed.
 
 You can configure which protocols to try in the Go2RTC protocol settings.
 
@@ -62,7 +62,7 @@ Settings that affect event video playback:
 
 ## Notification Settings
 
-Configure how zmNinjaNG handles event notifications. See {doc}`notifications` for details.
+Configure how zmNinjaNg handles event notifications. See {doc}`notifications` for details.
 
 ## Advanced
 
@@ -88,7 +88,7 @@ Manage the PIN used to lock and unlock kiosk mode. See {doc}`kiosk` for full det
 
 ## Multi-Server
 
-zmNinjaNG automatically detects multi-server ZoneMinder setups via the `/servers.json` API endpoint. Single-server setups are unaffected — no behavior change occurs.
+zmNinjaNg automatically detects multi-server ZoneMinder setups via the `/servers.json` API endpoint. Single-server setups are unaffected — no behavior change occurs.
 
 In a multi-server setup:
 

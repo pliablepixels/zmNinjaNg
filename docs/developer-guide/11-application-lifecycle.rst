@@ -3,7 +3,7 @@ Application Lifecycle
 
 This chapter bridges the gap between individual concepts by explaining
 *how* the application runs from start to finish. It is the “Runtime Map”
-of zmNinjaNG.
+of zmNinjaNg.
 
 1. The Entry Point (``index.html`` → ``main.tsx``)
 --------------------------------------------------
@@ -107,7 +107,7 @@ Once bootstrap completes (or is cancelled):
 3. The Authentication Flow
 --------------------------
 
-zmNinjaNG handles authentication differently than a typical SaaS app because
+zmNinjaNg handles authentication differently than a typical SaaS app because
 it connects to potentially *any* ZoneMinder server, each with different
 auth requirements.
 

@@ -4,7 +4,7 @@ Feature: Event Browsing and Management
   So that I can review incidents and save footage
 
   Background:
-    Given I am logged into zmNinjaNG
+    Given I am logged into zmNinjaNg
     When I navigate to the "Events" page
 
   @all

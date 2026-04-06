@@ -4,7 +4,7 @@ Feature: Montage Live Grid
   So that I can view multiple camera feeds simultaneously
 
   Background:
-    Given I am logged into zmNinjaNG
+    Given I am logged into zmNinjaNg
     When I navigate to the "Montage" page
 
   @all

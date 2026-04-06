@@ -1,4 +1,4 @@
-# zmNinjaNG Documentation - Sphinx Configuration
+# zmNinjaNg Documentation - Sphinx Configuration
 
 import json
 import os
@@ -11,7 +11,7 @@ _pkg_path = os.path.join(os.path.dirname(__file__), '..', 'app', 'package.json')
 with open(_pkg_path) as f:
     release = json.load(f)['version']
 
-project = 'zmNinjaNG'
+project = 'zmNinjaNg'
 copyright = '2025-2026, pliablepixels'
 author = 'pliablepixels'
 
@@ -72,7 +72,7 @@ html_js_files = ['js/collapse-nav.js']
 html_context = {
     'display_github': True,
     'github_user': 'pliablepixels',
-    'github_repo': 'zmNinjaNG',
+    'github_repo': 'zmNinjaNg',
     'github_version': 'main',
     'conf_py_path': '/docs/',
 }

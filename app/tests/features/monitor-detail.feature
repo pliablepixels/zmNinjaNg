@@ -4,7 +4,7 @@ Feature: Monitor Detail Page
   So that I can manage cameras and capture snapshots
 
   Background:
-    Given I am logged into zmNinjaNG
+    Given I am logged into zmNinjaNg
     When I navigate to the "Monitors" page
     And I click into the first monitor detail page
 

@@ -4,7 +4,7 @@ Feature: Monitor List and Navigation
   So that I can see camera status and navigate to detail views
 
   Background:
-    Given I am logged into zmNinjaNG
+    Given I am logged into zmNinjaNg
     When I navigate to the "Monitors" page
 
   @all

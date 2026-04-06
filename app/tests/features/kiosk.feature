@@ -4,7 +4,7 @@ Feature: Kiosk Mode
   So that unauthorized people cannot navigate away from the current view
 
   Background:
-    Given I am logged into zmNinjaNG
+    Given I am logged into zmNinjaNg
     When I navigate to the "Monitors" page
 
   @all

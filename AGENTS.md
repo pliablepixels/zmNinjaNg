@@ -147,7 +147,7 @@ Ask: "If I were a human QA tester with this feature on 5 devices, what would I c
 ```gherkin
 @all @visual
 Scenario: Create and verify a new widget
-  Given I am logged into zmNinjaNG
+  Given I am logged into zmNinjaNg
   When I navigate to the "Dashboard" page
   And I open the Add Widget dialog
   And I select widget type "My New Widget"

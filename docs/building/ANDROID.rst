@@ -1,7 +1,7 @@
 Android Build Guide
 ===================
 
-This guide walks you through setting up and building the zmNinjaNG Android
+This guide walks you through setting up and building the zmNinjaNg Android
 app from scratch.
 
 Prerequisites
@@ -71,8 +71,8 @@ Project Setup
 
 .. code:: bash
 
-   git clone https://github.com/pliablepixels/zmNinjaNG
-   cd zmNinjaNG/app
+   git clone https://github.com/pliablepixels/zmNinjaNg
+   cd zmNinjaNg/app
 
 2. Install Dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -93,14 +93,14 @@ Messaging (FCM):
 1. Go to `Firebase Console <https://console.firebase.google.com/>`__
 2. Click **Add project**
 3. Follow the setup wizard to create your project (call it anything, I
-   called mine zmNinjaNG)
+   called mine zmNinjaNg)
 
 2. Add Android App to Firebase
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 1. In Firebase Console, click **Add app** and select **Android**
 2. Enter the package name: ``com.zoneminder.zmNinjaNG``
-3. (Optional) Enter an app nickname: “zmNinjaNG Android”
+3. (Optional) Enter an app nickname: “zmNinjaNg Android”
 4. Click **Register app**
 
 3. Download Configuration File
@@ -112,7 +112,7 @@ Messaging (FCM):
 
    ::
 
-      zmNinjaNG/app/android/app/google-services.json
+      zmNinjaNg/app/android/app/google-services.json
 
 4. Verify Firebase Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -127,7 +127,7 @@ notifications.
 5. Configure ZoneMinder Event Notification Server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-zmNinjaNG works out of the box with zmES web socket notifications. If you
+zmNinjaNg works out of the box with zmES web socket notifications. If you
 want push notification support, the ZoneMinder event notification server
 (``zmeventnotification.pl``) needs to be configured to work with your
 Firebase project. You will need to use a modified version that I
@@ -229,7 +229,7 @@ Output location:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. Go to `Google Play Console <https://play.google.com/console>`__
-2. Select **zmNinjaNG**
+2. Select **zmNinjaNg**
 3. Go to **Testing > Internal testing** (or **Production**) and click
    **Create new release**
 4. Upload the ``.aab`` file

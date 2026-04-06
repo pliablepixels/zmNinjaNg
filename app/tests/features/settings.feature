@@ -4,7 +4,7 @@ Feature: Application Settings
   So that I can customize the app to my preferences
 
   Background:
-    Given I am logged into zmNinjaNG
+    Given I am logged into zmNinjaNg
 
   @all
   Scenario: Toggle theme and verify background color changes

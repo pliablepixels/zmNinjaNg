@@ -1,7 +1,7 @@
-Contributing to zmNinjaNG
+Contributing to zmNinjaNg
 ====================
 
-This chapter covers the workflow for contributing code to the zmNinjaNG
+This chapter covers the workflow for contributing code to the zmNinjaNg
 project.
 
 Before You Start
@@ -18,8 +18,8 @@ Before You Start
    .. code:: bash
 
       # Clone the repository
-      git clone https://github.com/your-org/zmNinjaNG.git
-      cd zmNinjaNG/app
+      git clone https://github.com/your-org/zmNinjaNg.git
+      cd zmNinjaNg/app
 
       # Install dependencies
       npm install
@@ -547,7 +547,7 @@ Naming Conventions
 Mobile Development
 ------------------
 
-zmNinjaNG is a cross-platform app built with
+zmNinjaNg is a cross-platform app built with
 `Capacitor <https://capacitorjs.com/>`__.
 
 Prerequisites
@@ -630,4 +630,4 @@ Recognition
 Contributors will be recognized in: - CONTRIBUTORS.md file - Release
 notes for features/fixes - Git commit history
 
-Thank you for contributing to zmNinjaNG!
+Thank you for contributing to zmNinjaNg!

@@ -6,7 +6,7 @@ import { log } from '../../src/lib/logger';
 const { Given, When, Then } = createBdd();
 
 // Authentication
-Given('I am logged into zmNinjaNG', async ({ page }) => {
+Given('I am logged into zmNinjaNg', async ({ page }) => {
   // Navigate to application
   await page.goto('/', { waitUntil: 'domcontentloaded' });
 
@@ -17,7 +17,7 @@ Given('I am logged into zmNinjaNG', async ({ page }) => {
 
   // Wait for either setup page or authenticated page to load (content-based, not URL-based)
   await Promise.race([
-    page.waitForSelector('text=/Welcome to zmNinjaNG/i', { timeout: testConfig.timeouts.transition }),
+    page.waitForSelector('text=/Welcome to zmNinjaNg/i', { timeout: testConfig.timeouts.transition }),
     page.waitForSelector('[data-testid="nav-item-dashboard"]', { timeout: testConfig.timeouts.transition })
   ]);
 

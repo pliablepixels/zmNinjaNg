@@ -4,7 +4,7 @@
  * Implements WebSocket connection to ZoneMinder event notification server (zmeventnotification.pl)
  * Handles real-time event notifications for both desktop and mobile (foreground)
  *
- * Protocol based on: https://github.com/ZoneMinder/zmeventnotification
+ * Protocol based on: https://github.com/ZoneMinder/zmeventnotificationNg
  */
 
 import { log, LogLevel } from '../lib/logger';

@@ -7,7 +7,7 @@ logic that connects them.
 Routing and Navigation
 ----------------------
 
-zmNinjaNG uses **React Router** (``react-router-dom``) for client-side
+zmNinjaNg uses **React Router** (``react-router-dom``) for client-side
 routing. The router integration is handled in ``src/App.tsx``.
 
 Route Structure
@@ -65,7 +65,7 @@ To navigate imperatively from code, use the ``useNavigate`` hook:
 Page Structure
 --------------
 
-All pages in zmNinjaNG follow the Ionic page pattern and are located in
+All pages in zmNinjaNg follow the Ionic page pattern and are located in
 ``src/pages/``:
 
 ::
@@ -700,7 +700,7 @@ memory) and ZoneMinder server logs (fetched via API).
 
 **Key Features**:
 
-- Toggle between App (zmNinjaNG) and Server logs
+- Toggle between App (zmNinjaNg) and Server logs
 - Filter by log level (DEBUG, INFO, WARN, ERROR)
 - Filter by component (e.g., specific monitor or service)
 - Export logs to file or share (mobile)

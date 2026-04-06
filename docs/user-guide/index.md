@@ -1,6 +1,6 @@
 # User Guide
 
-Everything you need to install, configure, and use zmNinjaNG day-to-day.
+Everything you need to install, configure, and use zmNinjaNg day-to-day.
 
 ```{toctree}
 :maxdepth: 2

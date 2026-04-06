@@ -2,7 +2,7 @@ Shared Services and Reusable Components
 =======================================
 
 This chapter documents all shared utilities, services, and reusable
-components in zmNinjaNG, including who uses them and how.
+components in zmNinjaNg, including who uses them and how.
 
 Table of Contents
 -----------------

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make zmNinjaNG fully usable on Android TV and Fire Stick with D-pad remote navigation, while preserving existing phone/tablet/web behavior.
+**Goal:** Make zmNinjaNg fully usable on Android TV and Fire Stick with D-pad remote navigation, while preserving existing phone/tablet/web behavior.
 
 **Architecture:** Hybrid approach — WebView spatial navigation handles standard screens, a custom `useTvKeyHandler` hook intercepts keys on complex screens (timeline, montage, event detail). TV mode auto-detected on TV devices, manually toggleable in settings. CSS scaling via root font size, no per-component layout changes.
 

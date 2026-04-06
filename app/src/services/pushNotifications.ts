@@ -20,7 +20,7 @@ import type { ZMEventServerConfig } from '../types/notifications';
 import { resolveProfileForNotification, requestProfileSwitch } from '../lib/notification-profile';
 
 /**
- * Data payload sent by zmeventnotification server via FCM.
+ * Data payload sent by zmeventnotificationNg server via FCM.
  * ES sends mid (monitor ID), eid (event ID), and since ES 7.x+
  * also monitorName and cause as structured fields.
  */

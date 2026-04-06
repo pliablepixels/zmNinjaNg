@@ -1,7 +1,7 @@
 /**
- * zmNinjaNG Application Constants
+ * zmNinjaNg Application Constants
  *
- * Centralized configuration values for the zmNinjaNG application.
+ * Centralized configuration values for the zmNinjaNg application.
  * Many values are derived from the original zmNinja application
  * to ensure consistent behavior and performance.
  *
@@ -13,7 +13,7 @@
  * ZoneMinder Integration Constants
  *
  * Configuration values for interacting with ZoneMinder servers.
- * These are zmNinjaNG-specific settings, not ZM protocol values.
+ * These are zmNinjaNg-specific settings, not ZM protocol values.
  */
 export const ZM_INTEGRATION = {
   // HTTP timeouts for ZM API calls

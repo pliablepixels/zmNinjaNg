@@ -30,7 +30,7 @@ Given('I am logged in and on the monitors page', async ({ page }) => {
 
   // Wait for either setup page or authenticated page
   await Promise.race([
-    page.waitForSelector('text=/Welcome to zmNinjaNG/i', { timeout: testConfig.timeouts.transition }),
+    page.waitForSelector('text=/Welcome to zmNinjaNg/i', { timeout: testConfig.timeouts.transition }),
     page.waitForSelector('[data-testid="nav-item-dashboard"]', { timeout: testConfig.timeouts.transition })
   ]);
 

@@ -1,7 +1,7 @@
 /**
  * Mock ZoneMinder Event Notification Server
  *
- * Simulates the zmeventnotification.pl WebSocket server for testing
+ * Simulates the zmeventnotificationNg WebSocket server for testing
  * Run with: node mock-notification-server.js
  */
 

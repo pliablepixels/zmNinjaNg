@@ -7,14 +7,14 @@ assignees: ''
 
 ---
 
-**NOTE**: Please read the [self support](https://github.com/pliablepixels/zmNinjaNG/blob/main/README.md#agentic-ai-you-and-me) guidelines. You are free to post issues, but there is no guarantee I will respond. 
+**NOTE**: Please read the [self support](https://github.com/pliablepixels/zmNinjaNg/blob/main/README.md#agentic-ai-you-and-me) guidelines. You are free to post issues, but there is no guarantee I will respond. 
 
 **NOTE**: If you are using self-signed certificates, enable the toggle in Settings > Connection (mobile) or add your CA to the system trust store (desktop). Using proper certificates (e.g. LetsEncrypt) is recommended.
 
-**zmNinjaNG version**
+**zmNinjaNg version**
 You will find the version in the logs menu option
 
-**zmNinjaNG platform**
+**zmNinjaNg platform**
 OS (example iOS, Android, Linux, MacOS, Windows)
 
 **ZM/ES/zm_detect versions (as applicable)**
