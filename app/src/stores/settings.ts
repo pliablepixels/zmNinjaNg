@@ -57,6 +57,7 @@ export interface ProfileSettings {
     endDateTime: string;
     favoritesOnly: boolean;
     onlyDetectedObjects: boolean;
+    activeQuickRange: number | null;
   };
   disableLogRedaction: boolean;
   lastRoute: string; // Last visited route for this profile
@@ -86,6 +87,7 @@ export interface ProfileSettings {
     startDateTime: string;
     endDateTime: string;
     onlyDetectedObjects: boolean;
+    activeQuickRange: number | null;
   };
   // Date/time display format
   dateFormat: DateFormatPreset;
@@ -175,6 +177,7 @@ export const DEFAULT_SETTINGS: ProfileSettings = {
     endDateTime: '',
     favoritesOnly: false,
     onlyDetectedObjects: false,
+    activeQuickRange: null,
   },
   disableLogRedaction: false,
   lastRoute: '/monitors',
@@ -199,6 +202,7 @@ export const DEFAULT_SETTINGS: ProfileSettings = {
     startDateTime: '',
     endDateTime: '',
     onlyDetectedObjects: false,
+    activeQuickRange: null,
   },
   dateFormat: 'MMM d',
   timeFormat: '12h',

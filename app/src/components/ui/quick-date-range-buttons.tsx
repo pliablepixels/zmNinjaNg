@@ -43,6 +43,11 @@ export function QuickDateRangeButtons({
 
   const ranges = [
     {
+      hours: 0,
+      label: t('events.today_short'),
+      fullLabel: t('events.today')
+    },
+    {
       hours: 4,
       label: t('events.past_4_hours_short'),
       fullLabel: t('events.past_4_hours')
@@ -86,7 +91,14 @@ export function QuickDateRangeButtons({
 
   const handleRangeClick = (hours: number) => {
     const end = new Date();
-    const start = new Date(end.getTime() - hours * 60 * 60 * 1000);
+    let start: Date;
+    if (hours === 0) {
+      // "Today" — midnight local time to now
+      start = new Date(end);
+      start.setHours(0, 0, 0, 0);
+    } else {
+      start = new Date(end.getTime() - hours * 60 * 60 * 1000);
+    }
     onRangeSelect({ start, end, hours });
   };
 

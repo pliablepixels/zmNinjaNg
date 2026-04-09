@@ -38,8 +38,8 @@ export default function Timeline() {
   const location = useLocation();
   const { t } = useTranslation();
   const {
-    selectedMonitorIds, startDateInput, endDateInput, onlyDetectedObjects,
-    setSelectedMonitorIds, setStartDateInput, setEndDateInput, setOnlyDetectedObjects,
+    selectedMonitorIds, startDateInput, endDateInput, onlyDetectedObjects, activeQuickRange,
+    setSelectedMonitorIds, setStartDateInput, setEndDateInput, setOnlyDetectedObjects, setActiveQuickRange,
     clearFilters, activeFilterCount,
   } = useTimelineFilters();
 
@@ -53,9 +53,6 @@ export default function Timeline() {
 
   // Detection filter state
   const [detectionCategory, setDetectionCategory] = useState<DetectionCategory>('all');
-
-  // Track which quick range button is active
-  const [activeQuickRange, setActiveQuickRange] = useState<number | null>(null);
 
   // Brush-to-zoom mode toggle
   const [brushMode, setBrushMode] = useState(false);
@@ -427,9 +424,8 @@ export default function Timeline() {
               />
             </div>
             {activeFilterCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={() => { clearFilters(); setActiveQuickRange(null); }} className="text-muted-foreground" data-testid="timeline-clear-filters">
-                <X className="h-4 w-4 mr-1" />
-                {t('common.clear')}
+              <Button variant="ghost" size="icon" onClick={() => { clearFilters(); setActiveQuickRange(null); }} className="text-muted-foreground h-7 w-7" title={t('common.clear')} data-testid="timeline-clear-filters">
+                <X className="h-4 w-4" />
               </Button>
             )}
           </div>

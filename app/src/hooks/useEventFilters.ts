@@ -24,12 +24,14 @@ interface UseEventFiltersReturn {
   endDateInput: string;
   favoritesOnly: boolean;
   onlyDetectedObjects: boolean;
+  activeQuickRange: number | null;
   setSelectedMonitorIds: (ids: string[]) => void;
   setSelectedTagIds: (ids: string[]) => void;
   setStartDateInput: (date: string) => void;
   setEndDateInput: (date: string) => void;
   setFavoritesOnly: (enabled: boolean) => void;
   setOnlyDetectedObjects: (enabled: boolean) => void;
+  setActiveQuickRange: (hours: number | null) => void;
   applyFilters: () => void;
   clearFilters: () => void;
   toggleMonitorSelection: (monitorId: string) => void;
@@ -75,6 +77,7 @@ export function useEventFilters(): UseEventFiltersReturn {
   const [favoritesOnly, _setFavoritesOnly] = useState(false);
   const [selectedTagIds, _setTagIds] = useState<string[]>([]);
   const [onlyDetectedObjects, _setOnlyDetected] = useState(false);
+  const [activeQuickRange, _setActiveQuickRange] = useState<number | null>(null);
 
   // Wrapped setters that also save to settings store immediately.
   // No effects needed — saves happen synchronously on user action.
@@ -111,6 +114,11 @@ export function useEventFilters(): UseEventFiltersReturn {
     if (profileIdRef.current) saveFilterField(profileIdRef.current, 'onlyDetectedObjects', enabled);
   }, []);
 
+  const setActiveQuickRange = useCallback((hours: number | null) => {
+    _setActiveQuickRange(hours);
+    if (profileIdRef.current) saveFilterField(profileIdRef.current, 'activeQuickRange', hours);
+  }, []);
+
   // ----- Restore filters from settings on mount / profile change -----
   // Does NOT trigger auto-save because it uses the raw _set* functions.
   const prevSettingsRef = useRef<string>('');
@@ -139,6 +147,7 @@ export function useEventFilters(): UseEventFiltersReturn {
     _setEndDate(saved.endDateTime);
     _setFavoritesOnly(saved.favoritesOnly);
     _setOnlyDetected(saved.onlyDetectedObjects);
+    _setActiveQuickRange(saved.activeQuickRange ?? null);
   }, [currentProfile?.id, settings.eventsPageFilters, searchParams]);
 
   // ----- Handle deep-link URL params -----
@@ -242,6 +251,7 @@ export function useEventFilters(): UseEventFiltersReturn {
     setEndDateInput('');
     setFavoritesOnly(false);
     setOnlyDetectedObjects(false);
+    setActiveQuickRange(null);
 
     const newParams = new URLSearchParams(searchParams);
     newParams.set('sort', 'StartDateTime');
@@ -288,8 +298,8 @@ export function useEventFilters(): UseEventFiltersReturn {
   );
 
   return {
-    filters, selectedMonitorIds, selectedTagIds, startDateInput, endDateInput, favoritesOnly, onlyDetectedObjects,
-    setSelectedMonitorIds, setSelectedTagIds, setStartDateInput, setEndDateInput, setFavoritesOnly, setOnlyDetectedObjects,
+    filters, selectedMonitorIds, selectedTagIds, startDateInput, endDateInput, favoritesOnly, onlyDetectedObjects, activeQuickRange,
+    setSelectedMonitorIds, setSelectedTagIds, setStartDateInput, setEndDateInput, setFavoritesOnly, setOnlyDetectedObjects, setActiveQuickRange,
     applyFilters, clearFilters, toggleMonitorSelection, toggleTagSelection, activeFilterCount,
   };
 }

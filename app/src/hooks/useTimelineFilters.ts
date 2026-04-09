@@ -15,10 +15,12 @@ interface UseTimelineFiltersReturn {
   startDateInput: string;
   endDateInput: string;
   onlyDetectedObjects: boolean;
+  activeQuickRange: number | null;
   setSelectedMonitorIds: (ids: string[]) => void;
   setStartDateInput: (date: string) => void;
   setEndDateInput: (date: string) => void;
   setOnlyDetectedObjects: (enabled: boolean) => void;
+  setActiveQuickRange: (hours: number | null) => void;
   clearFilters: () => void;
   activeFilterCount: number;
 }
@@ -38,6 +40,7 @@ export function useTimelineFilters(): UseTimelineFiltersReturn {
   const [startDateInput, _setStartDate] = useState('');
   const [endDateInput, _setEndDate] = useState('');
   const [onlyDetectedObjects, _setOnlyDetected] = useState(false);
+  const [activeQuickRange, _setActiveQuickRange] = useState<number | null>(null);
 
   const profileIdRef = useRef<string | null>(null);
   profileIdRef.current = currentProfile?.id ?? null;
@@ -62,6 +65,11 @@ export function useTimelineFilters(): UseTimelineFiltersReturn {
     if (profileIdRef.current) saveFilterField(profileIdRef.current, 'onlyDetectedObjects', enabled);
   }, []);
 
+  const setActiveQuickRange = useCallback((hours: number | null) => {
+    _setActiveQuickRange(hours);
+    if (profileIdRef.current) saveFilterField(profileIdRef.current, 'activeQuickRange', hours);
+  }, []);
+
   // Restore from persisted settings on mount / profile change
   const prevSettingsRef = useRef<string>('');
   useEffect(() => {
@@ -75,6 +83,7 @@ export function useTimelineFilters(): UseTimelineFiltersReturn {
     _setStartDate(saved.startDateTime);
     _setEndDate(saved.endDateTime);
     _setOnlyDetected(saved.onlyDetectedObjects);
+    _setActiveQuickRange(saved.activeQuickRange ?? null);
   }, [currentProfile?.id, settings.timelinePageFilters]);
 
   const clearFilters = useCallback(() => {
@@ -82,7 +91,8 @@ export function useTimelineFilters(): UseTimelineFiltersReturn {
     setStartDateInput('');
     setEndDateInput('');
     setOnlyDetectedObjects(false);
-  }, [setSelectedMonitorIds, setStartDateInput, setEndDateInput, setOnlyDetectedObjects]);
+    setActiveQuickRange(null);
+  }, [setSelectedMonitorIds, setStartDateInput, setEndDateInput, setOnlyDetectedObjects, setActiveQuickRange]);
 
   const activeFilterCount =
     (selectedMonitorIds.length > 0 ? 1 : 0) +
@@ -91,8 +101,8 @@ export function useTimelineFilters(): UseTimelineFiltersReturn {
     (onlyDetectedObjects ? 1 : 0);
 
   return {
-    selectedMonitorIds, startDateInput, endDateInput, onlyDetectedObjects,
-    setSelectedMonitorIds, setStartDateInput, setEndDateInput, setOnlyDetectedObjects,
+    selectedMonitorIds, startDateInput, endDateInput, onlyDetectedObjects, activeQuickRange,
+    setSelectedMonitorIds, setStartDateInput, setEndDateInput, setOnlyDetectedObjects, setActiveQuickRange,
     clearFilters, activeFilterCount,
   };
 }

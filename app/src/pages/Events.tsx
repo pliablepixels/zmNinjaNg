@@ -23,7 +23,7 @@ import { useEventMontageGrid } from '../hooks/useEventMontageGrid';
 import { useEventTags, useEventTagMapping } from '../hooks/useEventTags';
 import { PullToRefreshIndicator } from '../components/ui/pull-to-refresh-indicator';
 import { Button } from '../components/ui/button';
-import { RefreshCw, Filter, AlertCircle, ArrowLeft, LayoutGrid, List, Clock } from 'lucide-react';
+import { RefreshCw, Filter, AlertCircle, ArrowLeft, LayoutGrid, List, Clock, X } from 'lucide-react';
 import { filterMonitorsByGroup } from '../lib/filters';
 import { useGroupFilter } from '../hooks/useGroupFilter';
 import { GroupFilterSelect } from '../components/filters/GroupFilterSelect';
@@ -33,6 +33,7 @@ import { EventMontageView } from '../components/events/EventMontageView';
 import { EventListView } from '../components/events/EventListView';
 import { EventMontageGridControls } from '../components/events/EventMontageGridControls';
 import { EventsFilterPopover } from '../components/events/EventsFilterPopover';
+import { QuickDateRangeButtons } from '../components/ui/quick-date-range-buttons';
 import { useTranslation } from 'react-i18next';
 import { formatForServer, formatLocalDateTime } from '../lib/time';
 import { EmptyState } from '../components/ui/empty-state';
@@ -90,6 +91,8 @@ export default function Events() {
     setFavoritesOnly,
     onlyDetectedObjects,
     setOnlyDetectedObjects,
+    activeQuickRange,
+    setActiveQuickRange,
     applyFilters,
     clearFilters,
     activeFilterCount,
@@ -436,6 +439,34 @@ export default function Events() {
           {viewMode === 'montage' && gridControls.isScreenTooSmall && (
             <p className="text-xs text-destructive">{t('eventMontage.screen_too_small')}</p>
           )}
+
+          {/* Quick Date Range Buttons */}
+          <div className="flex items-center gap-3">
+            <QuickDateRangeButtons
+              activeHours={activeQuickRange}
+              onRangeSelect={({ start, end, hours }) => {
+                setStartDateInput(formatLocalDateTime(start));
+                setEndDateInput(formatLocalDateTime(end));
+                setActiveQuickRange(hours);
+                applyFilters();
+              }}
+            />
+            {activeQuickRange !== null && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground h-7 w-7"
+                onClick={() => {
+                  clearFilters();
+                  setActiveQuickRange(null);
+                }}
+                title={t('common.clear')}
+                data-testid="events-clear-quick-range"
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Event Heatmap */}
