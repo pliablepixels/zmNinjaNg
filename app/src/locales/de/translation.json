@@ -445,6 +445,8 @@
     "pip_needs_cors": "Bild-in-Bild erfordert CORS-Header auf dem ZoneMinder-Server",
     "load_error": "Fehler beim Laden des Monitors",
     "maximize": "Maximieren",
+    "mute": "Stumm",
+    "unmute": "Ton an",
     "pip": "Bild-in-Bild",
     "pip_failed": "Bild-in-Bild konnte nicht gestartet werden",
     "ptz_failed": "PTZ-Steuerung fehlgeschlagen",

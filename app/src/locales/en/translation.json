@@ -445,6 +445,8 @@
     "pip_needs_cors": "PiP requires CORS headers on the server",
     "load_error": "Error loading monitor",
     "maximize": "Maximize",
+    "mute": "Mute",
+    "unmute": "Unmute",
     "pip": "Picture in Picture",
     "pip_failed": "PiP failed",
     "ptz_failed": "PTZ control failed",

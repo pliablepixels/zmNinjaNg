@@ -445,6 +445,8 @@
     "pip_needs_cors": "L'image dans l'image nécessite des en-têtes CORS sur le serveur ZoneMinder",
     "load_error": "Erreur de chargement du moniteur",
     "maximize": "Maximiser",
+    "mute": "Muet",
+    "unmute": "Son",
     "pip": "Image dans l'image",
     "pip_failed": "Échec de l'ouverture de l'image dans l'image",
     "ptz_failed": "Échec du contrôle PTZ",

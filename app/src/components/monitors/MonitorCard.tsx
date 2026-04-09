@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { Activity, Settings, Download, Clock, Video, Eye, Disc } from 'lucide-react';
+import { Activity, Settings, Download, Clock, Video, Eye, Disc, Volume2, VolumeX } from 'lucide-react';
 import { cn, formatEventCount } from '../../lib/utils';
 import { handleKeyClick } from '../../lib/tv-a11y';
 import { downloadSnapshotFromElement } from '../../lib/download';
@@ -54,7 +54,9 @@ function MonitorCardComponent({
   const zmVersion = useAuthStore((s) => s.version);
   const resolvedFit = (objectFit === 'flex' ? 'cover' : (objectFit ?? 'cover')) as 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
   const [protocol, setProtocol] = useState('MJPEG');
+  const [isMuted, setIsMuted] = useState(true);
   const runState = getMonitorRunState(monitor, status, zmVersion);
+  const isRTC = monitor.Go2RTCEnabled === true && !!currentProfile?.go2rtcUrl;
   const aspectRatio = getMonitorAspectRatio(monitor.Width, monitor.Height, monitor.Orientation);
   const mediaRef = useRef<HTMLImageElement | HTMLVideoElement | null>(null);
 
@@ -99,6 +101,7 @@ function MonitorCardComponent({
             className="w-full h-full"
             objectFit={resolvedFit}
             externalMediaRef={mediaRef}
+            muted={isMuted}
             onProtocolChange={setProtocol}
           />
           <div className="absolute top-1.5 left-1.5 z-10">
@@ -114,7 +117,19 @@ function MonitorCardComponent({
         </div>
         <div className="p-2 space-y-1.5">
           <div className="flex items-center gap-1.5">
-            <div className="text-xs font-semibold truncate flex-1" title={monitor.Name}>{monitor.Name}</div>
+            <div className="text-xs font-semibold truncate flex-1 min-w-0" title={monitor.Name}>{monitor.Name}</div>
+            {isRTC && (
+              <button
+                type="button"
+                className="h-4 w-4 shrink-0 text-muted-foreground hover:text-foreground"
+                onClick={(e) => { e.stopPropagation(); setIsMuted((m) => !m); }}
+                title={isMuted ? t('monitor_detail.unmute') : t('monitor_detail.mute')}
+                aria-label={isMuted ? t('monitor_detail.unmute') : t('monitor_detail.mute')}
+                data-testid="monitor-volume-btn"
+              >
+                {isMuted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
+              </button>
+            )}
             <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 shrink-0">
               {monitor.Id}
             </Badge>
@@ -227,6 +242,7 @@ function MonitorCardComponent({
             className="w-full h-full"
             objectFit={resolvedFit}
             externalMediaRef={mediaRef}
+            muted={isMuted}
             onProtocolChange={setProtocol}
           />
           {settings.showProtocolLabel && (
@@ -249,6 +265,18 @@ function MonitorCardComponent({
               <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 shrink-0">
                 ID: {monitor.Id}
               </Badge>
+              {isRTC && (
+                <button
+                  type="button"
+                  className="h-5 w-5 shrink-0 text-muted-foreground hover:text-foreground"
+                  onClick={(e) => { e.stopPropagation(); setIsMuted((m) => !m); }}
+                  title={isMuted ? t('monitor_detail.unmute') : t('monitor_detail.mute')}
+                  aria-label={isMuted ? t('monitor_detail.unmute') : t('monitor_detail.mute')}
+                  data-testid="monitor-volume-btn"
+                >
+                  {isMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                </button>
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">

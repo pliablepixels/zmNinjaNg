@@ -445,6 +445,8 @@
     "pip_needs_cors": "画中画需要在 ZoneMinder 服务器上配置 CORS 头",
     "load_error": "加载监控错误",
     "maximize": "最大化",
+    "mute": "静音",
+    "unmute": "取消静音",
     "pip": "画中画",
     "pip_failed": "无法进入画中画模式",
     "ptz_failed": "PTZ 控制失败",

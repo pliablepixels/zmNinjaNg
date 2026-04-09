@@ -23,7 +23,7 @@ import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { VideoPlayer } from '../video/VideoPlayer';
-import { Clock, ChartGantt, Download, Maximize2, Pin } from 'lucide-react';
+import { Clock, ChartGantt, Download, Volume2, VolumeX, Pin } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { downloadSnapshotFromElement } from '../../lib/download';
 import { toast } from 'sonner';
@@ -64,8 +64,10 @@ function MontageMonitorComponent({
     useShallow((state) => state.getProfileSettings(currentProfile?.id || ''))
   );
   const [protocol, setProtocol] = useState('MJPEG');
+  const [isMuted, setIsMuted] = useState(true);
   const mediaRef = useRef<HTMLImageElement | HTMLVideoElement>(null);
   const resolvedFit = objectFit ?? 'cover';
+  const isRTC = monitor.Go2RTCEnabled === true && !!currentProfile?.go2rtcUrl;
 
   // Handle snapshot download
   const handleDownload = (e: React.MouseEvent) => {
@@ -175,23 +177,25 @@ function MontageMonitorComponent({
           >
             <ChartGantt className="h-3 w-3" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "h-6 w-6",
-              isFullscreen ? "text-white hover:bg-white/20" : "text-muted-foreground hover:text-foreground"
-            )}
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/monitors/${monitor.Id}`);
-            }}
-            title={t('monitor_detail.maximize')}
-            aria-label={t('monitor_detail.maximize')}
-            data-testid="montage-maximize-btn"
-          >
-            <Maximize2 className="h-3 w-3" />
-          </Button>
+          {isRTC && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "h-6 w-6",
+                isFullscreen ? "text-white hover:bg-white/20" : "text-muted-foreground hover:text-foreground"
+              )}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsMuted((m) => !m);
+              }}
+              title={isMuted ? t('monitor_detail.unmute') : t('monitor_detail.mute')}
+              aria-label={isMuted ? t('monitor_detail.unmute') : t('monitor_detail.mute')}
+              data-testid="montage-volume-btn"
+            >
+              {isMuted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -212,7 +216,7 @@ function MontageMonitorComponent({
           profile={currentProfile}
           externalMediaRef={mediaRef}
           objectFit={resolvedFit}
-          muted={true}
+          muted={isMuted}
           className="w-full h-full"
           onProtocolChange={setProtocol}
         />
