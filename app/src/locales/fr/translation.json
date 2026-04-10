@@ -981,8 +981,10 @@
       "shift_drag": "Shift+glisser",
       "scrubber": "Scrub pour événements",
       "center": "Ajuster à la plage",
-      "go_now": "Aller à maintenant"
-    }
+      "go_now": "Aller à maintenant",
+      "live": "Mise à jour auto sur nouveaux événements"
+    },
+    "live": "Direct"
   },
   "error": {
     "something_went_wrong": "Quelque chose s'est mal passé",

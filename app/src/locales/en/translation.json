@@ -981,8 +981,10 @@
       "shift_drag": "Shift+drag to select",
       "scrubber": "Scrub for events",
       "center": "Fit to range",
-      "go_now": "Jump to now"
-    }
+      "go_now": "Jump to now",
+      "live": "Auto-update on new events"
+    },
+    "live": "Live"
   },
   "error": {
     "something_went_wrong": "Something went wrong",

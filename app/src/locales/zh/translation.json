@@ -981,8 +981,10 @@
       "shift_drag": "Shift+拖动选择",
       "scrubber": "滑动查看事件",
       "center": "适应范围",
-      "go_now": "跳到现在"
-    }
+      "go_now": "跳到现在",
+      "live": "新事件时自动更新"
+    },
+    "live": "实时"
   },
   "error": {
     "something_went_wrong": "出错了",

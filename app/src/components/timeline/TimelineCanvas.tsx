@@ -40,6 +40,10 @@ interface TimelineCanvasProps {
   initialScrubberState?: ScrubberState | null;
   /** When true, drag selects a region to zoom into instead of panning. */
   brushMode?: boolean;
+  /** Increment to shift viewport so NOW is at the right edge (keeps zoom level). */
+  followNowKey?: number;
+  /** When true, prop changes to startMs/endMs won't reset the viewport. */
+  liveMode?: boolean;
 }
 
 const NOW_REFRESH_INTERVAL = 30_000;
@@ -61,6 +65,8 @@ const TimelineCanvasInner = ({
   onScrubberStateChange,
   initialScrubberState,
   brushMode,
+  followNowKey,
+  liveMode,
 }: TimelineCanvasProps) => {
   const { formatSettings } = useDateTimeFormat();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -74,15 +80,16 @@ const TimelineCanvasInner = ({
 
   const viewport = useTimelineViewport({ startMs, endMs });
 
-  // Track filter range changes and sync viewport
+  // Track filter range changes and sync viewport (skip in live mode to preserve zoom)
   const prevRangeRef = useRef(`${startMs}-${endMs}`);
   useEffect(() => {
+    if (liveMode) return;
     const key = `${startMs}-${endMs}`;
     if (key !== prevRangeRef.current) {
       prevRangeRef.current = key;
       viewport.setRange(startMs, endMs);
     }
-  }, [startMs, endMs, viewport]);
+  }, [startMs, endMs, viewport, liveMode]);
 
   // Reset viewport when resetKey changes (center/fit button)
   const prevResetKeyRef = useRef(resetKey);
@@ -124,6 +131,18 @@ const TimelineCanvasInner = ({
       viewport.animateToRange(now - dur / 2, now + dur / 2);
     }
   }, [goToNowKey, viewport]);
+
+  // Follow NOW — shift viewport so NOW is near the right edge (keeps zoom level)
+  const prevFollowNowRef = useRef(followNowKey);
+  useEffect(() => {
+    if (followNowKey !== undefined && followNowKey !== prevFollowNowRef.current) {
+      prevFollowNowRef.current = followNowKey;
+      const now = Date.now();
+      const dur = viewport.durationMs;
+      // Place NOW at ~90% from left so there's a small buffer on the right
+      viewport.animateToRange(now - dur * 0.9, now + dur * 0.1);
+    }
+  }, [followNowKey, viewport]);
 
   // Pan left/right by 20% of current viewport duration
   const prevPanLeftRef = useRef(panLeftKey);

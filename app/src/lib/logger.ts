@@ -223,6 +223,7 @@ class Logger {
   secureStorage = this.makeComponentLogger('SecureStorage');
   server = this.makeComponentLogger('Server');
   time = this.makeComponentLogger('Time');
+  timeline = this.makeComponentLogger('Timeline');
   videoMarkers = this.makeComponentLogger('VideoMarkers');
   videoPlayer = this.makeComponentLogger('VideoPlayer');
   sslTrust = this.makeComponentLogger('SSLTrust');
@@ -252,8 +253,8 @@ const componentLoggers = [
   'eventCard', 'eventDetail', 'eventMontage', 'http', 'imageError', 'kiosk', 'monitor', 'monitorCard',
   'monitorDetail', 'montageMonitor', 'navigation', 'notificationHandler', 'notifications',
   'notificationSettings', 'profile', 'profileForm', 'profileService', 'profileSwitcher',
-  'push', 'queryCache', 'secureImage', 'secureStorage', 'server', 'sslTrust', 'time', 'videoMarkers',
-  'videoPlayer', 'zmsEventPlayer'
+  'push', 'queryCache', 'secureImage', 'secureStorage', 'server', 'sslTrust', 'time', 'timeline',
+  'videoMarkers', 'videoPlayer', 'zmsEventPlayer'
 ] as const;
 
 type ComponentLoggerKey = typeof componentLoggers[number];

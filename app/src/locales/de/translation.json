@@ -981,8 +981,10 @@
       "shift_drag": "Shift+Ziehen zum Wählen",
       "scrubber": "Scrub für Ereignisse",
       "center": "An Bereich anpassen",
-      "go_now": "Zu Jetzt springen"
-    }
+      "go_now": "Zu Jetzt springen",
+      "live": "Bei neuen Ereignissen aktualisieren"
+    },
+    "live": "Live"
   },
   "error": {
     "something_went_wrong": "Etwas ist schief gelaufen",

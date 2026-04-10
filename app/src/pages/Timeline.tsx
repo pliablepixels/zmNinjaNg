@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useCallback, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getEvents } from '../api/events';
 import type { EventData } from '../api/types';
@@ -9,7 +9,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Switch } from '../components/ui/switch';
-import { RefreshCw, Filter, Clock, ScanSearch, X, Crosshair, ZoomIn, ZoomOut, ChevronDown, SkipForward, RectangleHorizontal, Info, Move, HandMetal } from 'lucide-react';
+import { RefreshCw, Filter, Clock, ScanSearch, X, Crosshair, ZoomIn, ZoomOut, ChevronDown, SkipForward, RectangleHorizontal, Info, Move, HandMetal, Radio } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { filterEnabledMonitors } from '../lib/filters';
 import { formatForServer } from '../lib/time';
@@ -25,7 +25,11 @@ import { EmptyState } from '../components/ui/empty-state';
 import { NotificationBadge } from '../components/NotificationBadge';
 import { useTimelineFilters } from '../hooks/useTimelineFilters';
 import { useTvKeyHandler } from '../hooks/useTvKeyHandler';
+import { useNotificationStore } from '../stores/notifications';
+import { useProfileStore } from '../stores/profile';
+import { useBandwidthSettings } from '../hooks/useBandwidthSettings';
 import { useEventTagMapping } from '../hooks/useEventTags';
+import { log, LogLevel } from '../lib/logger';
 import { TimelineCanvas } from '../components/timeline/TimelineCanvas';
 import { DetectionFilterTabs, categorizeEvent, type DetectionCategory } from '../components/timeline/DetectionFilterTabs';
 import { EventPreviewPopover } from '../components/timeline/EventPreviewPopover';
@@ -60,6 +64,15 @@ export default function Timeline() {
   // Filters section collapsed state
   const [filtersCollapsed, setFiltersCollapsed] = useState(false);
 
+  // Live mode — subscribe to notification store for new events, fall back to polling
+  const [liveMode, setLiveMode] = useState(false);
+  const queryClient = useQueryClient();
+  const currentProfileId = useProfileStore((s) => s.currentProfileId);
+  const notificationsEnabled = useNotificationStore(
+    (s) => currentProfileId ? s.getProfileSettings(currentProfileId).enabled : false,
+  );
+  const bandwidth = useBandwidthSettings();
+
   // Viewport control keys — increment to trigger action
   const [resetKey, setResetKey] = useState(0);
   const [zoomInKey, setZoomInKey] = useState(0);
@@ -67,6 +80,7 @@ export default function Timeline() {
   const [goToNowKey, setGoToNowKey] = useState(0);
   const [panLeftKey, setPanLeftKey] = useState(0);
   const [panRightKey, setPanRightKey] = useState(0);
+  const [followNowKey, setFollowNowKey] = useState(0);
 
   useTvKeyHandler({
     ArrowLeft: () => setPanLeftKey((k) => k + 1),
@@ -136,35 +150,132 @@ export default function Timeline() {
     return selectedMonitorIds.join(',');
   }, [selectedMonitorIds]);
 
+  // In live mode without notifications, fall back to polling
+  const livePolling = liveMode && !notificationsEnabled;
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['timeline-events', startDate, endDate, monitorFilter, onlyDetectedObjects],
     queryFn: () =>
       getEvents({
         startDateTime: formatForServer(new Date(startDate)),
-        endDateTime: formatForServer(new Date(endDate)),
+        // In live mode, always query up to "now" so new events aren't filtered out
+        endDateTime: formatForServer(liveMode ? new Date() : new Date(endDate)),
         monitorId: monitorFilter,
         notesRegexp: onlyDetectedObjects ? 'detected:' : undefined,
         sort: 'StartDateTime',
         direction: 'desc',
         limit: 2000,
       }),
+    refetchInterval: livePolling ? bandwidth.timelineHeatmapInterval : false,
   });
 
-  // Transform API events to TimelineEvent[]
+  // Log live mode source when it changes
+  useEffect(() => {
+    if (!liveMode) return;
+    if (notificationsEnabled) {
+      log.timeline('Live mode using notification store events', LogLevel.INFO);
+    } else {
+      log.timeline('Live mode falling back to polling (notifications not enabled)', LogLevel.INFO, {
+        interval: bandwidth.timelineHeatmapInterval,
+      });
+    }
+  }, [liveMode, notificationsEnabled, bandwidth.timelineHeatmapInterval]);
+
+  // Live-injected events — synthetic events from notifications, shown immediately
+  // before the API refetch returns the real data
+  const [liveInjectedEvents, setLiveInjectedEvents] = useState<TimelineEvent[]>([]);
+
+  // In live mode with notifications enabled, subscribe to store — inject event + schedule refetch
+  // Track by latest receivedAt, not count (store is capped at 100, count stays flat once full)
+  // Delay refetch slightly so ZM has time to index the new event
+  const prevReceivedAtRef = useRef(0);
+  const refetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!liveMode || !notificationsEnabled || !currentProfileId) return;
+    const events = useNotificationStore.getState().profileEvents[currentProfileId];
+    prevReceivedAtRef.current = events?.[0]?.receivedAt ?? 0;
+    const unsub = useNotificationStore.subscribe((state) => {
+      const latest = state.profileEvents[currentProfileId]?.[0];
+      const latestTs = latest?.receivedAt ?? 0;
+      if (latestTs > prevReceivedAtRef.current) {
+        log.timeline('New notification event, injecting + scheduling refetch', LogLevel.INFO, {
+          eventId: latest?.EventId,
+          monitor: latest?.MonitorName,
+        });
+        prevReceivedAtRef.current = latestTs;
+
+        // Inject a synthetic event so the bar + monitor row appear immediately
+        if (latest) {
+          const now = Date.now();
+          setLiveInjectedEvents((prev) => [
+            ...prev.filter((e) => e.id !== String(latest.EventId)),
+            {
+              id: String(latest.EventId),
+              monitorId: String(latest.MonitorId),
+              startMs: now,
+              endMs: now + 1000, // 1s minimum width so it's visible
+              cause: latest.Cause ?? 'Motion',
+              alarmRatio: 1,
+              notes: latest.Notes ?? '',
+            },
+          ]);
+        }
+
+        // Debounce: if multiple events arrive in quick succession, only refetch once
+        if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
+        refetchTimerRef.current = setTimeout(() => {
+          log.timeline('Refetching timeline after delay', LogLevel.DEBUG);
+          queryClient.invalidateQueries({ queryKey: ['timeline-events'] });
+        }, 2000);
+      }
+    });
+    return () => {
+      unsub();
+      if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
+    };
+  }, [liveMode, notificationsEnabled, currentProfileId, queryClient]);
+
+  // Clear injected events only when a new API refetch completes (not just because data exists)
+  const prevDataForClearRef = useRef(data);
+  useEffect(() => {
+    if (data !== prevDataForClearRef.current) {
+      prevDataForClearRef.current = data;
+      if (liveInjectedEvents.length > 0) {
+        setLiveInjectedEvents([]);
+      }
+    }
+  }, [data, liveInjectedEvents.length]);
+
+  // In live mode, scroll to NOW after data arrives (not before, to avoid blank canvas)
+  const prevDataRef = useRef(data);
+  useEffect(() => {
+    if (liveMode && data !== prevDataRef.current) {
+      prevDataRef.current = data;
+      setFollowNowKey((k) => k + 1);
+    }
+  }, [liveMode, data]);
+
+  // Transform API events to TimelineEvent[], merging any live-injected synthetics
   const allTimelineEvents: TimelineEvent[] = useMemo(() => {
-    if (!data?.events) return [];
-    return data.events.map(({ Event }) => ({
-      id: Event.Id,
-      monitorId: Event.MonitorId,
-      startMs: new Date(Event.StartDateTime.replace(' ', 'T')).getTime(),
-      endMs: Event.EndDateTime
-        ? new Date(Event.EndDateTime.replace(' ', 'T')).getTime()
-        : new Date(Event.StartDateTime.replace(' ', 'T')).getTime() + parseFloat(Event.Length) * 1000,
-      cause: Event.Cause,
-      alarmRatio: parseInt(Event.AlarmFrames) / Math.max(parseInt(Event.Frames), 1),
-      notes: Event.Notes ?? '',
-    }));
-  }, [data]);
+    const apiEvents: TimelineEvent[] = data?.events
+      ? data.events.map(({ Event }) => ({
+          id: Event.Id,
+          monitorId: Event.MonitorId,
+          startMs: new Date(Event.StartDateTime.replace(' ', 'T')).getTime(),
+          endMs: Event.EndDateTime
+            ? new Date(Event.EndDateTime.replace(' ', 'T')).getTime()
+            : new Date(Event.StartDateTime.replace(' ', 'T')).getTime() + parseFloat(Event.Length) * 1000,
+          cause: Event.Cause,
+          alarmRatio: parseInt(Event.AlarmFrames) / Math.max(parseInt(Event.Frames), 1),
+          notes: Event.Notes ?? '',
+        }))
+      : [];
+    if (liveInjectedEvents.length === 0) return apiEvents;
+    // Merge: API data wins over synthetics with the same id
+    const apiIds = new Set(apiEvents.map((e) => e.id));
+    const unique = liveInjectedEvents.filter((e) => !apiIds.has(e.id));
+    return [...apiEvents, ...unique];
+  }, [data, liveInjectedEvents]);
 
   // Compute detection category counts
   const detectionCounts = useMemo(() => {
@@ -203,10 +314,11 @@ export default function Timeline() {
     return rows;
   }, [enabledMonitors, filteredEvents]);
 
-  // Canvas time range — fit to actual event extent (with padding), fall back to filter range
+  // Canvas time range — fit to actual event extent + "now" (with padding), fall back to filter range
   const { startMs, endMs } = useMemo(() => {
     const filterStart = new Date(startDate).getTime();
     const filterEnd = new Date(endDate).getTime();
+    const now = Date.now();
 
     if (filteredEvents.length === 0) {
       return { startMs: filterStart, endMs: filterEnd };
@@ -219,12 +331,18 @@ export default function Timeline() {
       if (ev.endMs > maxMs) maxMs = ev.endMs;
     }
 
+    // Include "now" in the extent so the NOW marker is always visible on load
+    if (now >= filterStart && now <= filterEnd) {
+      if (now > maxMs) maxMs = now;
+      if (now < minMs) minMs = now;
+    }
+
     // Add 5% padding on each side so events aren't flush with edges
     const span = maxMs - minMs;
     const padding = Math.max(span * 0.05, 60_000); // at least 1 minute
     return {
       startMs: Math.max(filterStart, minMs - padding),
-      endMs: Math.min(filterEnd, maxMs + padding),
+      endMs: maxMs + padding,
     };
   }, [filteredEvents, startDate, endDate]);
 
@@ -496,6 +614,16 @@ export default function Timeline() {
                 </div>
                 <div className="flex items-center gap-1">
                   <Button
+                    variant={liveMode ? 'default' : 'ghost'}
+                    size="icon"
+                    className={`h-6 w-6 ${liveMode ? 'text-red-50 bg-red-600 hover:bg-red-700' : 'text-muted-foreground'}`}
+                    onClick={() => setLiveMode((v) => !v)}
+                    title={t('timeline.live')}
+                    data-testid="timeline-live-toggle"
+                  >
+                    <Radio className={`h-3.5 w-3.5 ${liveMode ? 'animate-pulse' : ''}`} />
+                  </Button>
+                  <Button
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6 text-muted-foreground"
@@ -541,6 +669,7 @@ export default function Timeline() {
                             <HelpRow icon={<span className="inline-block h-3.5 w-3.5 shrink-0 rounded-full" style={{ backgroundColor: '#00a8ff' }} />} text={t('timeline.help.scrubber')} />
                             <HelpRow icon={<Crosshair className="h-3.5 w-3.5 shrink-0 text-foreground/60" />} text={t('timeline.help.center')} />
                             <HelpRow icon={<SkipForward className="h-3.5 w-3.5 shrink-0 text-foreground/60" />} text={t('timeline.help.go_now')} />
+                            <HelpRow icon={<Radio className="h-3.5 w-3.5 shrink-0 text-foreground/60" />} text={t('timeline.help.live')} />
                           </>
                         );
                       })()}
@@ -565,6 +694,8 @@ export default function Timeline() {
                 onScrubberStateChange={handleScrubberStateChange}
                 initialScrubberState={initialScrubberState}
                 brushMode={brushMode}
+                followNowKey={followNowKey}
+                liveMode={liveMode}
               />
             </div>
           )}
