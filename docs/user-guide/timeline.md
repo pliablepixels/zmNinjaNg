@@ -18,6 +18,16 @@ The heatmap shows event density over time as a colored grid. Darker colors indic
 - **Quiet periods** - Times with little to no activity
 - **Patterns** - Recurring activity at specific times or days
 
+## Live Mode
+
+Tap the **Live** button (radio icon) in the toolbar to enable live mode. When active:
+
+- New events appear on the timeline as they happen, without waiting for a full refresh
+- The view auto-scrolls to keep the current time visible
+- Newly arrived events pulse with a yellow halo for 5 seconds so you can spot them instantly
+
+Live mode uses WebSocket notifications when enabled, or falls back to polling.
+
 ## Refresh
 
 Timeline and heatmap data refreshes automatically:
