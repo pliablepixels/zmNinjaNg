@@ -1,8 +1,25 @@
 # Changelog
 
-## [zmNinjaNg-1.1.8](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNg-1.1.8) (2026-04-05)
+## [zmNinjaNg-1.1.9](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNg-1.1.9) (2026-04-11)
 
-[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNg-1.1.7...zmNinjaNg-1.1.8)
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNG-1.1.8...zmNinjaNg-1.1.9)
+
+**Implemented enhancements:**
+
+- feat: live mode for timeline with auto-scroll and real-time event display [\#107](https://github.com/pliablepixels/zmNinjaNg/issues/107)
+- feat: Alarm pulse and event count badge on montage tiles [\#105](https://github.com/pliablepixels/zmNinjaNg/issues/105)
+- feat: Group notification history by date sections [\#104](https://github.com/pliablepixels/zmNinjaNg/issues/104)
+- feat: Add Today quick range and inline quick filters on Events page [\#103](https://github.com/pliablepixels/zmNinjaNg/issues/103)
+- feat: Replace maximize button with volume toggle for RTC monitors [\#102](https://github.com/pliablepixels/zmNinjaNg/issues/102)
+- android TV/Firestick app [\#96](https://github.com/pliablepixels/zmNinjaNg/issues/96)
+
+**Fixed bugs:**
+
+- fix: Monitors page toolbar cleanup and theme toggle offset [\#106](https://github.com/pliablepixels/zmNinjaNg/issues/106)
+
+## [zmNinjaNG-1.1.8](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNG-1.1.8) (2026-04-06)
+
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNG-1.1.7...zmNinjaNG-1.1.8)
 
 **Implemented enhancements:**
 
@@ -13,17 +30,17 @@
 
 - fix: multi-server routing for ZMS streams, daemon checks, and event URLs [\#100](https://github.com/pliablepixels/zmNinjaNg/issues/100)
 
-## [zmNinjaNg-1.1.7](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNg-1.1.7) (2026-04-03)
+## [zmNinjaNG-1.1.7](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNG-1.1.7) (2026-04-03)
 
-[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNg-1.1.6...zmNinjaNg-1.1.7)
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNG-1.1.6...zmNinjaNG-1.1.7)
 
 **Fixed bugs:**
 
 - fix: monitors page shows no video when status reports offline but stream works [\#98](https://github.com/pliablepixels/zmNinjaNg/issues/98)
 
-## [zmNinjaNg-1.1.6](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNg-1.1.6) (2026-04-02)
+## [zmNinjaNG-1.1.6](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNG-1.1.6) (2026-04-02)
 
-[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNg-1.1.5...zmNinjaNg-1.1.6)
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNG-1.1.5...zmNinjaNG-1.1.6)
 
 **Implemented enhancements:**
 
@@ -36,9 +53,9 @@
 - fix: i18n labels overflow on narrow screens [\#93](https://github.com/pliablepixels/zmNinjaNg/issues/93)
 - fix: move PTZ to info row, remove Type from monitor card [\#92](https://github.com/pliablepixels/zmNinjaNg/issues/92)
 
-## [zmNinjaNg-1.1.5](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNg-1.1.5) (2026-03-30)
+## [zmNinjaNG-1.1.5](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNG-1.1.5) (2026-03-30)
 
-[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNg-1.1.4...zmNinjaNg-1.1.5)
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNG-1.1.4...zmNinjaNG-1.1.5)
 
 **Implemented enhancements:**
 
@@ -49,18 +66,18 @@
 - feat: replace Function label with icons for Capturing/Analysing/Recording [\#87](https://github.com/pliablepixels/zmNinjaNg/issues/87)
 - feat: consistent monitor card thumbnail layout [\#86](https://github.com/pliablepixels/zmNinjaNg/issues/86)
 
-## [zmNinjaNg-1.1.4](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNg-1.1.4) (2026-03-28)
+## [zmNinjaNG-1.1.4](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNG-1.1.4) (2026-03-28)
 
-[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNg-1.1.3...zmNinjaNg-1.1.4)
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNG-1.1.3...zmNinjaNG-1.1.4)
 
 **Implemented enhancements:**
 
 - feat: redesign monitor settings dialog with ZM 1.38+ support [\#85](https://github.com/pliablepixels/zmNinjaNg/issues/85)
 - feat: cross-platform E2E test overhaul with real device testing [\#84](https://github.com/pliablepixels/zmNinjaNg/issues/84)
 
-## [zmNinjaNg-1.1.3](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNg-1.1.3) (2026-03-22)
+## [zmNinjaNG-1.1.3](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNG-1.1.3) (2026-03-22)
 
-[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNg-1.1.2...zmNinjaNg-1.1.3)
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNG-1.1.2...zmNinjaNG-1.1.3)
 
 **Implemented enhancements:**
 
@@ -77,21 +94,21 @@
 - fix: sidebar menu items too close together on desktop [\#76](https://github.com/pliablepixels/zmNinjaNg/issues/76)
 - fix: heading overlaps with device status bar on iPad/tablet [\#75](https://github.com/pliablepixels/zmNinjaNg/issues/75)
 
-## [zmNinjaNg-1.1.2](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNg-1.1.2) (2026-03-21)
+## [zmNinjaNG-1.1.2](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNG-1.1.2) (2026-03-21)
 
-[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNg-1.1.1...zmNinjaNg-1.1.2)
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNG-1.1.1...zmNinjaNG-1.1.2)
 
-## [zmNinjaNg-1.1.1](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNg-1.1.1) (2026-03-21)
+## [zmNinjaNG-1.1.1](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNG-1.1.1) (2026-03-21)
 
-[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNg-1.1.0...zmNinjaNg-1.1.1)
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNG-1.1.0...zmNinjaNG-1.1.1)
 
 **Implemented enhancements:**
 
 - feat: add kiosk mode \(lock/unlock\) with PIN and biometric auth [\#73](https://github.com/pliablepixels/zmNinjaNg/issues/73)
 
-## [zmNinjaNg-1.1.0](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNg-1.1.0) (2026-03-20)
+## [zmNinjaNG-1.1.0](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNG-1.1.0) (2026-03-20)
 
-[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNg-1.0.9...zmNinjaNg-1.1.0)
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNG-1.0.9...zmNinjaNG-1.1.0)
 
 **Implemented enhancements:**
 
@@ -108,18 +125,18 @@
 - fix: back button goes nowhere on cold start to detail views [\#66](https://github.com/pliablepixels/zmNinjaNg/issues/66)
 - fix: iOS badge count and notification history sync [\#65](https://github.com/pliablepixels/zmNinjaNg/issues/65)
 
-## [zmNinjaNg-1.0.9](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNg-1.0.9) (2026-03-17)
+## [zmNinjaNG-1.0.9](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNG-1.0.9) (2026-03-17)
 
-[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNg-1.0.8...zmNinjaNg-1.0.9)
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNG-1.0.8...zmNinjaNG-1.0.9)
 
 **Implemented enhancements:**
 
 - feat: reduce heading font sizes app-wide for space efficiency [\#63](https://github.com/pliablepixels/zmNinjaNg/issues/63)
 - feat: montage view display enhancements [\#62](https://github.com/pliablepixels/zmNinjaNg/issues/62)
 
-## [zmNinjaNg-1.0.8](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNg-1.0.8) (2026-03-15)
+## [zmNinjaNG-1.0.8](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNG-1.0.8) (2026-03-15)
 
-[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNg-1.0.7...zmNinjaNg-1.0.8)
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNG-1.0.7...zmNinjaNG-1.0.8)
 
 **Implemented enhancements:**
 
@@ -139,9 +156,9 @@
 - fix: fullscreen monitor detail overlaps iOS status bar [\#52](https://github.com/pliablepixels/zmNinjaNg/issues/52)
 - Montage full screen video controls opening between 2 windows and swapping continuously [\#50](https://github.com/pliablepixels/zmNinjaNg/issues/50)
 
-## [zmNinjaNg-1.0.7](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNg-1.0.7) (2026-03-12)
+## [zmNinjaNG-1.0.7](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNG-1.0.7) (2026-03-12)
 
-[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNg-1.0.6...zmNinjaNg-1.0.7)
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNG-1.0.6...zmNinjaNG-1.0.7)
 
 **Implemented enhancements:**
 
@@ -156,9 +173,9 @@
 
 - Could not find ZoneMinder API over HTTPS [\#45](https://github.com/pliablepixels/zmNinjaNg/issues/45)
 
-## [zmNinjaNg-1.0.6](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNg-1.0.6) (2026-03-09)
+## [zmNinjaNG-1.0.6](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNG-1.0.6) (2026-03-09)
 
-[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNg-1.0.4...zmNinjaNg-1.0.6)
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNG-1.0.4...zmNinjaNG-1.0.6)
 
 **Implemented enhancements:**
 
@@ -168,9 +185,9 @@
 
 - Android App fails after being configured. [\#44](https://github.com/pliablepixels/zmNinjaNg/issues/44)
 
-## [zmNinjaNg-1.0.4](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNg-1.0.4) (2026-03-08)
+## [zmNinjaNG-1.0.4](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNG-1.0.4) (2026-03-08)
 
-[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNg-1.0.3...zmNinjaNg-1.0.4)
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNg-1.0.3...zmNinjaNG-1.0.4)
 
 **Refactoring:**
 
