@@ -185,6 +185,10 @@ export default function Timeline() {
   // before the API refetch returns the real data
   const [liveInjectedEvents, setLiveInjectedEvents] = useState<TimelineEvent[]>([]);
 
+  // Track arrival timestamps for live events — survives the synthetic→API event swap
+  // so the pulse halo keeps animating after API data replaces the synthetic
+  const liveArrivalTimesRef = useRef<Map<string, number>>(new Map());
+
   // In live mode with notifications enabled, subscribe to store — inject event + schedule refetch
   // Track by latest receivedAt, not count (store is capped at 100, count stays flat once full)
   // Delay refetch slightly so ZM has time to index the new event
@@ -207,6 +211,7 @@ export default function Timeline() {
         // Inject a synthetic event so the bar + monitor row appear immediately
         if (latest) {
           const now = Date.now();
+          liveArrivalTimesRef.current.set(String(latest.EventId), now);
           setLiveInjectedEvents((prev) => [
             ...prev.filter((e) => e.id !== String(latest.EventId)),
             {
@@ -217,6 +222,7 @@ export default function Timeline() {
               cause: latest.Cause ?? 'Motion',
               alarmRatio: 1,
               notes: latest.Notes ?? '',
+              arrivedAt: now,
             },
           ]);
         }
@@ -235,16 +241,20 @@ export default function Timeline() {
     };
   }, [liveMode, notificationsEnabled, currentProfileId, queryClient]);
 
-  // Clear injected events only when a new API refetch completes (not just because data exists)
+  // Clear injected events only when a new API refetch includes them (not blindly on any data change)
   const prevDataForClearRef = useRef(data);
   useEffect(() => {
     if (data !== prevDataForClearRef.current) {
       prevDataForClearRef.current = data;
-      if (liveInjectedEvents.length > 0) {
-        setLiveInjectedEvents([]);
+      if (liveInjectedEvents.length > 0 && data?.events) {
+        const apiIds = new Set(data.events.map((e) => e.Event.Id));
+        const remaining = liveInjectedEvents.filter((e) => !apiIds.has(e.id));
+        if (remaining.length !== liveInjectedEvents.length) {
+          setLiveInjectedEvents(remaining);
+        }
       }
     }
-  }, [data, liveInjectedEvents.length]);
+  }, [data, liveInjectedEvents]);
 
   // In live mode, scroll to NOW after data arrives (not before, to avoid blank canvas)
   const prevDataRef = useRef(data);
@@ -257,6 +267,12 @@ export default function Timeline() {
 
   // Transform API events to TimelineEvent[], merging any live-injected synthetics
   const allTimelineEvents: TimelineEvent[] = useMemo(() => {
+    // Prune expired arrival timestamps (older than 5s)
+    const now = Date.now();
+    for (const [id, ts] of liveArrivalTimesRef.current) {
+      if (now - ts > 5000) liveArrivalTimesRef.current.delete(id);
+    }
+
     const apiEvents: TimelineEvent[] = data?.events
       ? data.events.map(({ Event }) => ({
           id: Event.Id,
@@ -268,6 +284,7 @@ export default function Timeline() {
           cause: Event.Cause,
           alarmRatio: parseInt(Event.AlarmFrames) / Math.max(parseInt(Event.Frames), 1),
           notes: Event.Notes ?? '',
+          arrivedAt: liveArrivalTimesRef.current.get(Event.Id),
         }))
       : [];
     if (liveInjectedEvents.length === 0) return apiEvents;

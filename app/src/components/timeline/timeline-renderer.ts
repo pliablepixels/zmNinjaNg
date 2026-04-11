@@ -391,12 +391,16 @@ function drawRoundedRect(
   ctx.closePath();
 }
 
+/** Duration (ms) for the pulse halo on newly arrived live events. */
+const PULSE_DURATION = 5000;
+
 export function drawEvents(
   ctx: CanvasRenderingContext2D,
   events: TimelineEvent[],
   monitorIds: string[],
   viewport: RenderViewport,
   hoveredEventId: string | null,
+  nowMs?: number,
 ): void {
   const { dpr, startMs, endMs, width } = viewport;
   const rowH = LAYOUT.rowHeight * dpr;
@@ -448,6 +452,31 @@ export function drawEvents(
     drawRoundedRect(ctx, x1, barY, barW, barH, cornerRadius);
     ctx.fillStyle = isHovered ? color : withAlpha(color, 0.85);
     ctx.fill();
+
+    // Pulse halo for newly arrived live events (5s fade-out)
+    if (nowMs !== undefined && event.arrivedAt !== undefined) {
+      const elapsed = nowMs - event.arrivedAt;
+      if (elapsed >= 0 && elapsed < PULSE_DURATION) {
+        const progress = elapsed / PULSE_DURATION;
+        const pulse = Math.sin(progress * Math.PI * 4) * 0.5 + 0.5;
+        const fade = 1 - progress;
+        const intensity = pulse * fade;
+
+        ctx.save();
+        // Draw multiple shadow layers for a strong glow
+        for (let layer = 0; layer < 3; layer++) {
+          ctx.shadowColor = `rgba(255, 220, 40, ${intensity})`;
+          ctx.shadowBlur = (10 + pulse * 14 + layer * 6) * dpr;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+          drawRoundedRect(ctx, x1 - dpr, barY - dpr, barW + 2 * dpr, barH + 2 * dpr, cornerRadius + dpr);
+          ctx.strokeStyle = `rgba(255, 220, 40, ${intensity * 0.9})`;
+          ctx.lineWidth = (2.5 - layer * 0.5) * dpr;
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
 
     // Hovered: white outline
     if (isHovered) {
@@ -619,6 +648,7 @@ export function renderTimeline(
   hoveredEventId: string | null,
   playheadMs: number | null | undefined,
   fmt: FormatSettings,
+  nowMs?: number,
 ): void {
   const { dpr, width, height } = viewport;
   const w = width * dpr;
@@ -635,7 +665,7 @@ export function renderTimeline(
   // Draw layers in order
   drawSwimlanes(ctx, monitors, viewport, colors);
   drawTimeAxis(ctx, viewport, colors, fmt);
-  drawEvents(ctx, events, monitorIds, viewport, hoveredEventId);
+  drawEvents(ctx, events, monitorIds, viewport, hoveredEventId, nowMs);
   drawCurrentTime(ctx, viewport, colors);
   if (playheadMs != null) {
     drawPlayhead(ctx, viewport, playheadMs);

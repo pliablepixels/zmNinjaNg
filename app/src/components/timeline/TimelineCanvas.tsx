@@ -188,6 +188,8 @@ const TimelineCanvasInner = ({
     return () => clearInterval(id);
   }, []);
 
+  const pulseRafRef = useRef<number | null>(null);
+
   const monitorIds = monitors.map((m) => m.id);
   const height = canvasHeight(monitors.length);
 
@@ -286,34 +288,62 @@ const TimelineCanvasInner = ({
       dpr,
     };
 
-    renderTimeline(ctx, canvas, monitors, events, monitorIds, renderVp, hoveredEventId, playheadMs, formatSettings);
+    const paintFrame = () => {
+      renderTimeline(ctx, canvas, monitors, events, monitorIds, renderVp, hoveredEventId, playheadMs, formatSettings, liveMode ? Date.now() : undefined);
 
-    // Draw brush selection overlay
-    if (brushSelection) {
-      const [lo, hi] = brushSelection;
-      const x1 = lo * containerWidth * dpr;
-      const x2 = hi * containerWidth * dpr;
-      const h = height * dpr;
+      // Draw brush selection overlay
+      if (brushSelection) {
+        const [lo, hi] = brushSelection;
+        const x1 = lo * containerWidth * dpr;
+        const x2 = hi * containerWidth * dpr;
+        const bh = height * dpr;
 
-      // Dim areas outside selection
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-      ctx.fillRect(0, 0, x1, h);
-      ctx.fillRect(x2, 0, containerWidth * dpr - x2, h);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(0, 0, x1, bh);
+        ctx.fillRect(x2, 0, containerWidth * dpr - x2, bh);
 
-      // Selection highlight
-      ctx.fillStyle = 'rgba(0, 168, 255, 0.15)';
-      ctx.fillRect(x1, 0, x2 - x1, h);
+        ctx.fillStyle = 'rgba(0, 168, 255, 0.15)';
+        ctx.fillRect(x1, 0, x2 - x1, bh);
 
-      // Selection borders
-      ctx.strokeStyle = '#00a8ff';
-      ctx.lineWidth = 2 * dpr;
-      ctx.beginPath();
-      ctx.moveTo(x1, 0);
-      ctx.lineTo(x1, h);
-      ctx.moveTo(x2, 0);
-      ctx.lineTo(x2, h);
-      ctx.stroke();
+        ctx.strokeStyle = '#00a8ff';
+        ctx.lineWidth = 2 * dpr;
+        ctx.beginPath();
+        ctx.moveTo(x1, 0);
+        ctx.lineTo(x1, bh);
+        ctx.moveTo(x2, 0);
+        ctx.lineTo(x2, bh);
+        ctx.stroke();
+      }
+    };
+
+    // Initial paint
+    paintFrame();
+
+    // If any events are pulsing, run a rAF loop to animate the halo
+    if (pulseRafRef.current) {
+      cancelAnimationFrame(pulseRafRef.current);
+      pulseRafRef.current = null;
     }
+    const PULSE_DURATION = 5000;
+    const hasPulsingEvents = liveMode && events.some((e) => e.arrivedAt !== undefined && Date.now() - e.arrivedAt < PULSE_DURATION);
+    if (hasPulsingEvents) {
+      const animate = () => {
+        paintFrame();
+        if (events.some((e) => e.arrivedAt !== undefined && Date.now() - e.arrivedAt < PULSE_DURATION)) {
+          pulseRafRef.current = requestAnimationFrame(animate);
+        } else {
+          pulseRafRef.current = null;
+        }
+      };
+      pulseRafRef.current = requestAnimationFrame(animate);
+    }
+
+    return () => {
+      if (pulseRafRef.current) {
+        cancelAnimationFrame(pulseRafRef.current);
+        pulseRafRef.current = null;
+      }
+    };
   });
 
   return (

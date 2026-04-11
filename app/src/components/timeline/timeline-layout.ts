@@ -7,6 +7,8 @@ export interface TimelineEvent {
   cause: string;
   alarmRatio: number;
   notes: string;
+  /** Timestamp (ms) when this event was injected in live mode. Used for pulse animation. */
+  arrivedAt?: number;
 }
 
 /** Fixed layout dimensions for the timeline canvas. */
