@@ -386,7 +386,18 @@
       "twelve_hour": "12-Stunden",
       "twenty_four_hour": "24-Stunden",
       "tv_mode": "TV-Modus",
-      "tv_mode_desc": "D-Pad-Navigation und Anzeige"
+      "tv_mode_desc": "D-Pad-Navigation und Anzeige",
+      "thumbnail_chain": {
+        "title": "Vorschaubild-Anzeige",
+        "desc": "Reihenfolge der Frames für Ereignis-Vorschaubilder. Deaktivierte werden übersprungen.",
+        "alarm": "Alarmbild",
+        "snapshot": "Snapshot",
+        "objdetect": "Objekterkennung",
+        "custom": "Eigene Frame-ID",
+        "custom_placeholder": "z. B. 1",
+        "move_up": "Nach oben",
+        "move_down": "Nach unten"
+      }
     }
   },
   "ssl": {

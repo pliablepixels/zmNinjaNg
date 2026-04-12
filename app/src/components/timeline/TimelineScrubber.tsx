@@ -7,10 +7,10 @@
  */
 
 import { memo, useState, useCallback, useRef, useEffect } from 'react';
-import { VideoOff } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { getEventImageUrl } from '../../api/events';
 import { getPortalUrlForEvent } from '../../lib/server-resolver';
+import { buildThumbnailChain } from '../../lib/thumbnail-chain';
+import { EventThumbnail } from '../events/EventThumbnail';
 import { useCurrentProfile } from '../../hooks/useCurrentProfile';
 import { useAuthStore } from '../../stores/auth';
 import type { MonitorsResponse } from '../../api/types';
@@ -84,16 +84,15 @@ function ScrubberThumbnail({
   monitorName: string;
   onTap: (eventId: string) => void;
 }) {
-  const { currentProfile } = useCurrentProfile();
+  const { currentProfile, settings } = useCurrentProfile();
   const accessToken = useAuthStore((s) => s.accessToken);
   const { fmtTimeShort } = useDateTimeFormat();
   const queryClient = useQueryClient();
-  const [failed, setFailed] = useState(false);
 
   const profilePortalUrl = currentProfile?.portalUrl ?? '';
   const monitors = (queryClient.getQueryData<MonitorsResponse>(['monitors']))?.monitors ?? [];
   const portalUrl = getPortalUrlForEvent(event.monitorId, monitors, profilePortalUrl);
-  const imageUrl = getEventImageUrl(portalUrl, event.id, 'alarm', {
+  const thumbnailUrls = buildThumbnailChain(portalUrl, event.id, settings.thumbnailFallbackChain, {
     token: accessToken ?? undefined,
     minStreamingPort: currentProfile?.minStreamingPort,
     monitorId: event.monitorId,
@@ -107,18 +106,13 @@ function ScrubberThumbnail({
       title={`${monitorName} · #${event.id}`}
       data-testid={`scrubber-thumb-${event.id}`}
     >
-      {failed ? (
-        <div className="w-full h-full flex items-center justify-center bg-muted/30">
-          <VideoOff className="h-4 w-4 text-muted-foreground/40" />
-        </div>
-      ) : (
-        <img
-          src={imageUrl}
-          alt=""
-          className="w-full h-full object-cover"
-          onError={() => setFailed(true)}
-        />
-      )}
+      <EventThumbnail
+        urls={thumbnailUrls}
+        cacheKey={`scrubber-${event.id}`}
+        alt=""
+        className="w-full h-full"
+        objectFit="cover"
+      />
       <span className="absolute bottom-0 left-0 right-0 text-[8px] text-white bg-black/70 px-1 flex min-w-0">
         <span className="truncate">{monitorName}</span>
         <span className="shrink-0"> · {fmtTimeShort(new Date(event.startMs))}</span>

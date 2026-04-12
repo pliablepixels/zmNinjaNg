@@ -386,7 +386,18 @@
       "twelve_hour": "12-hour",
       "twenty_four_hour": "24-hour",
       "tv_mode": "TV mode",
-      "tv_mode_desc": "D-pad navigation and larger UI"
+      "tv_mode_desc": "D-pad navigation and larger UI",
+      "thumbnail_chain": {
+        "title": "Thumbnail display",
+        "desc": "Order to try for event thumbnails. Disabled rows are skipped.",
+        "alarm": "Alarm frame",
+        "snapshot": "Snapshot",
+        "objdetect": "Object detection",
+        "custom": "Custom frame ID",
+        "custom_placeholder": "e.g. 1",
+        "move_up": "Move up",
+        "move_down": "Move down"
+      }
     }
   },
   "ssl": {

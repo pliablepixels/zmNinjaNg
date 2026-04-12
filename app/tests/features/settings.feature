@@ -51,6 +51,19 @@ Feature: Application Settings
     When I toggle bandwidth mode
     Then the bandwidth mode label should update
 
+  @all
+  Scenario: Thumbnail fallback chain reorder persists across reload
+    When I navigate to the "Settings" page
+    And I expand the thumbnail fallback chain editor
+    Then I should see the thumbnail fallback chain editor
+    When I move the "snapshot" thumbnail fallback entry up
+    And I disable the "objdetect" thumbnail fallback entry
+    And I navigate to the "Dashboard" page
+    And I navigate to the "Settings" page
+    And I expand the thumbnail fallback chain editor
+    Then the "snapshot" thumbnail fallback entry should be above the "alarm" entry
+    And the "objdetect" thumbnail fallback entry should be disabled
+
   @ios-phone @android @visual
   Scenario: Phone layout makes all settings reachable via scroll
     Given the viewport is mobile size

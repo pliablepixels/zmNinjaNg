@@ -273,3 +273,48 @@ Then('I clear logs if available', async ({ page }) => {
     }
   }
 });
+
+// Thumbnail fallback chain steps
+When('I expand the thumbnail fallback chain editor', async ({ page }) => {
+  const trigger = page.getByTestId('settings-thumbnail-chain-trigger');
+  await trigger.waitFor({ state: 'visible' });
+  if ((await trigger.getAttribute('data-state')) !== 'open') {
+    await trigger.click();
+  }
+});
+
+Then('I should see the thumbnail fallback chain editor', async ({ page }) => {
+  await expect(page.getByTestId('settings-thumbnail-chain')).toBeVisible();
+});
+
+When('I move the {string} thumbnail fallback entry up', async ({ page }, type: string) => {
+  await page.getByTestId(`settings-thumbnail-chain-${type}-up`).click();
+});
+
+When('I disable the {string} thumbnail fallback entry', async ({ page }, type: string) => {
+  const toggle = page.getByTestId(`settings-thumbnail-chain-${type}-toggle`);
+  if ((await toggle.getAttribute('data-state')) === 'checked') {
+    await toggle.click();
+  }
+});
+
+Then('the {string} thumbnail fallback entry should be above the {string} entry', async ({ page }, above: string, below: string) => {
+  const chain = page.getByTestId('settings-thumbnail-chain');
+  await expect(chain).toBeVisible();
+  await chain.getByTestId(`settings-thumbnail-chain-row-${above}`).waitFor({ state: 'visible' });
+  const rows = await chain.locator('[data-testid^="settings-thumbnail-chain-row-"]').all();
+  const types: string[] = [];
+  for (const row of rows) {
+    const testId = await row.getAttribute('data-testid');
+    if (testId) types.push(testId.replace('settings-thumbnail-chain-row-', ''));
+  }
+  const aboveIdx = types.indexOf(above);
+  const belowIdx = types.indexOf(below);
+  expect(aboveIdx).toBeGreaterThanOrEqual(0);
+  expect(belowIdx).toBeGreaterThan(aboveIdx);
+});
+
+Then('the {string} thumbnail fallback entry should be disabled', async ({ page }, type: string) => {
+  const toggle = page.getByTestId(`settings-thumbnail-chain-${type}-toggle`);
+  await expect(toggle).toHaveAttribute('data-state', 'unchecked');
+});

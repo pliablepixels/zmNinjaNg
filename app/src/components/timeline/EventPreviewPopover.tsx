@@ -15,6 +15,7 @@ import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { getEventImageUrl } from '../../api/events';
 import { getPortalUrlForEvent } from '../../lib/server-resolver';
+import { resolveFallbackFids } from '../../lib/thumbnail-chain';
 import { useCurrentProfile } from '../../hooks/useCurrentProfile';
 import { useAuthStore } from '../../stores/auth';
 import type { MonitorsResponse } from '../../api/types';
@@ -61,7 +62,7 @@ export const EventPreviewPopover = memo(function EventPreviewPopover({
   onClose,
 }: EventPreviewPopoverProps) {
   const { t } = useTranslation();
-  const { currentProfile } = useCurrentProfile();
+  const { currentProfile, settings } = useCurrentProfile();
   const accessToken = useAuthStore((s) => s.accessToken);
   const queryClient = useQueryClient();
 
@@ -73,23 +74,26 @@ export const EventPreviewPopover = memo(function EventPreviewPopover({
     minStreamingPort: currentProfile?.minStreamingPort,
     monitorId: event.monitorId,
   };
-  type FrameType = 'objdetect' | 'alarm' | 'snapshot';
-  const frameTypes: FrameType[] = ['objdetect', 'alarm', 'snapshot'];
-  const candidates = frameTypes.map((f) => ({
-    type: f,
-    url: getEventImageUrl(portalUrl, event.id, f, tokenOpts),
+  const fids = resolveFallbackFids(settings.thumbnailFallbackChain);
+  const candidates = fids.map((fid) => ({
+    fid,
+    url: getEventImageUrl(portalUrl, event.id, fid, tokenOpts),
   }));
 
   const [resolvedSrc, setResolvedSrc] = useState<string | null>(null);
-  const [resolvedFrame, setResolvedFrame] = useState<FrameType | null>(null);
+  const [resolvedFrame, setResolvedFrame] = useState<string | null>(null);
   const [imgFailed, setImgFailed] = useState(false);
 
   // Preload off-screen: try each candidate until one loads successfully
   useEffect(() => {
     let cancelled = false;
+    if (candidates.length === 0) {
+      setImgFailed(true);
+      return () => { cancelled = true; };
+    }
 
     (async () => {
-      for (const { type, url } of candidates) {
+      for (const { fid, url } of candidates) {
         if (cancelled) return;
         const ok = await new Promise<boolean>((resolve) => {
           const img = new Image();
@@ -100,7 +104,7 @@ export const EventPreviewPopover = memo(function EventPreviewPopover({
         if (cancelled) return;
         if (ok) {
           setResolvedSrc(url);
-          setResolvedFrame(type);
+          setResolvedFrame(fid);
           return;
         }
       }
@@ -110,7 +114,7 @@ export const EventPreviewPopover = memo(function EventPreviewPopover({
     return () => { cancelled = true; };
   }, [event.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const frameLabels: Record<FrameType, string> = {
+  const frameLabels: Record<string, string> = {
     objdetect: 'AI Detect',
     alarm: 'Alarm',
     snapshot: 'Snapshot',
@@ -158,7 +162,7 @@ export const EventPreviewPopover = memo(function EventPreviewPopover({
           )}
           {resolvedFrame && (
             <span className="absolute top-1.5 right-1.5 text-[9px] font-medium px-1.5 py-0.5 rounded bg-black/60 text-white/80">
-              {frameLabels[resolvedFrame]}
+              {frameLabels[resolvedFrame] ?? resolvedFrame}
             </span>
           )}
         </div>

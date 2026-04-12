@@ -15,6 +15,20 @@ export type StreamingMethod = 'auto' | 'mjpeg';
 export type WebRTCProtocol = 'webrtc' | 'mse' | 'hls';
 export type DateFormatPreset = 'MMM d, yyyy' | 'MMM d' | 'dd/MM/yyyy' | 'dd/MM' | 'custom';
 export type TimeFormatPreset = '12h' | '24h' | 'custom';
+export type ThumbnailFallbackType = 'alarm' | 'snapshot' | 'objdetect' | 'custom';
+
+export interface ThumbnailFallbackEntry {
+  type: ThumbnailFallbackType;
+  enabled: boolean;
+  customFid?: string;
+}
+
+export const DEFAULT_THUMBNAIL_FALLBACK_CHAIN: ThumbnailFallbackEntry[] = [
+  { type: 'alarm', enabled: true },
+  { type: 'snapshot', enabled: true },
+  { type: 'objdetect', enabled: true },
+  { type: 'custom', enabled: false, customFid: '' },
+];
 
 export interface ProfileSettings {
   viewMode: ViewMode;
@@ -108,6 +122,9 @@ export interface ProfileSettings {
   // Per-component log level overrides (component name → LogLevel)
   // When absent, the component uses the global logLevel.
   componentLogLevels: Record<string, number>;
+  // Ordered fallback chain for event thumbnails. Disabled entries (and custom
+  // entries with an empty customFid) are skipped at URL build time.
+  thumbnailFallbackChain: ThumbnailFallbackEntry[];
 }
 
 interface SettingsState {
@@ -216,6 +233,7 @@ export const DEFAULT_SETTINGS: ProfileSettings = {
   showProtocolLabel: true,
   monitorStreamingOverrides: {},
   componentLogLevels: {},
+  thumbnailFallbackChain: DEFAULT_THUMBNAIL_FALLBACK_CHAIN,
 };
 
 export const useSettingsStore = create<SettingsState>()(

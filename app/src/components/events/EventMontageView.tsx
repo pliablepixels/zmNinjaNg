@@ -17,10 +17,12 @@ import { useDateTimeFormat } from '../../hooks/useDateTimeFormat';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { SecureImage } from '../ui/secure-image';
+import { EventThumbnail } from './EventThumbnail';
 import { downloadEventVideo } from '../../lib/download';
-import { getEventImageUrl, type EventFilters } from '../../api/events';
+import { type EventFilters } from '../../api/events';
 import { getPortalUrlForEvent } from '../../lib/server-resolver';
+import { buildThumbnailChain } from '../../lib/thumbnail-chain';
+import { useCurrentProfile } from '../../hooks/useCurrentProfile';
 import { calculateThumbnailDimensions, getMonitorDimensions } from '../../lib/event-utils';
 import { ZM_INTEGRATION } from '../../lib/zmninja-ng-constants';
 import type { EventData, Monitor, Tag } from '../../api/types';
@@ -63,6 +65,8 @@ export const EventMontageView = ({
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { fmtDateTimeShort } = useDateTimeFormat();
+  const { settings } = useCurrentProfile();
+  const thumbnailChain = settings.thumbnailFallbackChain;
 
   // Haptic feedback helper
   const triggerHaptic = async () => {
@@ -107,7 +111,7 @@ export const EventMontageView = ({
           );
 
           const eventPortalUrl = getPortalUrlForEvent(event.MonitorId, monitors, portalUrl);
-          const imageUrl = getEventImageUrl(eventPortalUrl, event.Id, 'snapshot', {
+          const thumbnailUrls = buildThumbnailChain(eventPortalUrl, event.Id, thumbnailChain, {
             token: accessToken,
             width: thumbnailWidth,
             height: thumbnailHeight,
@@ -125,17 +129,13 @@ export const EventMontageView = ({
               onClick={() => navigate(`/events/${event.Id}`, { state: { from: '/events', eventFilters } })}
             >
               <div className="relative bg-card" style={{ aspectRatio: aspectRatio.toString() }}>
-                <SecureImage
-                  src={imageUrl}
+                <EventThumbnail
+                  urls={thumbnailUrls}
+                  cacheKey={event.Id}
                   alt={event.Name}
                   className="w-full h-full"
-                  style={{ objectFit: thumbnailFit }}
+                  objectFit={thumbnailFit}
                   loading="lazy"
-                  onError={(e) => {
-                    const img = e.target as HTMLImageElement;
-                    img.src =
-                      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="200"%3E%3Crect fill="%231a1a1a" width="300" height="200"/%3E%3Ctext fill="%23444" x="50%" y="50%" text-anchor="middle" font-family="sans-serif"%3ENo Image%3C/text%3E%3C/svg%3E';
-                  }}
                 />
                 <div className="absolute top-2 right-2 flex items-center gap-2">
                   <Badge variant="secondary" className="text-xs">

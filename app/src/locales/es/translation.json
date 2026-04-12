@@ -386,7 +386,18 @@
       "twelve_hour": "12 horas",
       "twenty_four_hour": "24 horas",
       "tv_mode": "Modo TV",
-      "tv_mode_desc": "Navegacion D-pad y pantalla"
+      "tv_mode_desc": "Navegacion D-pad y pantalla",
+      "thumbnail_chain": {
+        "title": "Miniaturas",
+        "desc": "Orden de fotogramas para miniaturas. Se omiten las filas desactivadas.",
+        "alarm": "Fotograma alarma",
+        "snapshot": "Instantánea",
+        "objdetect": "Detección",
+        "custom": "ID personalizado",
+        "custom_placeholder": "p. ej. 1",
+        "move_up": "Subir",
+        "move_down": "Bajar"
+      }
     }
   },
   "ssl": {
