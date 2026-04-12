@@ -386,7 +386,18 @@
       "twelve_hour": "12小时制",
       "twenty_four_hour": "24小时制",
       "tv_mode": "TV模式",
-      "tv_mode_desc": "D-pad导航和显示"
+      "tv_mode_desc": "D-pad导航和显示",
+      "thumbnail_chain": {
+        "title": "缩略图显示",
+        "desc": "事件缩略图的尝试顺序。已禁用的行将被跳过。",
+        "alarm": "报警帧",
+        "snapshot": "快照",
+        "objdetect": "目标检测",
+        "custom": "自定义帧 ID",
+        "custom_placeholder": "例如 1",
+        "move_up": "上移",
+        "move_down": "下移"
+      }
     }
   },
   "ssl": {

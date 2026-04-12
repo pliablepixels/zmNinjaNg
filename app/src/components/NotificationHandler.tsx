@@ -19,6 +19,8 @@ import { useAuthStore } from '../stores/auth';
 import { toast } from 'sonner';
 import { Bell } from 'lucide-react';
 import { getEventCauseIcon } from '../lib/event-icons';
+import { buildThumbnailChain } from '../lib/thumbnail-chain';
+import { EventThumbnail } from './events/EventThumbnail';
 import { log, LogLevel } from '../lib/logger';
 import { navigationService } from '../lib/navigation';
 import { useTranslation } from 'react-i18next';
@@ -38,7 +40,7 @@ import { useNotificationDelivered } from '../hooks/useNotificationDelivered';
  */
 export function NotificationHandler() {
   const navigate = useNavigate();
-  const { currentProfile } = useCurrentProfile();
+  const { currentProfile, settings: profileSettings } = useCurrentProfile();
   const getDecryptedPassword = useProfileStore((state) => state.getDecryptedPassword);
   const switchProfile = useProfileStore((state) => state.switchProfile);
   const { t } = useTranslation();
@@ -154,25 +156,30 @@ export function NotificationHandler() {
     if (latestEvent.EventId !== lastEventId.current) {
       lastEventId.current = latestEvent.EventId;
 
+      const toastThumbnailUrls = currentProfile && latestEvent.EventId
+        ? buildThumbnailChain(
+            currentProfile.portalUrl,
+            String(latestEvent.EventId),
+            profileSettings.thumbnailFallbackChain,
+            {
+              token: useAuthStore.getState().accessToken ?? undefined,
+              minStreamingPort: currentProfile.minStreamingPort,
+            }
+          )
+        : [];
+
       // Show toast notification
       toast(
         <div className="flex items-start gap-3">
-          {latestEvent.ImageUrl ? (
-            <div className="flex-shrink-0">
-              <img
-                src={latestEvent.ImageUrl ? `${latestEvent.ImageUrl}&token=${useAuthStore.getState().accessToken}` : ''}
+          {toastThumbnailUrls.length > 0 ? (
+            <div className="flex-shrink-0 h-16 w-16 rounded border overflow-hidden bg-muted/30">
+              <EventThumbnail
+                urls={toastThumbnailUrls}
+                cacheKey={`toast-${latestEvent.EventId}`}
                 alt={latestEvent.MonitorName}
-                className="h-16 w-16 rounded object-cover border"
-                onError={(e) => {
-                  // Fallback to icon if image fails to load
-                  e.currentTarget.style.display = 'none';
-                  const icon = e.currentTarget.nextElementSibling as HTMLElement;
-                  if (icon) icon.style.display = 'block';
-                }}
+                className="h-full w-full"
+                objectFit="cover"
               />
-              <div style={{ display: 'none' }} className="mt-0.5">
-                <Bell className="h-5 w-5 text-primary" />
-              </div>
             </div>
           ) : (
             <div className="flex-shrink-0 mt-0.5">

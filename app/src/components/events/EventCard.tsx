@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDateTimeFormat } from '../../hooks/useDateTimeFormat';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
-import { SecureImage } from '../ui/secure-image';
+import { EventThumbnail } from './EventThumbnail';
 import { Video, Calendar, Clock, Star } from 'lucide-react';
 import { getEventCauseIcon } from '../../lib/event-icons';
 import { getObjectClassIconFromList } from '../../lib/object-class-icons';
@@ -31,7 +31,7 @@ import { TagChipList } from './TagChip';
  * @param props.monitorName - Name of the monitor that recorded the event
  * @param props.thumbnailUrl - URL for the event thumbnail image
  */
-function EventCardComponent({ event, monitorName, thumbnailUrl, objectFit = 'contain', thumbnailWidth, thumbnailHeight, tags, eventFilters }: EventCardProps) {
+function EventCardComponent({ event, monitorName, thumbnailUrls, objectFit = 'contain', thumbnailWidth, thumbnailHeight, tags, eventFilters }: EventCardProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { fmtDate, fmtTime } = useDateTimeFormat();
@@ -57,15 +57,6 @@ function EventCardComponent({ event, monitorName, thumbnailUrl, objectFit = 'con
     }
   };
 
-  /**
-   * Handles image load errors by replacing the source with a fallback SVG.
-   */
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.target as HTMLImageElement;
-    img.src =
-      `data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="160" height="120"%3E%3Crect fill="%231a1a1a" width="160" height="120"/%3E%3Ctext fill="%23666" x="50%" y="50%" text-anchor="middle" font-size="12"%3E${t('events.no_image')}%3C/text%3E%3C/svg%3E`;
-  };
-
   return (
     <Card
       className="group overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-200 hover:ring-2 hover:ring-primary/50 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -88,15 +79,15 @@ function EventCardComponent({ event, monitorName, thumbnailUrl, objectFit = 'con
             className="w-full max-h-28"
             style={{ aspectRatio: aspectRatio.toString() }}
           >
-            <SecureImage
-              src={thumbnailUrl}
+            <EventThumbnail
+              urls={thumbnailUrls}
+              cacheKey={event.Id}
               alt={event.Name}
               className={cn(
                 "w-full h-full group-hover:scale-105 transition-transform duration-300"
               )}
-              style={{ objectFit }}
+              objectFit={objectFit}
               loading="lazy"
-              onError={handleImageError}
               data-testid="event-thumbnail"
             />
           </div>

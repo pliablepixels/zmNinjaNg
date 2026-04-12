@@ -8,6 +8,8 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useNotificationStore } from '../stores/notifications';
 import { useCurrentProfile } from '../hooks/useCurrentProfile';
+import { buildThumbnailChain } from '../lib/thumbnail-chain';
+import { EventThumbnail } from '../components/events/EventThumbnail';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -30,15 +32,10 @@ import { NotificationBadge } from '../components/NotificationBadge';
 import { useAuthStore } from '../stores/auth';
 import { useDateTimeFormat } from '../hooks/useDateTimeFormat';
 
-/** Strip any existing token= param from a URL so we can append the current one. */
-function stripToken(url: string): string {
-  return url.replace(/[&?]token=[^&]*/g, '');
-}
-
 export default function NotificationHistory() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { currentProfile } = useCurrentProfile();
+  const { currentProfile, settings } = useCurrentProfile();
   const { getEvents, getUnreadCount, markEventRead, markAllRead, clearEvents } = useNotificationStore();
   const accessToken = useAuthStore((state) => state.accessToken);
   const { fmtDateTimeShort } = useDateTimeFormat();
@@ -67,13 +64,22 @@ export default function NotificationHistory() {
     }
   };
 
-  /** Build image src with current token, stripping any stale token from stored URL. */
-  const getImageSrc = useMemo(() => {
-    return (url: string) => {
-      const clean = stripToken(url);
-      return accessToken ? `${clean}${clean.includes('?') ? '&' : '?'}token=${accessToken}` : clean;
-    };
-  }, [accessToken]);
+  /** Build the thumbnail fallback chain URLs for a notification event. */
+  const buildChainForEvent = useCallback(
+    (eventId: number) => {
+      if (!currentProfile) return [];
+      return buildThumbnailChain(
+        currentProfile.portalUrl,
+        String(eventId),
+        settings.thumbnailFallbackChain,
+        {
+          token: accessToken ?? undefined,
+          minStreamingPort: currentProfile.minStreamingPort,
+        }
+      );
+    },
+    [currentProfile, accessToken, settings.thumbnailFallbackChain]
+  );
 
   type DateSection = 'today' | 'yesterday' | 'this_week' | 'this_month' | 'older';
 
@@ -187,13 +193,16 @@ export default function NotificationHistory() {
                       data-testid="notification-history-item"
                     >
                       {/* Thumbnail */}
-                      {event.ImageUrl ? (
-                        <img
-                          src={getImageSrc(event.ImageUrl)}
-                          alt={`Event ${event.EventId}`}
-                          className="h-14 w-20 rounded border object-cover flex-shrink-0"
-                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                        />
+                      {event.EventId ? (
+                        <div className="h-14 w-20 rounded border overflow-hidden bg-muted/30 flex-shrink-0">
+                          <EventThumbnail
+                            urls={buildChainForEvent(event.EventId)}
+                            cacheKey={`notif-${event.EventId}`}
+                            alt={`Event ${event.EventId}`}
+                            className="h-full w-full"
+                            objectFit="cover"
+                          />
+                        </div>
                       ) : (
                         <div className="h-14 w-20 rounded border bg-muted/30 flex items-center justify-center flex-shrink-0">
                           <Bell className="h-4 w-4 text-muted-foreground" />

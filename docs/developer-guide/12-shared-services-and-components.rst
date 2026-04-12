@@ -959,6 +959,60 @@ stream URLs with tokens)
 
 --------------
 
+EventThumbnail (``events/EventThumbnail.tsx``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Event thumbnail with a user-configurable fallback chain. Receives an
+ordered list of candidate URLs (``urls``) and a stable ``cacheKey``
+(typically the event id). On ``<img>`` ``onError`` it advances to the
+next URL. The image is rendered with ``opacity: 0`` until ``onLoad``
+fires, so the browser never flashes its broken-image glyph while the
+chain is walking. The winning index is kept in a session-scoped
+``Map<cacheKey, index>`` so list re-renders don't re-probe the chain.
+
+**Props:**
+
+.. code:: ts
+
+   interface EventThumbnailProps {
+     urls: string[];           // candidate URLs in order
+     cacheKey: string;         // stable per-event identifier
+     alt?: string;
+     objectFit?: CSSProperties['objectFit'];
+     className?: string;
+   }
+
+**Usage:**
+
+.. code:: tsx
+
+   import { buildThumbnailChain } from '../../lib/thumbnail-chain';
+   import { useCurrentProfile } from '../../hooks/useCurrentProfile';
+
+   const { settings } = useCurrentProfile();
+   const urls = buildThumbnailChain(portalUrl, event.Id, settings.thumbnailFallbackChain, {
+     token: accessToken,
+     width,
+     height,
+     minStreamingPort,
+     monitorId: event.MonitorId,
+   });
+
+   <EventThumbnail urls={urls} cacheKey={event.Id} alt={event.Name} />
+
+The chain itself comes from the per-profile ``thumbnailFallbackChain``
+setting (see ``stores/settings.ts``). ``resolveFallbackFids`` and
+``buildThumbnailChain`` in ``lib/thumbnail-chain.ts`` translate the
+setting into ordered fids and full URLs. Disabled entries and empty
+custom rows are skipped.
+
+**Used By:** EventCard (via EventListView and EventMontageView),
+TimelineScrubber thumbnails, NotificationHistory. The EventDetail hero
+poster and EventPreviewPopover pick the first fid from the resolved
+chain instead of hardcoding ``snapshot``/``alarm``.
+
+--------------
+
 VideoPlayer (``ui/video-player.tsx``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

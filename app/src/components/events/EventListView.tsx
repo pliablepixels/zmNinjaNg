@@ -8,10 +8,13 @@ import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { EventCard } from './EventCard';
-import { getEventImageUrl, type EventFilters } from '../../api/events';
+import { type EventFilters } from '../../api/events';
 import { getPortalUrlForEvent } from '../../lib/server-resolver';
+import { buildThumbnailChain } from '../../lib/thumbnail-chain';
 import { calculateThumbnailDimensions, EVENT_GRID_CONSTANTS, getMonitorDimensions } from '../../lib/event-utils';
+import { useCurrentProfile } from '../../hooks/useCurrentProfile';
 import type { EventData, Monitor, Tag } from '../../api/types';
+import type { ThumbnailFallbackEntry } from '../../stores/settings';
 
 interface EventListViewProps {
   events: EventData[];
@@ -39,6 +42,7 @@ const EventItem = ({
   eventTagMap,
   eventFilters,
   minStreamingPort,
+  thumbnailChain,
 }: {
   event: EventData;
   monitors: Array<{ Monitor: Monitor }>;
@@ -48,6 +52,7 @@ const EventItem = ({
   eventTagMap?: Map<string, Tag[]>;
   eventFilters?: EventFilters;
   minStreamingPort?: number;
+  thumbnailChain: ThumbnailFallbackEntry[];
 }) => {
   const { Event } = event;
   const monitorData = monitors.find((m) => m.Monitor.Id === Event.MonitorId)?.Monitor;
@@ -62,7 +67,7 @@ const EventItem = ({
   );
 
   const eventPortalUrl = getPortalUrlForEvent(Event.MonitorId, monitors, portalUrl);
-  const thumbnailUrl = getEventImageUrl(eventPortalUrl, Event.Id, 'snapshot', {
+  const thumbnailUrls = buildThumbnailChain(eventPortalUrl, Event.Id, thumbnailChain, {
     token: accessToken,
     width: thumbnailWidth,
     height: thumbnailHeight,
@@ -77,7 +82,7 @@ const EventItem = ({
       <EventCard
         event={Event}
         monitorName={monitorName}
-        thumbnailUrl={thumbnailUrl}
+        thumbnailUrls={thumbnailUrls}
         objectFit={thumbnailFit}
         thumbnailWidth={thumbnailWidth}
         thumbnailHeight={thumbnailHeight}
@@ -104,6 +109,8 @@ export const EventListView = ({
   minStreamingPort,
 }: EventListViewProps) => {
   const { t } = useTranslation();
+  const { settings } = useCurrentProfile();
+  const thumbnailChain = settings.thumbnailFallbackChain;
 
   const isLoadingData = isLoadingMore || isFetching;
   const hasMore = totalCount !== undefined ? events.length < totalCount : false;
@@ -156,6 +163,7 @@ export const EventListView = ({
           eventTagMap={eventTagMap}
           eventFilters={eventFilters}
           minStreamingPort={minStreamingPort}
+          thumbnailChain={thumbnailChain}
         />
       ))}
       {footer}

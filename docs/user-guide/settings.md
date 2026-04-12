@@ -10,6 +10,17 @@ Settings are stored per profile. Each ZoneMinder server profile has its own inde
 | **Theme** | Light, Cream, Dark, Slate, Amber, or System (follows system setting by default) |
 | **Date format** | How dates are displayed throughout the app |
 | **Time format** | 12-hour or 24-hour clock |
+| **Thumbnail display** | Order of frame types to try when loading event thumbnails |
+
+### Thumbnail display
+
+Event thumbnails can come from different frame types in ZoneMinder: `alarm` (first alarmed frame), `snapshot` (representative frame), `objdetect` (object-detection frame from zmeventnotification), or a custom frame ID. Different ZoneMinder setups populate different frame types depending on motion and ML configuration, so a single fixed choice leaves some users with missing images.
+
+The **Thumbnail display** setting lets you pick the order in which the app tries each frame type. Each row has a drag position (up/down arrows), an enable toggle, and the frame type label. The last row is a custom slot where you can type any frame ID your setup uses (for example `1` for the first frame). Disabled rows and empty custom rows are skipped.
+
+When a thumbnail loads successfully, the winning frame type is cached for the session so the app doesn't re-try earlier entries for the same event. If every entry fails, a placeholder image is shown. At no point does the app flash a broken-image icon — the thumbnail area stays blank until a frame succeeds or the chain is exhausted.
+
+The setting applies to every thumbnail surface in the app: events list, event montage, event detail hero, timeline scrubber, timeline preview popover, and notification history.
 
 ## Bandwidth Settings
 

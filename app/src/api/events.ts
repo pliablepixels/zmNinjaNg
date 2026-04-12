@@ -324,7 +324,7 @@ export async function getConsoleEvents(interval: string = '1 hour'): Promise<Rec
 export function getEventImageUrl(
   portalUrl: string,
   eventId: string,
-  frame: number | 'snapshot' | 'alarm' | 'objdetect',
+  frame: number | 'snapshot' | 'alarm' | 'objdetect' | string,
   options: {
     token?: string;
     width?: number;

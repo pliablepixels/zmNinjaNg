@@ -8,6 +8,7 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getEvent, getEventVideoUrl, getEventImageUrl } from '../api/events';
+import { resolveFallbackFids } from '../lib/thumbnail-chain';
 import { getMonitor } from '../api/monitors';
 import { useCurrentProfile } from '../hooks/useCurrentProfile';
 import { useAuthStore } from '../stores/auth';
@@ -203,8 +204,9 @@ export default function EventDetail() {
     : '';
 
 
+  const posterFid = resolveFallbackFids(settings.thumbnailFallbackChain)[0] ?? 'snapshot';
   const posterUrl = currentProfile
-    ? getEventImageUrl(resolvedPortalUrl, event.Event.Id, 'snapshot', {
+    ? getEventImageUrl(resolvedPortalUrl, event.Event.Id, posterFid, {
       token: accessToken || undefined,
       apiUrl: currentProfile.apiUrl,
       minStreamingPort: currentProfile.minStreamingPort,
