@@ -397,6 +397,18 @@
         "custom_placeholder": "p. ej. 1",
         "move_up": "Subir",
         "move_down": "Bajar"
+      },
+      "hover_preview": {
+        "title": "Vista al pasar",
+        "desc": "Muestra una vista ampliada al pasar sobre miniaturas.",
+        "title_long_press": "Vista con pulsación larga",
+        "desc_long_press": "Mantén pulsada una miniatura para ver la vista ampliada.",
+        "events_list": "Eventos (lista)",
+        "events_grid": "Eventos (rejilla)",
+        "monitors_list": "Monitores (lista)",
+        "monitors_grid": "Monitores (rejilla)",
+        "dashboard": "Panel",
+        "timeline": "Línea de tiempo"
       }
     }
   },

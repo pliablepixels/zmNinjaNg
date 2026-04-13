@@ -397,6 +397,18 @@
         "custom_placeholder": "e.g. 1",
         "move_up": "Move up",
         "move_down": "Move down"
+      },
+      "hover_preview": {
+        "title": "Hover preview",
+        "desc": "Show an enlarged preview when hovering thumbnails.",
+        "title_long_press": "Long press preview",
+        "desc_long_press": "Long press a thumbnail to show an enlarged preview.",
+        "events_list": "Events (list)",
+        "events_grid": "Events (grid)",
+        "monitors_list": "Monitors (list)",
+        "monitors_grid": "Monitors (grid)",
+        "dashboard": "Dashboard",
+        "timeline": "Timeline"
       }
     }
   },

@@ -5,6 +5,25 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Native app feel: no long-press text selection / callout outside
+     editable fields. Tagged on <html> in main.tsx via Platform.isNative. */
+  .is-native,
+  .is-native * {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  .is-native input,
+  .is-native textarea,
+  .is-native [contenteditable="true"],
+  .is-native [contenteditable=""] {
+    -webkit-user-select: auto;
+    user-select: auto;
+    -webkit-touch-callout: default;
+  }
+}
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;

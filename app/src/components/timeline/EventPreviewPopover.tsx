@@ -19,6 +19,8 @@ import { resolveFallbackFids } from '../../lib/thumbnail-chain';
 import { useCurrentProfile } from '../../hooks/useCurrentProfile';
 import { useAuthStore } from '../../stores/auth';
 import type { MonitorsResponse } from '../../api/types';
+import { HoverPreview } from '../ui/hover-preview';
+import { EventZmsHoverPlayer } from '../events/EventThumbnailHoverPreview';
 
 interface EventPreviewPopoverProps {
   event: {
@@ -150,11 +152,29 @@ export const EventPreviewPopover = memo(function EventPreviewPopover({
               <VideoOff className="h-8 w-8 text-muted-foreground/40" />
             </div>
           ) : resolvedSrc ? (
-            <img
-              src={resolvedSrc}
-              alt=""
-              className="aspect-video bg-black rounded-t-lg overflow-hidden object-contain w-full"
-            />
+            settings.hoverPreview.timeline ? (
+              <HoverPreview
+                aspectRatio={16 / 9}
+                testId="event-thumbnail-hover-preview"
+                renderPreview={() => (
+                  <EventZmsHoverPlayer
+                    descriptor={{ eventId: event.id, monitorId: event.monitorId }}
+                  />
+                )}
+              >
+                <img
+                  src={resolvedSrc}
+                  alt=""
+                  className="aspect-video bg-black rounded-t-lg overflow-hidden object-contain w-full"
+                />
+              </HoverPreview>
+            ) : (
+              <img
+                src={resolvedSrc}
+                alt=""
+                className="aspect-video bg-black rounded-t-lg overflow-hidden object-contain w-full"
+              />
+            )
           ) : (
             <div className="aspect-video bg-muted/30 rounded-t-lg flex items-center justify-center">
               <Camera className="h-8 w-8 text-muted-foreground/40 animate-pulse" />

@@ -36,7 +36,8 @@ function EventCardComponent({ event, monitorName, thumbnailUrls, largeThumbnailU
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { fmtDate, fmtTime } = useDateTimeFormat();
-  const { currentProfile } = useCurrentProfile();
+  const { currentProfile, settings } = useCurrentProfile();
+  const showHover = settings.hoverPreview.eventsList;
   const toggleFavorite = useEventFavoritesStore((state) => state.toggleFavorite);
 
   // Subscribe to the specific favorite state for this event
@@ -80,12 +81,27 @@ function EventCardComponent({ event, monitorName, thumbnailUrls, largeThumbnailU
             className="w-full max-h-28"
             style={{ aspectRatio: aspectRatio.toString() }}
           >
-            <EventThumbnailHoverPreview
-              urls={largeThumbnailUrls ?? thumbnailUrls}
-              cacheKey={event.Id}
-              alt={event.Name}
-              aspectRatio={aspectRatio}
-            >
+            {showHover ? (
+              <EventThumbnailHoverPreview
+                urls={largeThumbnailUrls ?? thumbnailUrls}
+                cacheKey={event.Id}
+                alt={event.Name}
+                aspectRatio={aspectRatio}
+                event={event}
+              >
+                <EventThumbnail
+                  urls={thumbnailUrls}
+                  cacheKey={event.Id}
+                  alt={event.Name}
+                  className={cn(
+                    "w-full h-full group-hover:scale-105 transition-transform duration-300"
+                  )}
+                  objectFit={objectFit}
+                  loading="lazy"
+                  data-testid="event-thumbnail"
+                />
+              </EventThumbnailHoverPreview>
+            ) : (
               <EventThumbnail
                 urls={thumbnailUrls}
                 cacheKey={event.Id}
@@ -97,7 +113,7 @@ function EventCardComponent({ event, monitorName, thumbnailUrls, largeThumbnailU
                 loading="lazy"
                 data-testid="event-thumbnail"
               />
-            </EventThumbnailHoverPreview>
+            )}
           </div>
           <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 sm:bottom-1 bg-black/50 text-white text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 rounded font-medium">
             {event.Length}s

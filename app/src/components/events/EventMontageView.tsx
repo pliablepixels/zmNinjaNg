@@ -23,6 +23,7 @@ import { type EventFilters } from '../../api/events';
 import { getPortalUrlForEvent } from '../../lib/server-resolver';
 import { buildThumbnailChain } from '../../lib/thumbnail-chain';
 import { useCurrentProfile } from '../../hooks/useCurrentProfile';
+import { EventThumbnailHoverPreview } from './EventThumbnailHoverPreview';
 import { calculateThumbnailDimensions, getMonitorDimensions } from '../../lib/event-utils';
 import { ZM_INTEGRATION } from '../../lib/zmninja-ng-constants';
 import type { EventData, Monitor, Tag } from '../../api/types';
@@ -67,6 +68,7 @@ export const EventMontageView = ({
   const { fmtDateTimeShort } = useDateTimeFormat();
   const { settings } = useCurrentProfile();
   const thumbnailChain = settings.thumbnailFallbackChain;
+  const showHover = settings.hoverPreview.eventsGrid;
 
   // Haptic feedback helper
   const triggerHaptic = async () => {
@@ -129,14 +131,27 @@ export const EventMontageView = ({
               onClick={() => navigate(`/events/${event.Id}`, { state: { from: '/events', eventFilters } })}
             >
               <div className="relative bg-card" style={{ aspectRatio: aspectRatio.toString() }}>
-                <EventThumbnail
-                  urls={thumbnailUrls}
-                  cacheKey={event.Id}
-                  alt={event.Name}
-                  className="w-full h-full"
-                  objectFit={thumbnailFit}
-                  loading="lazy"
-                />
+                {showHover ? (
+                  <EventThumbnailHoverPreview event={event} aspectRatio={aspectRatio}>
+                    <EventThumbnail
+                      urls={thumbnailUrls}
+                      cacheKey={event.Id}
+                      alt={event.Name}
+                      className="w-full h-full"
+                      objectFit={thumbnailFit}
+                      loading="lazy"
+                    />
+                  </EventThumbnailHoverPreview>
+                ) : (
+                  <EventThumbnail
+                    urls={thumbnailUrls}
+                    cacheKey={event.Id}
+                    alt={event.Name}
+                    className="w-full h-full"
+                    objectFit={thumbnailFit}
+                    loading="lazy"
+                  />
+                )}
                 <div className="absolute top-2 right-2 flex items-center gap-2">
                   <Badge variant="secondary" className="text-xs">
                     {event.Length}s
