@@ -53,6 +53,18 @@ Then('I should see the monitor grid', async ({ page }) => {
   await expect(page.getByTestId('monitor-grid')).toBeVisible();
 });
 
+When('I hover the first monitor card', async ({ page }) => {
+  const firstCard = page.getByTestId('monitor-card').first();
+  await firstCard.hover();
+});
+
+Then('I should see the monitor hover preview', async ({ page }) => {
+  const preview = page.getByTestId('monitor-hover-preview');
+  await expect(preview).toBeVisible({ timeout: 2000 });
+  const box = await preview.boundingBox();
+  expect(box?.width).toBeGreaterThanOrEqual(350);
+});
+
 // Montage Steps
 Then('I should see the montage interface', async ({ page }) => {
   const hasLayoutControls = await page.locator('select,button').count() > 0;
