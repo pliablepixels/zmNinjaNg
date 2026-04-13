@@ -445,6 +445,27 @@ Displays a single event with thumbnail, details, and actions.
 - Duration and timestamp
 - Quick play button
 - Delete/download actions
+- Desktop hover preview of the thumbnail via
+  ``EventThumbnailHoverPreview`` (see below)
+
+EventThumbnailHoverPreview
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Location**: ``src/components/events/EventThumbnailHoverPreview.tsx``
+
+Wraps an ``EventThumbnail`` and, on desktop viewports
+(``window.innerWidth >= 768``), shows a 400px-wide enlarged preview after
+a 400 ms hover delay. The preview is rendered into ``document.body`` via
+a portal and positioned to the right of the anchor (or left if there is
+no room). It uses ``pointer-events: none`` so the underlying card click
+to open the event still works.
+
+The hover preview consumes a separate ``largeThumbnailUrls`` chain that
+``EventListView`` builds with ``buildThumbnailChain`` with no ``width``
+or ``height`` set — the server returns the original image, and the view
+scales it down to the preview size.
+
+Closes automatically on mouse leave and on window scroll / wheel events.
 
 ZmsEventPlayer
 ~~~~~~~~~~~~~~

@@ -67,6 +67,11 @@ Feature: Event Browsing and Management
     When I download snapshot from first event in montage
     Then I should see the background task drawer if download was triggered
 
+  @web @tauri
+  Scenario: Hovering an event thumbnail in list view shows enlarged preview
+    When I hover the first event thumbnail if events exist
+    Then I should see the enlarged event thumbnail preview if hover was performed
+
   @ios-phone @android @visual
   Scenario: Phone layout shows readable event cards
     Given the viewport is mobile size

@@ -15,6 +15,8 @@ Events are displayed as cards showing:
 
 The list supports infinite scrolling - older events load automatically as you scroll down.
 
+On desktop, hovering over a thumbnail for a moment shows a 400px-wide preview anchored next to the row. The preview loads a higher-resolution image from the server. The underlying card remains clickable while the preview is visible, so you can still click to open the event.
+
 ## Filtering Events
 
 Filter events using the controls at the top:
