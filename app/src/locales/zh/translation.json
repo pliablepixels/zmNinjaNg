@@ -408,7 +408,8 @@
         "monitors_list": "监视器(列表)",
         "monitors_grid": "监视器(网格)",
         "dashboard": "仪表板",
-        "timeline": "时间线"
+        "timeline": "时间线",
+        "notifications": "通知"
       }
     }
   },

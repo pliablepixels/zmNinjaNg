@@ -30,6 +30,7 @@ export interface HoverPreviewSettings {
   monitorsGrid: boolean;
   dashboard: boolean;
   timeline: boolean;
+  notifications: boolean;
 }
 
 export const DEFAULT_HOVER_PREVIEW: HoverPreviewSettings = {
@@ -39,6 +40,7 @@ export const DEFAULT_HOVER_PREVIEW: HoverPreviewSettings = {
   monitorsGrid: false,
   dashboard: true,
   timeline: true,
+  notifications: true,
 };
 
 export const DEFAULT_THUMBNAIL_FALLBACK_CHAIN: ThumbnailFallbackEntry[] = [

@@ -408,7 +408,8 @@
         "monitors_list": "Monitors (list)",
         "monitors_grid": "Monitors (grid)",
         "dashboard": "Dashboard",
-        "timeline": "Timeline"
+        "timeline": "Timeline",
+        "notifications": "Notifications"
       }
     }
   },

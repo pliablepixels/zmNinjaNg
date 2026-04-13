@@ -408,7 +408,8 @@
         "monitors_list": "Monitore (Liste)",
         "monitors_grid": "Monitore (Raster)",
         "dashboard": "Dashboard",
-        "timeline": "Zeitleiste"
+        "timeline": "Zeitleiste",
+        "notifications": "Benachrichtigungen"
       }
     }
   },

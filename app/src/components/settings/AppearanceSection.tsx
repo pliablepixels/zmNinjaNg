@@ -270,6 +270,7 @@ function HoverPreviewEditor({ value, onChange }: HoverPreviewEditorProps) {
     { key: 'monitorsGrid', labelKey: 'settings.appearance.hover_preview.monitors_grid' },
     { key: 'dashboard', labelKey: 'settings.appearance.hover_preview.dashboard' },
     { key: 'timeline', labelKey: 'settings.appearance.hover_preview.timeline' },
+    { key: 'notifications', labelKey: 'settings.appearance.hover_preview.notifications' },
   ];
 
   return (

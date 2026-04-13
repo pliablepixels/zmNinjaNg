@@ -408,7 +408,8 @@
         "monitors_list": "Monitores (lista)",
         "monitors_grid": "Monitores (rejilla)",
         "dashboard": "Panel",
-        "timeline": "Línea de tiempo"
+        "timeline": "Línea de tiempo",
+        "notifications": "Notificaciones"
       }
     }
   },
