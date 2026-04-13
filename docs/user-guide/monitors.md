@@ -14,6 +14,8 @@ Each card shows:
 
 Tap a card to open the [Monitor Detail](#monitor-detail) view.
 
+On desktop, hovering a monitor card for a moment opens a larger (400px wide) live preview next to the card. The preview uses its own streaming connection that is opened when the preview appears and closed the moment your cursor leaves. The underlying card remains clickable while the preview is visible.
+
 ## Filtering Monitors
 
 Use the filter controls at the top of the screen to narrow down which monitors are shown:
