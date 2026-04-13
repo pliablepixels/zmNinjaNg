@@ -397,6 +397,19 @@
         "custom_placeholder": "例如 1",
         "move_up": "上移",
         "move_down": "下移"
+      },
+      "hover_preview": {
+        "title": "悬停预览",
+        "desc": "悬停缩略图时显示放大预览。",
+        "title_long_press": "长按预览",
+        "desc_long_press": "长按缩略图显示放大预览。",
+        "events_list": "事件(列表)",
+        "events_grid": "事件(网格)",
+        "monitors_list": "监视器(列表)",
+        "monitors_grid": "监视器(网格)",
+        "dashboard": "仪表板",
+        "timeline": "时间线",
+        "notifications": "通知"
       }
     }
   },

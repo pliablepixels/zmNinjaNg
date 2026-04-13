@@ -17,6 +17,7 @@ import { handleKeyClick } from '../../lib/tv-a11y';
 import { downloadSnapshotFromElement } from '../../lib/download';
 import { toast } from 'sonner';
 import { VideoPlayer } from '../video/VideoPlayer';
+import { MonitorHoverPreview } from './MonitorHoverPreview';
 import { useCurrentProfile } from '../../hooks/useCurrentProfile';
 import type { MonitorCardProps } from '../../api/types';
 import { log, LogLevel } from '../../lib/logger';
@@ -59,6 +60,22 @@ function MonitorCardComponent({
   const isRTC = monitor.Go2RTCEnabled === true && !!currentProfile?.go2rtcUrl;
   const aspectRatio = getMonitorAspectRatio(monitor.Width, monitor.Height, monitor.Orientation);
   const mediaRef = useRef<HTMLImageElement | HTMLVideoElement | null>(null);
+  const showHover = compact ? settings.hoverPreview.monitorsGrid : settings.hoverPreview.monitorsList;
+
+  const videoPlayer = (
+    <VideoPlayer
+      monitor={monitor}
+      profile={currentProfile}
+      className="w-full h-full"
+      objectFit={resolvedFit}
+      externalMediaRef={mediaRef}
+      muted={isMuted}
+      onProtocolChange={setProtocol}
+    />
+  );
+  const wrappedVideo = showHover ? (
+    <MonitorHoverPreview monitor={monitor}>{videoPlayer}</MonitorHoverPreview>
+  ) : videoPlayer;
 
   /**
    * Downloads a snapshot of the current stream frame.
@@ -95,15 +112,7 @@ function MonitorCardComponent({
           tabIndex={0}
           role="button"
         >
-          <VideoPlayer
-            monitor={monitor}
-            profile={currentProfile}
-            className="w-full h-full"
-            objectFit={resolvedFit}
-            externalMediaRef={mediaRef}
-            muted={isMuted}
-            onProtocolChange={setProtocol}
-          />
+          {wrappedVideo}
           <div className="absolute top-1.5 left-1.5 z-10">
             <span
               className={cn('block h-2 w-2 rounded-full shadow-sm', monitorDotColor(runState))}
@@ -236,15 +245,7 @@ function MonitorCardComponent({
           tabIndex={0}
           aria-label={`${t('monitors.view_live')}: ${monitor.Name}`}
         >
-          <VideoPlayer
-            monitor={monitor}
-            profile={currentProfile}
-            className="w-full h-full"
-            objectFit={resolvedFit}
-            externalMediaRef={mediaRef}
-            muted={isMuted}
-            onProtocolChange={setProtocol}
-          />
+          {wrappedVideo}
           {settings.showProtocolLabel && (
             <span className="absolute bottom-1 right-1 z-10 text-[9px] px-1 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
               {protocol}

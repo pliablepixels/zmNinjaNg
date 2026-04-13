@@ -397,6 +397,19 @@
         "custom_placeholder": "z. B. 1",
         "move_up": "Nach oben",
         "move_down": "Nach unten"
+      },
+      "hover_preview": {
+        "title": "Hover-Vorschau",
+        "desc": "Vergrößerte Vorschau beim Überfahren von Miniaturen.",
+        "title_long_press": "Lang-Druck-Vorschau",
+        "desc_long_press": "Lange auf eine Miniatur drücken für eine vergrößerte Vorschau.",
+        "events_list": "Ereignisse (Liste)",
+        "events_grid": "Ereignisse (Raster)",
+        "monitors_list": "Monitore (Liste)",
+        "monitors_grid": "Monitore (Raster)",
+        "dashboard": "Dashboard",
+        "timeline": "Zeitleiste",
+        "notifications": "Benachrichtigungen"
       }
     }
   },

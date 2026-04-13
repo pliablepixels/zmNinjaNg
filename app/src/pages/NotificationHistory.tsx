@@ -10,6 +10,8 @@ import { useNotificationStore } from '../stores/notifications';
 import { useCurrentProfile } from '../hooks/useCurrentProfile';
 import { buildThumbnailChain } from '../lib/thumbnail-chain';
 import { EventThumbnail } from '../components/events/EventThumbnail';
+import { HoverPreview } from '../components/ui/hover-preview';
+import { EventZmsHoverPlayer } from '../components/events/EventThumbnailHoverPreview';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -195,13 +197,37 @@ export default function NotificationHistory() {
                       {/* Thumbnail */}
                       {event.EventId ? (
                         <div className="h-14 w-20 rounded border overflow-hidden bg-muted/30 flex-shrink-0">
-                          <EventThumbnail
-                            urls={buildChainForEvent(event.EventId)}
-                            cacheKey={`notif-${event.EventId}`}
-                            alt={`Event ${event.EventId}`}
-                            className="h-full w-full"
-                            objectFit="cover"
-                          />
+                          {settings.hoverPreview.notifications ? (
+                            <HoverPreview
+                              aspectRatio={16 / 9}
+                              testId="event-thumbnail-hover-preview"
+                              renderPreview={() => (
+                                <EventZmsHoverPlayer
+                                  descriptor={{
+                                    eventId: String(event.EventId),
+                                    monitorId: String(event.MonitorId),
+                                    name: event.MonitorName,
+                                  }}
+                                />
+                              )}
+                            >
+                              <EventThumbnail
+                                urls={buildChainForEvent(event.EventId)}
+                                cacheKey={`notif-${event.EventId}`}
+                                alt={`Event ${event.EventId}`}
+                                className="h-full w-full"
+                                objectFit="cover"
+                              />
+                            </HoverPreview>
+                          ) : (
+                            <EventThumbnail
+                              urls={buildChainForEvent(event.EventId)}
+                              cacheKey={`notif-${event.EventId}`}
+                              alt={`Event ${event.EventId}`}
+                              className="h-full w-full"
+                              objectFit="cover"
+                            />
+                          )}
                         </div>
                       ) : (
                         <div className="h-14 w-20 rounded border bg-muted/30 flex items-center justify-center flex-shrink-0">

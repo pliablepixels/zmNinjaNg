@@ -11,6 +11,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { getPortalUrlForEvent } from '../../lib/server-resolver';
 import { buildThumbnailChain } from '../../lib/thumbnail-chain';
 import { EventThumbnail } from '../events/EventThumbnail';
+import { HoverPreview } from '../ui/hover-preview';
+import { EventZmsHoverPlayer } from '../events/EventThumbnailHoverPreview';
 import { useCurrentProfile } from '../../hooks/useCurrentProfile';
 import { useAuthStore } from '../../stores/auth';
 import type { MonitorsResponse } from '../../api/types';
@@ -98,7 +100,7 @@ function ScrubberThumbnail({
     monitorId: event.monitorId,
   });
 
-  return (
+  const button = (
     <button
       type="button"
       className="relative shrink-0 w-24 h-16 rounded overflow-hidden bg-black border border-border/50 hover:border-primary/50 transition-colors cursor-pointer"
@@ -118,6 +120,23 @@ function ScrubberThumbnail({
         <span className="shrink-0"> · {fmtTimeShort(new Date(event.startMs))}</span>
       </span>
     </button>
+  );
+
+  if (!settings.hoverPreview.timeline) return button;
+
+  return (
+    <HoverPreview
+      aspectRatio={16 / 9}
+      testId="event-thumbnail-hover-preview"
+      className="shrink-0"
+      renderPreview={() => (
+        <EventZmsHoverPlayer
+          descriptor={{ eventId: event.id, monitorId: event.monitorId }}
+        />
+      )}
+    >
+      {button}
+    </HoverPreview>
   );
 }
 

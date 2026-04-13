@@ -397,6 +397,19 @@
         "custom_placeholder": "ex. 1",
         "move_up": "Monter",
         "move_down": "Descendre"
+      },
+      "hover_preview": {
+        "title": "Aperçu au survol",
+        "desc": "Afficher un aperçu agrandi au survol des miniatures.",
+        "title_long_press": "Aperçu par appui long",
+        "desc_long_press": "Appui long sur une miniature pour afficher un aperçu agrandi.",
+        "events_list": "Événements (liste)",
+        "events_grid": "Événements (grille)",
+        "monitors_list": "Moniteurs (liste)",
+        "monitors_grid": "Moniteurs (grille)",
+        "dashboard": "Tableau de bord",
+        "timeline": "Chronologie",
+        "notifications": "Notifications"
       }
     }
   },

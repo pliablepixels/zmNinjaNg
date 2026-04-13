@@ -12,6 +12,7 @@ import { useDateTimeFormat } from '../../hooks/useDateTimeFormat';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { EventThumbnail } from './EventThumbnail';
+import { EventThumbnailHoverPreview } from './EventThumbnailHoverPreview';
 import { Video, Calendar, Clock, Star } from 'lucide-react';
 import { getEventCauseIcon } from '../../lib/event-icons';
 import { getObjectClassIconFromList } from '../../lib/object-class-icons';
@@ -31,11 +32,12 @@ import { TagChipList } from './TagChip';
  * @param props.monitorName - Name of the monitor that recorded the event
  * @param props.thumbnailUrl - URL for the event thumbnail image
  */
-function EventCardComponent({ event, monitorName, thumbnailUrls, objectFit = 'contain', thumbnailWidth, thumbnailHeight, tags, eventFilters }: EventCardProps) {
+function EventCardComponent({ event, monitorName, thumbnailUrls, largeThumbnailUrls, objectFit = 'contain', thumbnailWidth, thumbnailHeight, tags, eventFilters }: EventCardProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { fmtDate, fmtTime } = useDateTimeFormat();
-  const { currentProfile } = useCurrentProfile();
+  const { currentProfile, settings } = useCurrentProfile();
+  const showHover = settings.hoverPreview.eventsList;
   const toggleFavorite = useEventFavoritesStore((state) => state.toggleFavorite);
 
   // Subscribe to the specific favorite state for this event
@@ -79,17 +81,39 @@ function EventCardComponent({ event, monitorName, thumbnailUrls, objectFit = 'co
             className="w-full max-h-28"
             style={{ aspectRatio: aspectRatio.toString() }}
           >
-            <EventThumbnail
-              urls={thumbnailUrls}
-              cacheKey={event.Id}
-              alt={event.Name}
-              className={cn(
-                "w-full h-full group-hover:scale-105 transition-transform duration-300"
-              )}
-              objectFit={objectFit}
-              loading="lazy"
-              data-testid="event-thumbnail"
-            />
+            {showHover ? (
+              <EventThumbnailHoverPreview
+                urls={largeThumbnailUrls ?? thumbnailUrls}
+                cacheKey={event.Id}
+                alt={event.Name}
+                aspectRatio={aspectRatio}
+                event={event}
+              >
+                <EventThumbnail
+                  urls={thumbnailUrls}
+                  cacheKey={event.Id}
+                  alt={event.Name}
+                  className={cn(
+                    "w-full h-full group-hover:scale-105 transition-transform duration-300"
+                  )}
+                  objectFit={objectFit}
+                  loading="lazy"
+                  data-testid="event-thumbnail"
+                />
+              </EventThumbnailHoverPreview>
+            ) : (
+              <EventThumbnail
+                urls={thumbnailUrls}
+                cacheKey={event.Id}
+                alt={event.Name}
+                className={cn(
+                  "w-full h-full group-hover:scale-105 transition-transform duration-300"
+                )}
+                objectFit={objectFit}
+                loading="lazy"
+                data-testid="event-thumbnail"
+              />
+            )}
           </div>
           <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 sm:bottom-1 bg-black/50 text-white text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 rounded font-medium">
             {event.Length}s

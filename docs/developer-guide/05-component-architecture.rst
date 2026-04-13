@@ -445,6 +445,55 @@ Displays a single event with thumbnail, details, and actions.
 - Duration and timestamp
 - Quick play button
 - Delete/download actions
+- Desktop hover preview of the thumbnail via
+  ``EventThumbnailHoverPreview`` (see below)
+
+EventThumbnailHoverPreview
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Location**: ``src/components/events/EventThumbnailHoverPreview.tsx``
+
+Thin wrapper around the ``HoverPreview`` primitive
+(``src/components/ui/hover-preview.tsx``) that renders an
+``EventThumbnail`` as the preview content.
+
+The hover preview consumes a separate ``largeThumbnailUrls`` chain that
+``EventListView`` builds with ``buildThumbnailChain`` with no ``width``
+or ``height`` set — the server returns the original image, and the view
+scales it down to the preview size.
+
+HoverPreview (primitive)
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Location**: ``src/components/ui/hover-preview.tsx``
+
+Generic desktop-only hover primitive. Renders ``children`` as the
+trigger and opens a 400px-wide portal next to the anchor after a 400 ms
+hover delay (both configurable). The ``renderPreview`` render prop is
+only invoked while the preview is open, so components mounted inside
+are created on hover and torn down on leave — this is what lets
+``MonitorHoverPreview`` spin up a fresh stream connection and kill it
+cleanly. The portal uses ``pointer-events: none`` so the underlying
+trigger stays clickable, flips to the left side of the anchor when
+there is no room on the right, and closes on mouse leave or window
+scroll / wheel events.
+
+MonitorHoverPreview
+~~~~~~~~~~~~~~~~~~~
+
+**Location**: ``src/components/monitors/MonitorHoverPreview.tsx``
+
+Wraps a monitor card or dashboard monitor widget. On hover, mounts an
+inner ``MonitorLivePreview`` that calls ``useStreamLifecycle`` with
+``viewMode: 'streaming'`` to generate a fresh ZMS connkey, then renders
+an ``<img>`` pointed at ``getStreamUrl(..., { mode: 'jpeg', connkey })``.
+When the hover ends the inner component unmounts, and
+``useStreamLifecycle``'s cleanup effect sends ``CMD_QUIT`` for that
+connkey — so the extra preview stream is torn down on the ZM server
+instead of lingering as a zombie.
+
+Used from ``MonitorCard`` (both compact and list layouts) and the
+dashboard ``MonitorWidget``'s ``SingleMonitor``.
 
 ZmsEventPlayer
 ~~~~~~~~~~~~~~

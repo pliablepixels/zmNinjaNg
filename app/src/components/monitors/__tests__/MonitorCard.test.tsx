@@ -10,10 +10,14 @@ vi.mock('../../video/VideoPlayer', () => ({
   ),
 }));
 
+vi.mock('../MonitorHoverPreview', () => ({
+  MonitorHoverPreview: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 vi.mock('../../../hooks/useCurrentProfile', () => ({
   useCurrentProfile: () => ({
     currentProfile: { id: 'test', portalUrl: 'https://test', cgiUrl: 'https://test/cgi', apiUrl: 'https://test/api' },
-    settings: { viewMode: 'streaming' },
+    settings: { viewMode: 'streaming', hoverPreview: { eventsList: true, eventsGrid: false, monitorsList: true, monitorsGrid: false, dashboard: true, timeline: true, notifications: true } },
   }),
 }));
 

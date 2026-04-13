@@ -32,6 +32,12 @@ Feature: Monitor List and Navigation
     When I select a group from the filter if available
     Then the filter should be applied
 
+  @web @tauri
+  Scenario: Hovering a monitor card shows enlarged live preview
+    Then I should see at least 1 monitor cards
+    When I hover the first monitor card
+    Then I should see the monitor hover preview
+
   @ios-phone @android @visual
   Scenario: Phone layout shows single-column monitor cards
     Given the viewport is mobile size

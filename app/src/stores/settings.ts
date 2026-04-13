@@ -23,6 +23,26 @@ export interface ThumbnailFallbackEntry {
   customFid?: string;
 }
 
+export interface HoverPreviewSettings {
+  eventsList: boolean;
+  eventsGrid: boolean;
+  monitorsList: boolean;
+  monitorsGrid: boolean;
+  dashboard: boolean;
+  timeline: boolean;
+  notifications: boolean;
+}
+
+export const DEFAULT_HOVER_PREVIEW: HoverPreviewSettings = {
+  eventsList: true,
+  eventsGrid: false,
+  monitorsList: true,
+  monitorsGrid: false,
+  dashboard: true,
+  timeline: true,
+  notifications: true,
+};
+
 export const DEFAULT_THUMBNAIL_FALLBACK_CHAIN: ThumbnailFallbackEntry[] = [
   { type: 'alarm', enabled: true },
   { type: 'snapshot', enabled: true },
@@ -125,6 +145,8 @@ export interface ProfileSettings {
   // Ordered fallback chain for event thumbnails. Disabled entries (and custom
   // entries with an empty customFid) are skipped at URL build time.
   thumbnailFallbackChain: ThumbnailFallbackEntry[];
+  // Hover preview toggles for events/monitors/dashboard/timeline
+  hoverPreview: HoverPreviewSettings;
 }
 
 interface SettingsState {
@@ -234,6 +256,7 @@ export const DEFAULT_SETTINGS: ProfileSettings = {
   monitorStreamingOverrides: {},
   componentLogLevels: {},
   thumbnailFallbackChain: DEFAULT_THUMBNAIL_FALLBACK_CHAIN,
+  hoverPreview: DEFAULT_HOVER_PREVIEW,
 };
 
 export const useSettingsStore = create<SettingsState>()(

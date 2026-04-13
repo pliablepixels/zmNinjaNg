@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { getMonitor, getMonitors } from '../../../api/monitors';
 import type { MonitorFeedFit } from '../../../stores/settings';
 import { VideoPlayer } from '../../video/VideoPlayer';
+import { MonitorHoverPreview } from '../../monitors/MonitorHoverPreview';
 import { useCurrentProfile } from '../../../hooks/useCurrentProfile';
 import { AlertTriangle } from 'lucide-react';
 import { Skeleton } from '../../ui/skeleton';
@@ -69,13 +70,25 @@ function SingleMonitor({ monitorId, objectFit }: { monitorId: string; objectFit:
             className="w-full h-full bg-black relative group overflow-hidden cursor-pointer"
             onClick={() => navigate(`/monitors/${monitor.Monitor.Id}`, { state: { from: '/dashboard' } })}
         >
-            <VideoPlayer
-                monitor={monitor.Monitor}
-                profile={currentProfile}
-                className="w-full h-full"
-                objectFit={objectFit}
-                onProtocolChange={setProtocol}
-            />
+            {settings.hoverPreview.dashboard ? (
+                <MonitorHoverPreview monitor={monitor.Monitor}>
+                    <VideoPlayer
+                        monitor={monitor.Monitor}
+                        profile={currentProfile}
+                        className="w-full h-full"
+                        objectFit={objectFit}
+                        onProtocolChange={setProtocol}
+                    />
+                </MonitorHoverPreview>
+            ) : (
+                <VideoPlayer
+                    monitor={monitor.Monitor}
+                    profile={currentProfile}
+                    className="w-full h-full"
+                    objectFit={objectFit}
+                    onProtocolChange={setProtocol}
+                />
+            )}
             {settings.showProtocolLabel && (
                 <span className="absolute bottom-1 right-1 z-10 text-[9px] px-1 py-0.5 rounded bg-black/50 text-white/90 font-medium pointer-events-none">
                     {protocol}

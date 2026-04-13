@@ -26,12 +26,14 @@ import { Switch } from '../ui/switch';
 import { SectionHeader, SettingsCard, SettingsRow, RowLabel } from './SettingsLayout';
 import { cn } from '../../lib/utils';
 import { validateFormatString } from '../../lib/format-date-time';
+import { Platform } from '../../lib/platform';
 import type {
   ProfileSettings,
   DateFormatPreset,
   TimeFormatPreset,
   ThumbnailFallbackEntry,
   ThumbnailFallbackType,
+  HoverPreviewSettings,
 } from '../../stores/settings';
 
 // ---- Date/time preset config ----
@@ -221,8 +223,93 @@ export function AppearanceSection({ settings, update }: AppearanceSectionProps) 
           chain={settings.thumbnailFallbackChain}
           onChange={(next) => update('thumbnailFallbackChain', next)}
         />
+        <HoverPreviewEditor
+          value={settings.hoverPreview}
+          onChange={(next) => update('hoverPreview', next)}
+        />
       </SettingsCard>
     </section>
+  );
+}
+
+interface HoverPreviewEditorProps {
+  value: HoverPreviewSettings;
+  onChange: (next: HoverPreviewSettings) => void;
+}
+
+const HOVER_PREVIEW_OPEN_KEY = 'zmng-hover-preview-open';
+
+function HoverPreviewEditor({ value, onChange }: HoverPreviewEditorProps) {
+  const { t } = useTranslation();
+  const isNative = Platform.isNative;
+  const titleKey = isNative
+    ? 'settings.appearance.hover_preview.title_long_press'
+    : 'settings.appearance.hover_preview.title';
+  const descKey = isNative
+    ? 'settings.appearance.hover_preview.desc_long_press'
+    : 'settings.appearance.hover_preview.desc';
+  const [open, setOpen] = useState(() => {
+    try {
+      return localStorage.getItem(HOVER_PREVIEW_OPEN_KEY) === 'true';
+    } catch { return false; }
+  });
+
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    try { localStorage.setItem(HOVER_PREVIEW_OPEN_KEY, String(next)); } catch { /* ignore */ }
+  };
+
+  const toggle = (key: keyof HoverPreviewSettings, checked: boolean) => {
+    onChange({ ...value, [key]: checked });
+  };
+
+  const rows: { key: keyof HoverPreviewSettings; labelKey: string }[] = [
+    { key: 'eventsList', labelKey: 'settings.appearance.hover_preview.events_list' },
+    { key: 'eventsGrid', labelKey: 'settings.appearance.hover_preview.events_grid' },
+    { key: 'monitorsList', labelKey: 'settings.appearance.hover_preview.monitors_list' },
+    { key: 'monitorsGrid', labelKey: 'settings.appearance.hover_preview.monitors_grid' },
+    { key: 'dashboard', labelKey: 'settings.appearance.hover_preview.dashboard' },
+    { key: 'timeline', labelKey: 'settings.appearance.hover_preview.timeline' },
+    { key: 'notifications', labelKey: 'settings.appearance.hover_preview.notifications' },
+  ];
+
+  return (
+    <Collapsible open={open} onOpenChange={handleOpenChange}>
+      <CollapsibleTrigger
+        className="flex w-full items-center justify-between px-4 py-3 text-left"
+        data-testid="settings-hover-preview-trigger"
+      >
+        <RowLabel
+          label={t(titleKey)}
+          desc={t(descKey)}
+        />
+        <ChevronDown
+          className={cn(
+            'h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0 ml-2',
+            open && 'rotate-180'
+          )}
+        />
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <ul className="px-4 pb-3 space-y-1" data-testid="settings-hover-preview">
+          {rows.map((row) => (
+            <li
+              key={row.key}
+              className="flex items-center gap-2 rounded border border-border/40 bg-background/40 px-2 py-1.5"
+              data-testid={`settings-hover-preview-row-${row.key}`}
+            >
+              <Checkbox
+                checked={value[row.key]}
+                onCheckedChange={(checked) => toggle(row.key, checked === true)}
+                data-testid={`settings-hover-preview-${row.key}-toggle`}
+                aria-label={t(row.labelKey)}
+              />
+              <span className="text-xs font-medium truncate">{t(row.labelKey)}</span>
+            </li>
+          ))}
+        </ul>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 
