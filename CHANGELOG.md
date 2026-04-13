@@ -1,5 +1,19 @@
 # Changelog
 
+## [zmNinjaNg-1.1.10](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNg-1.1.10) (2026-04-13)
+
+[Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNg-1.1.9...zmNinjaNg-1.1.10)
+
+**Implemented enhancements:**
+
+- feat: hover preview for monitor list and dashboard widget [\#112](https://github.com/pliablepixels/zmNinjaNg/issues/112)
+- feat: hover preview for event list thumbnails on desktop [\#110](https://github.com/pliablepixels/zmNinjaNg/issues/110)
+- feat: configurable thumbnail fallback chain in display settings [\#109](https://github.com/pliablepixels/zmNinjaNg/issues/109)
+
+**Closed issues:**
+
+- Boredoms [\#108](https://github.com/pliablepixels/zmNinjaNg/issues/108)
+
 ## [zmNinjaNg-1.1.9](https://github.com/pliablepixels/zmNinjaNg/tree/zmNinjaNg-1.1.9) (2026-04-11)
 
 [Full Changelog](https://github.com/pliablepixels/zmNinjaNg/compare/zmNinjaNG-1.1.8...zmNinjaNg-1.1.9)
