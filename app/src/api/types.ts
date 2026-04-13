@@ -547,6 +547,7 @@ export interface EventCardProps {
   event: Event;
   monitorName: string;
   thumbnailUrls: string[];
+  largeThumbnailUrls?: string[];
   objectFit?: React.CSSProperties['objectFit'];
   thumbnailWidth: number;
   thumbnailHeight: number;

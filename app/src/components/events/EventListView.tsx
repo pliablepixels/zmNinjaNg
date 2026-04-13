@@ -75,6 +75,14 @@ const EventItem = ({
     monitorId: Event.MonitorId,
   });
 
+  // Full-size image chain used by the desktop hover preview. No width/height
+  // is passed so ZM returns the original image, which the view scales down.
+  const largeThumbnailUrls = buildThumbnailChain(eventPortalUrl, Event.Id, thumbnailChain, {
+    token: accessToken,
+    minStreamingPort,
+    monitorId: Event.MonitorId,
+  });
+
   const monitorName = monitorData?.Name || `Camera ${Event.MonitorId}`;
 
   return (
@@ -83,6 +91,7 @@ const EventItem = ({
         event={Event}
         monitorName={monitorName}
         thumbnailUrls={thumbnailUrls}
+        largeThumbnailUrls={largeThumbnailUrls}
         objectFit={thumbnailFit}
         thumbnailWidth={thumbnailWidth}
         thumbnailHeight={thumbnailHeight}
