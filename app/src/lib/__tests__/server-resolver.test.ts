@@ -120,6 +120,63 @@ describe('buildServerMap', () => {
     expect(entry.portalPath).toBe('https://minimal.example.com:443/index.php');
     expect(entry.apiBaseUrl).toBe('https://minimal.example.com:443/api');
   });
+
+  it('skips servers with Port 0', () => {
+    const portZero = makeServer({
+      Id: '50',
+      Name: 'portzero',
+      Hostname: 'real.example.com',
+      Port: 0,
+    });
+    const map = buildServerMap([portZero, pseudoServer]);
+    expect(map.has('50')).toBe(false);
+    expect(map.has('1')).toBe(true);
+  });
+
+  it('skips servers with negative Port', () => {
+    const negativePort = makeServer({
+      Id: '51',
+      Name: 'neg',
+      Hostname: 'real.example.com',
+      Port: -1 as unknown as number,
+    });
+    const map = buildServerMap([negativePort]);
+    expect(map.has('51')).toBe(false);
+  });
+
+  it('skips servers with placeholder hostname "server.localdomain"', () => {
+    const placeholder = makeServer({
+      Id: '52',
+      Name: 'placeholder',
+      Hostname: 'server.localdomain',
+      Port: 443,
+    });
+    const map = buildServerMap([placeholder]);
+    expect(map.has('52')).toBe(false);
+  });
+
+  it('skips servers with placeholder hostname "localhost"', () => {
+    const placeholder = makeServer({
+      Id: '53',
+      Name: 'localhost',
+      Hostname: 'localhost',
+      Port: 443,
+    });
+    const map = buildServerMap([placeholder]);
+    expect(map.has('53')).toBe(false);
+  });
+
+  it('skips rows with combined placeholder hostname and port 0 (common ZM default row)', () => {
+    const zmDefault = makeServer({
+      Id: '1',
+      Name: 'zm-default',
+      Hostname: 'server.localdomain',
+      Port: 0,
+      PathToApi: '/zm/api',
+    });
+    const map = buildServerMap([zmDefault]);
+    expect(map.size).toBe(0);
+  });
 });
 
 describe('resolveMonitorUrls', () => {
@@ -161,6 +218,24 @@ describe('resolveMonitorUrls', () => {
     const result = resolveMonitorUrls('0', serverMap, defaults);
     expect(result.isMultiServer).toBe(false);
     expect(result.recordingUrl).toBe(defaults.cgiUrl);
+  });
+
+  it('falls back to profile defaults when ServerId points at a skipped placeholder row', () => {
+    const mapWithPlaceholder = buildServerMap([
+      makeServer({
+        Id: '1',
+        Name: 'zm-default',
+        Hostname: 'server.localdomain',
+        Port: 0,
+        PathToApi: '/zm/api',
+      }),
+    ]);
+    const result = resolveMonitorUrls('1', mapWithPlaceholder, defaults);
+    expect(result.isMultiServer).toBe(false);
+    expect(result.recordingUrl).toBe(defaults.cgiUrl);
+    expect(result.apiBaseUrl).toBe(defaults.apiUrl);
+    expect(result.apiBaseUrl).not.toContain(':0');
+    expect(result.apiBaseUrl).not.toContain('server.localdomain');
   });
 });
 
