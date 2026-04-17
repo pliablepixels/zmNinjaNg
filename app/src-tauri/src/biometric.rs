@@ -90,6 +90,7 @@ pub async fn check_biometric_available() -> Result<bool, String> {
 }
 
 #[tauri::command]
+#[cfg_attr(not(target_os = "macos"), allow(unused_variables))]
 pub async fn authenticate_biometric(reason: String) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     {
