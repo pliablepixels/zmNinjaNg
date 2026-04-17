@@ -49,7 +49,7 @@ A modern web and mobile application for ZoneMinder, providing a clean, intuitive
 Agentic AI and me: I built the very first version of zmNinja over several months and built in more features over multiple years. I built the first version of zmNinjaNg over 2.5 days with almost as many features as the last version of zmNinja. Thanks to Claude.
 
 Agentic AI and you: I don't plan to support zmNinjaNg with any urgency. Please don't ping me and expect quick answers. 
-Instead, treat this as "personal software" - i.e. download the code and fix it yourself. If you don't code, or do code, but aren't familiar with the environment of zmNinjaNg, I'd encourage you to use an agentic AI tool to help you along the way. Pick one you prefer. Personally, I'd recommend [Claude Code](https://claude.com/product/claude-code). In my experience, as of Mar 2026, its significantly ahead of others.
+Instead, treat this as "personal software" - i.e. download the code and fix it yourself. If you don't code, or do code, but aren't familiar with the environment of zmNinjaNg, I'd encourage you to use an agentic AI tool to help you along the way. Pick one you prefer. Personally, I'd recommend [Claude Code](https://claude.com/product/claude-code). In my experience, as of Mar 2026, it is significantly ahead of others.
 
 
 #### Pull Requests
@@ -60,7 +60,7 @@ I am happy to accept PRs, but I don't want [AI slop](https://en.wikipedia.org/wi
 - See my agent rules for [CLAUDE](AGENTS.md) here - please make sure to use it in your agent
 - Before you PR, please do a code review
 
-### Limitations & Notes
+###  Notes
 - Self-signed certificates are supported on mobile (iOS/Android) via Settings > Connection. On desktop, add your CA to the system trust store. Using proper certificates (e.g. [LetsEncrypt](https://letsencrypt.org/)) is still recommended.
 - If you want push notifications, you'll have to use a newer [Event Server](https://zmeventnotificationng.readthedocs.io/en/latest/)
 
@@ -68,8 +68,7 @@ I am happy to accept PRs, but I don't want [AI slop](https://en.wikipedia.org/wi
 ## Quick Start
 
 ### Binaries
-- Download binaries from [zmNinjaNg Releases](https://github.com/pliablepixels/zmNinjaNg/releases)
-- iOS will be in the app store soon. Isaac is on it.
+- Download from [here] (https://pliablepixels.github.io/zmNinjaNg/)
 - I use Github workflows and runners to automatically build release binaries [here](https://github.com/pliablepixels/zmNinjaNg/tree/main/.github/workflows). Binaries are built for specific platforms. If the binary doesn't work for your linux distro, look at those files
 
 ## Build from Source
