@@ -60,15 +60,32 @@ export function clearServerMap(): void {
 
 // ========== Functions ==========
 
+// ZoneMinder installs often have a default/placeholder row in the Servers
+// table that was never populated — typically Hostname=server.localdomain
+// or localhost and Port=0. Treating those rows as valid routes breaks
+// monitors whose ServerId points at them, because the resolver then
+// overrides the user's working profile URL with the placeholder.
+const PLACEHOLDER_HOSTNAMES = new Set(['localhost', 'server.localdomain']);
+
+function isPlaceholderRow(server: Server): boolean {
+  if (!server.Hostname) return true;
+  const host = server.Hostname.toLowerCase();
+  if (PLACEHOLDER_HOSTNAMES.has(host)) return true;
+  if (host.endsWith('.localdomain')) return true;
+  if (server.Port != null && Number(server.Port) <= 0) return true;
+  return false;
+}
+
 /**
  * Build a map of ServerId to constructed URLs from a list of servers.
- * Servers without a Hostname are skipped.
+ * Rows with missing/placeholder Hostname or non-positive Port are skipped
+ * so the resolver falls back to the user's configured profile URLs.
  */
 export function buildServerMap(servers: Server[]): ServerUrlMap {
   const map: ServerUrlMap = new Map();
 
   for (const server of servers) {
-    if (!server.Hostname) {
+    if (isPlaceholderRow(server)) {
       continue;
     }
 
