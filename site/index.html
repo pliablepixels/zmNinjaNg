@@ -195,6 +195,15 @@
     .btn-primary { background: var(--fg); color: var(--bg); }
     .btn-outline { background: transparent; color: var(--fg); border: 1px solid var(--border); }
     .btn-outline:hover { border-color: var(--ring); }
+    .btn-dark { background: var(--secondary); color: var(--fg); border: 1px solid var(--border); }
+    .btn-dark:hover { background: var(--border); }
+
+    .btn-lg {
+      padding: 18px 36px;
+      font-size: 1.1rem;
+      border-radius: 12px;
+    }
+    .btn-lg i { width: 20px; height: 20px; }
 
     .hero-screenshot { flex: 1; min-width: 0; position: relative; display: flex; justify-content: center; }
 
@@ -555,6 +564,12 @@
           <h1 class="hero-title">Monitor smarter,<br>not harder</h1>
         </div>
         <p class="hero-subtitle">zmNinjaNg: The modern ZoneMinder client that runs on every platform</p>
+        <div class="hero-ctas">
+          <a href="#platforms" class="btn btn-dark btn-lg" data-testid="hero-download-cta">
+            <i data-lucide="download"></i>
+            Download Now
+          </a>
+        </div>
         <div class="zmes-callout">
           <img src="zmES7plus.png" alt="zmesNg" class="zmes-logo">
           <span>Pair with <a href="https://zmeventnotificationng.readthedocs.io/en/latest/" target="_blank" rel="noopener" class="zmes-link"><strong>zmesNg</strong></a> for object detection, face recognition, license plates, bird songs, or even <a href="https://pyzmng.readthedocs.io/en/latest/guide/training.html" target="_blank" rel="noopener" class="zmes-link">train</a> your own models and more...</span>
@@ -576,12 +591,11 @@
   </section>
 
   <!-- Platforms -->
-  <section class="section" id="platforms">
-  <section class="section">
+  <section class="section" id="platforms" style="scroll-margin-top: 72px;">
     <div class="section-inner" style="text-align: center;">
       <p class="section-label">Platforms</p>
       <h2 class="section-title">Runs everywhere</h2>
-      <p class="section-desc" style="margin: 0 auto;">One app for all your devices — desktop builds available now</p>
+      <p class="section-desc" style="margin: 0 auto;">One app for all your devices - select the platform below</p>
 
       <div class="platforms-grid">
         <div class="platform-item">
