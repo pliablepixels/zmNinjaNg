@@ -14,7 +14,9 @@ concurrency:
 
 jobs:
   claude-review:
-    if: github.event.pull_request.draft == false
+    if: >-
+      github.event.pull_request.draft == false &&
+      !contains(github.event.pull_request.body, 'Generated with [Claude Code]')
     runs-on: ubuntu-latest
     permissions:
       contents: read
