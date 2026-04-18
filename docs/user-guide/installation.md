@@ -2,17 +2,14 @@
 
 ## Pre-built Binaries
 
-Download the latest release for your platform from [GitHub Releases](https://github.com/pliablepixels/zmNinjaNg/releases).
+Download links for every platform are on the [zmNinjaNg downloads page](https://pliablepixels.github.io/zmNinjaNg/). Mobile users install from the App Store or Google Play; desktop users grab an installer from [GitHub Releases](https://github.com/pliablepixels/zmNinjaNg/releases).
 
 ### Android
 
-1. Download the `.apk` file from the releases page
-2. On your device, enable **Install from unknown sources** (Settings > Security)
-3. Open the downloaded APK to install
-4. Launch zmNinjaNg and set up your first {doc}`profile <profiles>`
+Install from [Google Play](https://play.google.com/store/apps/details?id=com.zoneminder.zmNinjaNG). Launch zmNinjaNg and set up your first {doc}`profile <profiles>`.
 
-:::{note}
-Push notifications require building the app yourself with your own Firebase credentials. See {doc}`../building/ANDROID`. Web-based (foreground) notifications work without a custom build.
+:::{tip}
+An APK is also published on the [releases page](https://github.com/pliablepixels/zmNinjaNg/releases) for sideloading. Enable **Install from unknown sources** (Settings > Security) before running it. Sideloaded builds do not receive automatic updates.
 :::
 
 ### Windows
@@ -40,7 +37,11 @@ If the pre-built binary doesn't work on your Linux distribution, check the [GitH
 
 ### iOS
 
-iOS binaries are **not** published on the releases page. You must build from source with your own Apple Developer account. See {doc}`../building/IOS`.
+Install from the [App Store](https://apps.apple.com/app/id6759469535). Launch zmNinjaNg and set up your first {doc}`profile <profiles>`.
+
+:::{tip}
+If you prefer to build from source (for example, to customize settings or contribute), see {doc}`../building/IOS`. You will need an Apple Developer account.
+:::
 
 ## Web Deployment
 

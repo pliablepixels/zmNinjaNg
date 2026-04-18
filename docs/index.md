@@ -48,7 +48,7 @@ building/index
 ## Links
 
 - [GitHub Repository](https://github.com/pliablepixels/zmNinjaNg)
-- [Releases & Downloads](https://github.com/pliablepixels/zmNinjaNg/releases)
+- [Downloads](https://pliablepixels.github.io/zmNinjaNg/)
 - [Issue Tracker](https://github.com/pliablepixels/zmNinjaNg/issues)
 - [ZoneMinder](https://zoneminder.com/)
 - [Demo Video](https://youtu.be/ces_2ap-htc)

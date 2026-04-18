@@ -22,27 +22,23 @@ Uses ZoneMinder's built-in Notifications REST API (no Event Server required). Ch
 
 ## Push Notifications (Mobile)
 
-Both modes support native push notifications on iOS and Android via Firebase Cloud Messaging (FCM).
-
-:::{important}
-Push notifications require building the mobile app yourself with your own Firebase credentials. Pre-built binaries do not include push notification support. See the {doc}`../building/ANDROID` and {doc}`../building/IOS` build guides.
-:::
+Both modes support native push notifications on iOS and Android via Firebase Cloud Messaging (FCM). Push works out of the box with the App Store and Google Play builds — no Firebase setup required on your end.
 
 ### Requirements
 
-1. A Firebase project with Cloud Messaging enabled
-2. A custom-built zmNinjaNg mobile app with your Firebase credentials
-3. **ES mode**: The [Event Notification Server](https://github.com/pliablepixels/zmeventnotificationNg) with FCM support
-4. **Direct mode**: ZoneMinder with the Notifications REST API
+1. **ES mode**: The [Event Notification Server](https://github.com/pliablepixels/zmeventnotificationNg) with FCM support
+2. **Direct mode**: ZoneMinder with the Notifications REST API
+
+:::{tip}
+If you build the app from source and want push notifications, you will need to provide your own Firebase credentials. See the {doc}`../building/ANDROID` and {doc}`../building/IOS` build guides.
+:::
 
 ### Setup
 
-1. Create a Firebase project and enable Cloud Messaging
-2. Download the `google-services.json` (Android) or `GoogleService-Info.plist` (iOS)
-3. Place the file in the appropriate directory (see build guides)
-4. Build the app
-5. In zmNinjaNg **Notification Settings**, enable notifications and select your mode
-6. The app registers its FCM token with the appropriate backend (ES via WebSocket, or ZM via REST API)
+1. In zmNinjaNg **Notification Settings**, enable notifications and select your mode (ES or Direct)
+2. The app registers its FCM token with the appropriate backend (ES via WebSocket, or ZM via REST API)
+
+For custom-built mobile apps, add your own Firebase project first: create a Firebase project, enable Cloud Messaging, and drop `google-services.json` (Android) or `GoogleService-Info.plist` (iOS) into the appropriate directory before building. See the {doc}`../building/ANDROID` and {doc}`../building/IOS` guides.
 
 ### Per-Monitor Configuration
 
@@ -84,8 +80,8 @@ Tap a notification entry to jump to the corresponding event.
 - Check app logs for polling errors
 
 **No push notifications (mobile)**
-- Verify you built the app with your own Firebase credentials
 - Check that FCM token registration succeeded (check app logs)
-- ES mode: Verify the Event Notification Server has FCM support
+- ES mode: Verify the Event Notification Server has FCM support and is configured to send to zmNinjaNg
 - Direct mode: Verify ZoneMinder's Notifications API is available
 - On Android, check that battery optimization isn't killing the app in the background
+- Custom builds only: verify you embedded your own Firebase credentials before building
