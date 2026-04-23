@@ -1,0 +1,65 @@
+name: Auto-close low-quality issues
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    if: github.event.issue.author_association == 'NONE' || github.event.issue.author_association == 'FIRST_TIME_CONTRIBUTOR' || github.event.issue.author_association == 'FIRST_TIMER'
+    steps:
+      - name: Close if title or body is too short
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const title = (issue.title || '').trim();
+            const body = (issue.body || '').trim();
+
+            const titleTooShort = title.length < 10;
+            const bodyTooShort = body.length < 30;
+
+            if (!titleTooShort && !bodyTooShort) {
+              core.info('Issue passes minimum length checks.');
+              return;
+            }
+
+            const reasons = [];
+            if (titleTooShort) reasons.push(`the title is shorter than 10 characters (got ${title.length})`);
+            if (bodyTooShort) reasons.push(`the body is shorter than 30 characters (got ${body.length})`);
+
+            const message = [
+              `Hi @${issue.user.login}, this issue was closed automatically because ${reasons.join(' and ')}.`,
+              '',
+              'If this is a real bug report, please open a new issue using the [Bug report form](https://github.com/pliablepixels/zmNinjaNg/issues/new/choose) and fill in the required fields (version, platform, repro steps, expected behavior).',
+              '',
+              'For questions or general help, please use [Discussions](https://github.com/pliablepixels/zmNinjaNg/discussions) instead.',
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: message,
+            });
+
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              state: 'closed',
+              state_reason: 'not_planned',
+            });
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: ['invalid'],
+            });
+
+            core.info(`Closed issue #${issue.number}: ${reasons.join(', ')}`);
