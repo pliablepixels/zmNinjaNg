@@ -123,16 +123,16 @@
 
 ## 15. Triage Center screen
 
-- [ ] 15.1 Create `app/src/pages/TriageCenter.tsx` with four sections: Mutes, Quiet Hours, Per-Monitor Priority, Noise Filter
-- [ ] 15.2 Mutes section: list ordered by `until` ascending, Clear / Extend (1h, 4h, 24h, custom) per row, empty state
-- [ ] 15.3 Quiet Hours section: list with label, time range, weekdays, monitor scope; Add / Edit / Delete; weekday-mask validation (reject empty)
-- [ ] 15.4 Per-Monitor Priority section: list current profile's monitors with priority selector (`high` / `normal` / `low` / `silent`); info banner explaining OS-level mapping
-- [ ] 15.5 Noise Filter section: list rules with monitor scope, score threshold, cause-exclude patterns, mode; Add / Edit / Delete; help line showing default rule status
-- [ ] 15.6 Use `useDateTimeFormat()` for time-remaining and time-range display (rule #24)
+- [x] 15.1 Create `app/src/pages/TriageCenter.tsx` with four sections: Mutes, Quiet Hours, Per-Monitor Priority, Noise Filter
+- [~] 15.2 Mutes section: list ordered by `until` ascending, Clear / Extend (1h, 4h, 24h, custom) per row, empty state — 1h extend in MVP; 4h/24h/custom in §15 follow-up
+- [x] 15.3 Quiet Hours section: list with label, time range, weekdays, monitor scope; Add / Edit / Delete; weekday-mask validation (reject empty)
+- [~] 15.4 Per-Monitor Priority section: list current profile's monitors with priority selector (`high` / `normal` / `low` / `silent`); info banner explaining OS-level mapping — placeholder card; depends on §5 cross-process priority field
+- [x] 15.5 Noise Filter section: list rules with monitor scope, score threshold, cause-exclude patterns, mode; Add / Edit / Delete; help line showing default rule status
+- [x] 15.6 Use `useDateTimeFormat()` for time-remaining and time-range display (rule #24)
 - [ ] 15.7 Auto-refresh on focus and on a 30 s interval (use `useBandwidthSettings()` if a fitting interval already exists; else hardcoded 30 s with comment justification)
-- [ ] 15.8 Add `data-testid` attributes to all interactive elements (rule #13)
-- [ ] 15.9 Add an entry-point link/button to `app/src/pages/NotificationSettings.tsx`
-- [ ] 15.10 Add route to the app router
+- [x] 15.8 Add `data-testid` attributes to all interactive elements (rule #13)
+- [x] 15.9 Add an entry-point link/button to `app/src/pages/NotificationSettings.tsx`
+- [x] 15.10 Add route to the app router
 
 ## 16. Quick-look surfaces
 

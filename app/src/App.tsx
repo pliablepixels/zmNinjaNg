@@ -39,6 +39,7 @@ const Settings = lazy(() => import('./pages/Settings'));
 const Server = lazy(() => import('./pages/Server'));
 const NotificationSettings = lazy(() => import('./pages/NotificationSettings'));
 const NotificationHistory = lazy(() => import('./pages/NotificationHistory'));
+const TriageCenter = lazy(() => import('./pages/TriageCenter'));
 const Logs = lazy(() => import('./pages/Logs'));
 
 // Loading fallback component
@@ -249,6 +250,14 @@ function AppRoutes() {
             element={
               <RouteErrorBoundary routePath="/notifications/history">
                 <NotificationHistory />
+              </RouteErrorBoundary>
+            }
+          />
+          <Route
+            path="/notifications/triage"
+            element={
+              <RouteErrorBoundary routePath="/notifications/triage">
+                <TriageCenter />
               </RouteErrorBoundary>
             }
           />

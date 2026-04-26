@@ -1,6 +1,16 @@
 {
   "common": {
     "go_back": "Zurück",
+    "back": "Zurück",
+    "weekday": {
+      "sun": "So",
+      "mon": "Mo",
+      "tue": "Di",
+      "wed": "Mi",
+      "thu": "Do",
+      "fri": "Fr",
+      "sat": "Sa"
+    },
     "previous": "Zurück",
     "next": "Weiter",
     "refresh": "Aktualisieren",
@@ -723,6 +733,7 @@
     "show_advanced": "Erweitert anzeigen",
     "unread_count": "{{count}} ungelesene Benachrichtigungen",
     "view_history": "Verlauf",
+    "triage_center": "Triage-Center",
     "function": "Funktion",
     "disconnected": "Getrennt",
     "notifications_enabled": "Benachrichtigungen aktiviert",
@@ -1118,5 +1129,50 @@
     "pin_cleared": "Kiosk-PIN entfernt",
     "pin_setting_label": "Kiosk-PIN",
     "pin_setting_desc": "PIN zum Sperren und Entsperren des Kiosk-Modus"
+  },
+  "triage": {
+    "title": "Triage-Center",
+    "subtitle": "Stummschaltungen und Filter für Benachrichtigungen verwalten.",
+    "tab": {
+      "mutes": "Stumm",
+      "quiet_hours": "Ruhezeiten",
+      "noise": "Filter",
+      "priority": "Priorität"
+    },
+    "mutes": {
+      "empty": "Keine aktiven Stummschaltungen. Stumm-Aktion in einer Benachrichtigung verwenden.",
+      "monitor": "Monitor {{id}}",
+      "until": "Bis {{time}}",
+      "extend_1h": "+1 Std."
+    },
+    "quiet_hours": {
+      "empty": "Noch keine Ruhezeit-Fenster.",
+      "add": "Ruhezeit hinzufügen",
+      "label_field": "Bezeichnung",
+      "label_placeholder": "z. B. Schlaf",
+      "start": "Start",
+      "end": "Ende",
+      "weekdays": "Wochentage",
+      "every_day": "Jeden Tag",
+      "unnamed": "Ruhezeit",
+      "error_no_weekdays": "Mindestens einen Wochentag wählen.",
+      "error_time_format": "Zeitformat muss HH:MM sein."
+    },
+    "noise": {
+      "empty": "Noch keine Filterregeln.",
+      "add": "Regel hinzufügen",
+      "min_score": "Mindest-Alarm-Score",
+      "mode": "Modus",
+      "mode_dim": "In Liste abblenden",
+      "mode_hide": "Aus Liste und Pushes ausblenden",
+      "exclude_label": "Ausschließen wenn Ursache enthält (kommagetrennt)",
+      "exclude_placeholder": "z. B. Continuous, Test",
+      "row_summary": "Score < {{score}} · {{mode}}",
+      "exclude_summary": "Ausschluss: {{patterns}}",
+      "error_score_range": "Score muss 0-100 sein."
+    },
+    "priority": {
+      "placeholder": "Pro-Monitor-Priorität kommt mit der nativen Version."
+    }
   }
 }

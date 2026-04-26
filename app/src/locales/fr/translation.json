@@ -1,6 +1,16 @@
 {
   "common": {
     "go_back": "Retour",
+    "back": "Retour",
+    "weekday": {
+      "sun": "Dim",
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mer",
+      "thu": "Jeu",
+      "fri": "Ven",
+      "sat": "Sam"
+    },
     "previous": "Précédent",
     "next": "Suivant",
     "refresh": "Actualiser",
@@ -723,6 +733,7 @@
     "show_advanced": "Afficher avancé",
     "unread_count": "{{count}} notifications non lues",
     "view_history": "Historique",
+    "triage_center": "Centre de triage",
     "function": "Fonction",
     "disconnected": "Déconnecté",
     "notifications_enabled": "Notifications activées",
@@ -1118,5 +1129,50 @@
     "pin_cleared": "PIN kiosque supprimé",
     "pin_setting_label": "PIN kiosque",
     "pin_setting_desc": "PIN pour verrouiller et déverrouiller le mode kiosque"
+  },
+  "triage": {
+    "title": "Centre de triage",
+    "subtitle": "Gérer la mise en sourdine et le filtrage des notifications.",
+    "tab": {
+      "mutes": "Sourdines",
+      "quiet_hours": "Heures calmes",
+      "noise": "Bruit",
+      "priority": "Priorité"
+    },
+    "mutes": {
+      "empty": "Aucune sourdine active. Utilisez l'action Sourdine d'une notification.",
+      "monitor": "Moniteur {{id}}",
+      "until": "Jusqu'à {{time}}",
+      "extend_1h": "+1 h"
+    },
+    "quiet_hours": {
+      "empty": "Aucune plage d'heures calmes.",
+      "add": "Ajouter heures calmes",
+      "label_field": "Libellé",
+      "label_placeholder": "Ex. Sommeil",
+      "start": "Début",
+      "end": "Fin",
+      "weekdays": "Jours",
+      "every_day": "Tous les jours",
+      "unnamed": "Heures calmes",
+      "error_no_weekdays": "Choisissez au moins un jour.",
+      "error_time_format": "Le format doit être HH:MM."
+    },
+    "noise": {
+      "empty": "Aucune règle de filtre.",
+      "add": "Ajouter une règle",
+      "min_score": "Score d'alarme minimum",
+      "mode": "Mode",
+      "mode_dim": "Atténuer dans la liste",
+      "mode_hide": "Masquer de la liste et des notifications",
+      "exclude_label": "Exclure si la cause contient (séparées par virgule)",
+      "exclude_placeholder": "Ex. Continuous, Test",
+      "row_summary": "Score < {{score}} · {{mode}}",
+      "exclude_summary": "Exclut: {{patterns}}",
+      "error_score_range": "Le score doit être 0-100."
+    },
+    "priority": {
+      "placeholder": "La priorité par moniteur arrive avec la version native."
+    }
   }
 }

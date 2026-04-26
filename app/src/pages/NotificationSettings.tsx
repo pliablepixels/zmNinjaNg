@@ -26,6 +26,7 @@ import {
   XCircle,
   AlertCircle,
   Loader2,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -323,14 +324,24 @@ export default function NotificationSettings() {
             {t('notification_settings.subtitle')}
           </p>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => navigate('/notifications/history')}
-          data-testid="notification-history-button"
-        >
-          <History className="h-4 w-4 mr-2" />
-          {t('notification_settings.view_history')}
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/notifications/triage')}
+            data-testid="notification-triage-button"
+          >
+            <SlidersHorizontal className="h-4 w-4 mr-2" />
+            {t('notification_settings.triage_center')}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate('/notifications/history')}
+            data-testid="notification-history-button"
+          >
+            <History className="h-4 w-4 mr-2" />
+            {t('notification_settings.view_history')}
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4">
