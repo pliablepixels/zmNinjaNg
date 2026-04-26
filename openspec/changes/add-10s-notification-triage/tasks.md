@@ -98,7 +98,7 @@
 - [x] 12.3 Per-card "Mark reviewed" affordance + "Unmark reviewed" overflow item on `EventCard`
 - [x] 12.4 Bulk "Mark all reviewed" action on the Events page; cap at 500 events with localized notice when exceeded
 - [ ] 12.5 Visual treatment: 50% opacity + checkmark icon on reviewed events across `EventCard`, `Events.tsx`, dashboard recent-events widget, montage view (where applicable)
-- [ ] 12.6 "Show reviewed" toggle integration with quick-search filter bar (default off on phone portrait, on for tablet/desktop, persisted profile-scoped within session)
+- [~] 12.6 "Show reviewed" toggle integration with quick-search filter bar (default off on phone portrait, on for tablet/desktop, persisted profile-scoped within session) — lightweight integration into existing filter popover; final inline placement on the quick-search bar follows §13
 - [~] 12.7 Unit tests for store, batched-write performance test, drain test (store + batched-write covered; drain test deferred to §12.2)
 
 ## 13. Events page — Quick-Search filter bar

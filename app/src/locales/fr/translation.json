@@ -209,7 +209,8 @@
       "reviewed": "Vu",
       "bulk_mark_all": "Tout marquer vu",
       "bulk_marked": "{{count}} événements marqués vus",
-      "bulk_capped": "Premiers {{count}} événements marqués vus"
+      "bulk_capped": "Premiers {{count}} événements marqués vus",
+      "show_reviewed": "Afficher les vus"
     },
     "filter": {
       "tags": "Tags",

@@ -64,6 +64,15 @@ export default function Events() {
     )
   );
 
+  // Reviewed-state subscription. Toggle is session-only per spec; reviewed
+  // events are hidden by default and rendered dimmed when "Show reviewed" is on.
+  const reviewedIds = useEventReviewStateStore(
+    useShallow((state) =>
+      currentProfile ? state.getReviewed(currentProfile.id) : []
+    )
+  );
+  const [showReviewed, setShowReviewed] = useState(false);
+
   const parentRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
 
@@ -217,6 +226,12 @@ export default function Events() {
       filtered = filtered.filter(({ Event }: EventData) => favoriteIds.includes(Event.Id));
     }
 
+    // Hide reviewed events unless the session toggle says otherwise.
+    if (!showReviewed && reviewedIds.length > 0) {
+      const reviewedSet = new Set(reviewedIds);
+      filtered = filtered.filter(({ Event }: EventData) => !reviewedSet.has(Event.Id));
+    }
+
     // Apply tag filter if tags are selected (client-side)
     if (selectedTagIds.length > 0 && eventTagMap.size > 0) {
       const isAllTagsFilter = selectedTagIds.includes(ALL_TAGS_FILTER_ID);
@@ -232,7 +247,7 @@ export default function Events() {
     }
 
     return filtered;
-  }, [eventsData?.events, favoritesOnly, favoriteIds, selectedTagIds, eventTagMap]);
+  }, [eventsData?.events, favoritesOnly, favoriteIds, showReviewed, reviewedIds, selectedTagIds, eventTagMap]);
 
   // Use grid management hook (only active when in montage mode)
   const gridControls = useEventMontageGrid({
@@ -424,6 +439,8 @@ export default function Events() {
                   isLoadingTags={isLoadingTags}
                   onlyDetectedObjects={onlyDetectedObjects}
                   onOnlyDetectedObjectsChange={setOnlyDetectedObjects}
+                  showReviewed={showReviewed}
+                  onShowReviewedChange={setShowReviewed}
                 />
               </Popover>
 

@@ -5,7 +5,7 @@
  * Provides filtering UI for events by monitors, favorites, tags, and date range.
  */
 
-import { Star, Tag, X, Loader2, ScanSearch } from 'lucide-react';
+import { Star, Tag, X, Loader2, ScanSearch, CheckCircle2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { MonitorData, Tag as TagType } from '../../api/types';
 import { ALL_TAGS_FILTER_ID } from '../../hooks/useEventFilters';
@@ -41,6 +41,9 @@ interface EventsFilterPopoverProps {
   // Object detection filter
   onlyDetectedObjects?: boolean;
   onOnlyDetectedObjectsChange?: (value: boolean) => void;
+  // Reviewed filter
+  showReviewed?: boolean;
+  onShowReviewedChange?: (value: boolean) => void;
 }
 
 export function EventsFilterPopover({
@@ -63,6 +66,8 @@ export function EventsFilterPopover({
   isLoadingTags = false,
   onlyDetectedObjects = false,
   onOnlyDetectedObjectsChange,
+  showReviewed = false,
+  onShowReviewedChange,
 }: EventsFilterPopoverProps) {
   const { t } = useTranslation();
 
@@ -152,6 +157,24 @@ export function EventsFilterPopover({
             data-testid="events-detected-objects-toggle"
           />
         </div>
+
+        {/* Show reviewed events */}
+        {onShowReviewedChange && (
+          <div className="flex items-center justify-between p-3 rounded-md border bg-card">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              <Label htmlFor="show-reviewed" className="cursor-pointer">
+                {t('events.review.show_reviewed')}
+              </Label>
+            </div>
+            <Switch
+              id="show-reviewed"
+              checked={showReviewed}
+              onCheckedChange={onShowReviewedChange}
+              data-testid="events-show-reviewed-toggle"
+            />
+          </div>
+        )}
 
         {/* Tags filter - only show if tags are supported */}
         {tagsSupported && (
