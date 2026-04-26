@@ -85,37 +85,38 @@ Explicit exclusions for this milestone. Each carries its rationale to prevent re
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TRIAGE-01 | (set by roadmapper) | Pending |
-| TRIAGE-02 | (set by roadmapper) | Pending |
-| TRIAGE-03 | (set by roadmapper) | Pending |
-| TRIAGE-04 | (set by roadmapper) | Pending |
-| TRIAGE-05 | (set by roadmapper) | Pending |
-| TRIAGE-06 | (set by roadmapper) | Pending |
-| TRIAGE-07 | (set by roadmapper) | Pending |
-| TRIAGE-08 | (set by roadmapper) | Pending |
-| ALERT-01 | (set by roadmapper) | Pending |
-| ALERT-02 | (set by roadmapper) | Pending |
-| ALERT-03 | (set by roadmapper) | Pending |
-| ALERT-04 | (set by roadmapper) | Pending |
-| ALERT-05 | (set by roadmapper) | Pending |
-| ALERT-06 | (set by roadmapper) | Pending |
-| ALERT-07 | (set by roadmapper) | Pending |
-| ALERT-08 | (set by roadmapper) | Pending |
-| ALERT-09 | (set by roadmapper) | Pending |
-| ALERT-10 | (set by roadmapper) | Pending |
-| QL-01 | (set by roadmapper) | Pending |
-| QL-02 | (set by roadmapper) | Pending |
-| QL-03 | (set by roadmapper) | Pending |
-| QL-04 | (set by roadmapper) | Pending |
-| QL-05 | (set by roadmapper) | Pending |
-| QL-06 | (set by roadmapper) | Pending |
-| QL-07 | (set by roadmapper) | Pending |
+| TRIAGE-01 | Phase 1 | Pending |
+| TRIAGE-02 | Phase 1 | Pending |
+| TRIAGE-03 | Phase 1 | Pending |
+| TRIAGE-04 | Phase 2 | Pending |
+| TRIAGE-05 | Phase 2 | Pending |
+| TRIAGE-06 | Phase 2 | Pending |
+| TRIAGE-07 | Phase 2 | Pending |
+| TRIAGE-08 | Phase 2 | Pending |
+| ALERT-01 | Phase 3 | Pending |
+| ALERT-02 | Phase 3 | Pending |
+| ALERT-03 | Phase 3 | Pending |
+| ALERT-04 | Phase 3 | Pending |
+| ALERT-05 | Phase 3 | Pending |
+| ALERT-06 | Phase 4 | Pending |
+| ALERT-07 | Phase 4 | Pending |
+| ALERT-08 | Phase 4 | Pending |
+| ALERT-09 | Phase 4 | Pending |
+| ALERT-10 | Phase 4 | Pending |
+| QL-01 | Phase 5 | Pending |
+| QL-02 | Phase 5 | Pending |
+| QL-03 | Phase 5 | Pending |
+| QL-04 | Phase 2 | Pending |
+| QL-05 | Phase 2 | Pending |
+| QL-06 | Phase 5 | Pending |
+| QL-07 | Phase 2 | Pending |
 
 **Coverage:**
 - v1 requirements: 25 total
-- Mapped to phases: 0 (filled by roadmapper)
-- Unmapped: 25 (will be 0 after roadmap)
+- Mapped to phases: 25
+- Unmapped: 0
 
 ---
+
 *Requirements defined: 2026-04-26 after research synthesis*
-*Last updated: 2026-04-26 after initialization*
+*Traceability filled: 2026-04-26 after roadmap creation*
