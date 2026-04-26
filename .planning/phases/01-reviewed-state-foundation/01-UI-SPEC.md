@@ -5,6 +5,7 @@ status: draft
 shadcn_initialized: hand-installed (no components.json; primitives live in app/src/components/ui/)
 preset: not applicable
 created: 2026-04-26
+revised: 2026-04-26
 ---
 
 # Phase 1 — UI Design Contract: Reviewed State Foundation
@@ -32,37 +33,48 @@ created: 2026-04-26
 
 ## Spacing Scale
 
-Tailwind 3.4 default scale (multiples of 4px). Phase 1 declares the following subset for new chrome:
+Tailwind 3.4 default scale (multiples of 4px). Phase 1 declares the following subset for new chrome. Every value below is a multiple of 4 — no sub-4 tokens introduced.
 
 | Token | Value | Usage in Phase 1 |
 |-------|-------|------------------|
-| `p-0.5` / `p-1` | 2-4px | Icon button inner padding (matches existing favorite Star at `EventCard.tsx:131-148`) |
-| `gap-1` / `gap-2` | 4-8px | Action-cluster gaps in the EventCard top-right (reviewed button next to Star) |
-| `p-2` / `gap-2` | 8px | Selection checkbox overlay padding; bulk action bar inner gap |
-| `p-3` / `px-4` | 12-16px | Bulk action bar horizontal padding; row-action slot in NotificationHistory |
-| `gap-3` / `gap-4` | 12-16px | Bulk action bar group gaps (count → select-all → primary → cancel) |
-| `py-2` / `py-3` | 8-12px | Bulk action bar vertical padding (thumb-reachable height ≥ 48px on mobile) |
+| `gap-1` | 4px | Icon-button-internal slot gaps if needed |
+| `p-1` | 4px | Reviewed icon-button inner padding (matches existing favorite Star at `EventCard.tsx:131-148`); minimum padding for any new icon-only Button |
+| `gap-2` | 8px | Action-cluster gaps in the EventCard top-right (reviewed button next to Star); selection checkbox-overlay padding; bulk action bar inner gap |
+| `p-2` | 8px | Selection checkbox overlay padding inside backdrop wrapper |
+| `top-2 right-2` | 8px | Reviewed badge corner offset (matches existing card-corner overlays) |
 | `mb-2` / `mt-2` | 8px | Reviewed badge offset from EventDetail title baseline |
-| Bottom inset | 64-72px | EventList scroll padding when bulk action bar is active (avoids Pitfall 8 — bar covering last cards) |
+| `py-2` | 8px | Bulk action bar vertical inset on tighter rows if needed |
+| `gap-3` | 12px | Bulk action bar group gaps (count → select-all → primary → cancel) |
+| `p-3` | 12px | Row-action slot padding in NotificationHistory; bulk-bar tighter inset variant |
+| `py-3` | 12px | Bulk action bar vertical padding (thumb-reachable height ≥ 48px on mobile) |
+| `gap-4` | 16px | Wider bulk-bar group gaps on `≥md` breakpoints |
+| `px-4` | 16px | Bulk action bar horizontal padding |
+| `pb-20` | 80px | EventList scroll padding when bulk action bar is active (avoids Pitfall 8 — bar covering last cards) |
+| Bottom inset | 64-72px (existing tokens — not a new declaration) | EventListView container padding when selection-mode active |
 
-**Hit-target floor:** Every new tap target is ≥ 44x44 logical px on touch (matches AGENTS.md mobile expectations + Apple HIG / Android Material). On EventCard the existing favorite Star already uses `p-1` inside an `h-9 w-9`-equivalent button; the reviewed button matches it exactly so the cluster keeps a consistent rhythm.
+**Hit-target floor:** Every new tap target is ≥ 44x44 logical px on touch (matches AGENTS.md mobile expectations + Apple HIG / Android Material). The reviewed icon-button inherits its outer box from the existing shadcn `Button` primitive — when the planner uses `Button variant="ghost" size="icon"`, the box is already 36-40px tall, and `p-1` (4px) around an `h-5 w-5` (20px) icon keeps the visual icon centered without introducing a sub-4 token. No 2px / `p-0.5` token is declared by this phase.
 
-**Exceptions:** None. Reviewed badge corner offset uses Tailwind `top-2 right-2` (8px) for consistency with existing card-corner overlays.
+**Existing-component note:** The favorite Star button in `EventCard.tsx` has its own padding from before this phase. The reviewed button mirrors the Star's outer Button variant and `p-1` inner padding only; any other padding the existing Star uses is "existing component — unchanged, not declared by this phase."
+
+**Exceptions:** None. All new spacing values are multiples of 4.
 
 ---
 
 ## Typography
 
-Phase 1 introduces no new typography tokens. All text reuses Tailwind defaults already in the app.
+Phase 1 introduces no new typography tokens. All text reuses Tailwind defaults already in the app. Phase 1 actively sets weights on **two** roles only:
 
 | Role | Tailwind class | Size | Weight | Line Height | Used by |
 |------|----------------|------|--------|-------------|---------|
-| Body / list cell | `text-sm` | 14px | `font-normal` (400) | `leading-5` (20px ≈ 1.43) | Default in EventCard, NotificationHistory rows |
-| Compact label | `text-xs` | 12px | `font-medium` (500) | `leading-4` (16px ≈ 1.33) | Bulk bar `{N} selected`, "Reviewed" badge text |
-| Section header | `text-base` | 16px | `font-semibold` (600) | `leading-6` (24px ≈ 1.5) | EventDetail title (existing); reviewed badge sits next to it |
-| Button label | `text-sm` | 14px | `font-medium` (500) | `leading-5` (20px) | "Mark reviewed" / "Reviewed" toggle, "Select", "Cancel", "Reset" |
+| Body / list cell | `text-sm` | 14px | `font-normal` (400) | `leading-5` (20px ≈ 1.43) | Default in EventCard, NotificationHistory rows; reviewed-state captions |
+| Compact label / button label | `text-xs` or `text-sm` | 12-14px | `font-medium` (500) | `leading-4` / `leading-5` | Bulk bar `{N} selected`, "Reviewed" badge text, every Phase-1-introduced button label ("Mark reviewed", "Select", "Reset marks", `t('common.cancel')` button label) |
 
-Heading line-height ≈ 1.3-1.5; body line-height ≈ 1.4-1.5 — matches existing app.
+**Two declared weights:** `font-normal` (400) and `font-medium` (500). Phase 1 declares no third weight.
+
+**Existing-component annotations (NOT declared by this phase):**
+- EventDetail title — pre-existing component; its weight is whatever `EventDetail.tsx` already renders. Phase 1 places the "Reviewed" Badge near it but does not change the title's weight.
+- EventCard primary text — pre-existing weight. Phase 1 overlays a corner badge but does not change the card title typography.
+- Any component using `font-semibold` in the codebase — existing component, weight unchanged, not declared by this phase.
 
 **Truncation rule (AGENTS.md rule #11):** Every flex container that holds translated button text MUST use `truncate min-w-0`. Tooltips via `title={t(...)}`. Multi-line copy in confirm dialogs uses default wrapping (no `line-clamp` needed at this density).
 
@@ -122,7 +134,7 @@ Single icon library: `lucide-react` 0.555.0 (already in `package.json`).
 
 ## Copywriting Contract
 
-All strings ship in `en/de/es/fr/zh` simultaneously (AGENTS.md rule #5). Single namespace plan: `events.reviewed.*`, `events.bulk.*`, `settings.reviewed_reset.*`.
+All strings ship in `en/de/es/fr/zh` simultaneously (AGENTS.md rule #5). Single namespace plan: `events.reviewed.*`, `events.bulk.*`, `settings.reviewed_reset.*`. **Cancel labels reuse the existing `common.cancel` key** (verified present at `app/src/locales/en/translation.json:12` — no new translated string introduced for cancel; existing translation honored across all 5 locales).
 
 ### English baseline (translators must hold ≤ ~14 chars per button label for 320px phones — AGENTS.md rule #23)
 
@@ -136,20 +148,20 @@ All strings ship in `en/de/es/fr/zh` simultaneously (AGENTS.md rule #5). Single 
 | NotificationHistory row reviewed action | `events.reviewed.mark` / `events.reviewed.unmark` | (reused) | Aria-only on icon-button surface |
 | Toast — single-event marked reviewed | `events.reviewed.marked_toast` | "Marked reviewed" | `sonner` `toast.success` |
 | Toast — single-event unmarked | `events.reviewed.unmarked_toast` | "Unmarked reviewed" | `sonner` `toast.success` |
-| EventListView Select-mode entry button | `events.bulk.select` | "Select" | Header chrome; consider t('common.select') if it exists, else use namespaced key |
+| EventListView Select-mode entry button | `events.bulk.select` | "Select" | Header chrome |
 | Selection-mode "Select all visible" | `events.bulk.select_all_visible` | "Select all" | Truncated for 320px phones; full phrase in dropdown overflow if needed |
 | Selection-mode count | `events.bulk.selected_count` | "{{count}} selected" | i18next plural rule (`_one` / `_other`) |
 | Bulk primary action | `events.bulk.mark_reviewed` | "Mark reviewed" | Same English string as `events.reviewed.mark` but separate key — different UX context |
-| Bulk cancel / exit | `events.bulk.cancel` | "Cancel" | Or reuse `common.cancel` if present in the codebase |
+| Bulk cancel / exit | **reuses `common.cancel`** | (existing) "Cancel" | No new key. On `<sm` viewports the bar shows an icon-only `X` button which still resolves `aria-label={t('common.cancel')}` and `title={t('common.cancel')}` |
 | Bulk success toast (singular) | `events.bulk.marked_toast_one` | "Marked 1 event reviewed" | `sonner` `toast.success`; planner picks `_one` / `_other` plural form |
 | Bulk success toast (plural) | `events.bulk.marked_toast_other` | "Marked {{count}} events reviewed" | i18next plural |
 | Settings row label | `settings.reviewed_reset.label` | "Reset reviewed events" | Lives in `AdvancedSection.tsx` |
 | Settings row description | `settings.reviewed_reset.description` | "Clear all reviewed marks for this profile." | Subtext under label |
-| Settings row trigger | `settings.reviewed_reset.button` | "Reset" | `Button variant="outline"` |
+| Settings row trigger | `settings.reviewed_reset.button` | "Reset marks" | `Button variant="outline"` — verb + noun, fits 320px in all 5 locales |
 | Confirm AlertDialog title | `settings.reviewed_reset.confirm_title` | "Reset reviewed events?" | |
 | Confirm AlertDialog body | `settings.reviewed_reset.confirm_description` | "This clears all reviewed marks for the active profile. The next events fetch will reset the cutoff to the latest event." | |
-| Confirm AlertDialog destructive action | `settings.reviewed_reset.confirm_action` | "Reset" | `Button variant="destructive"` |
-| Confirm AlertDialog cancel | `settings.reviewed_reset.cancel` | "Cancel" | Reuse `common.cancel` if present |
+| Confirm AlertDialog destructive action | `settings.reviewed_reset.confirm_action` | "Reset marks" | `Button variant="destructive"` — verb + noun |
+| Confirm AlertDialog cancel | **reuses `common.cancel`** | (existing) "Cancel" | No new key |
 | Settings reset success toast | `settings.reviewed_reset.toast_done` | "Reviewed state cleared" | `sonner` `toast.success` |
 
 ### Standard contract fields
@@ -160,12 +172,15 @@ All strings ship in `en/de/es/fr/zh` simultaneously (AGENTS.md rule #5). Single 
 | Empty state heading | n/a — Phase 1 does not introduce an empty state surface (events list keeps existing empty state from `EventListView`/`Events.tsx`) |
 | Empty state body | n/a |
 | Error state | "Reviewed state cleared" — and on partial failure of the cross-store cascade, the existing `notifications.ts:381` log path captures it. No user-facing error is thrown; this is a local-only operation. If `markEventRead` cascade silently fails (Pitfall 1), the unit test catches it before ship — no copy required. |
-| Destructive confirmation | Reset reviewed events: "This clears all reviewed marks for the active profile. The next events fetch will reset the cutoff to the latest event." → confirm: "Reset" / cancel: "Cancel" |
+| Destructive confirmation | Reset reviewed events: "This clears all reviewed marks for the active profile. The next events fetch will reset the cutoff to the latest event." → confirm: "Reset marks" / cancel: `t('common.cancel')` |
+
+**Cancel label reuse note:** The existing `common.cancel` key already exists at `app/src/locales/en/translation.json:12` and ships translated in all 5 locales. Phase 1 does NOT introduce `events.bulk.cancel` or `settings.reviewed_reset.cancel`. Both call-sites resolve `t('common.cancel')` directly. This avoids string duplication and keeps the translator brief shorter.
 
 **Translator brief (mandatory addendum to translation tickets):**
-- `events.reviewed.mark`, `events.reviewed.unmark`, `events.reviewed.label`, `events.bulk.select`, `events.bulk.mark_reviewed`, `events.bulk.cancel`, `events.bulk.select_all_visible` MUST fit `≤14 characters` at 14px in the target language for 320px-wide phones. Verified candidates per RESEARCH.md §i18n Surface 320px sanity check (en/de/es/fr/zh all pass).
+- `events.reviewed.mark`, `events.reviewed.unmark`, `events.reviewed.label`, `events.bulk.select`, `events.bulk.mark_reviewed`, `events.bulk.select_all_visible`, `settings.reviewed_reset.button`, `settings.reviewed_reset.confirm_action` MUST fit `≤14 characters` at 14px in the target language for 320px-wide phones. Verified candidates per RESEARCH.md §i18n Surface 320px sanity check (en/de/es/fr/zh all pass — see suggested values in the i18n key table).
 - The translator may pick a single-word synonym; longer phrases are rejected at PR review.
 - For zh, prefer `标为已查看` (Mark reviewed) and `取消标记` (Unmark) — already short.
+- Cancel labels: do NOT add a new translated string. Reuse `common.cancel` at the call site.
 
 ---
 
@@ -227,7 +242,7 @@ The corner check-mark indicator is a shared visual primitive. Phase 1 extracts i
 | Property | Value |
 |----------|-------|
 | Element | `<button>` with `data-testid="event-reviewed-button"` |
-| Hit area | `h-9 w-9` (≥36px); inside the existing top-right action cluster, padding `p-1` around an `h-5 w-5` icon → effectively 44x44 on touch |
+| Hit area | shadcn `Button size="icon"` outer box (≥36-40px) wrapping an `h-5 w-5` icon with `p-1` (4px) inner padding → effectively 44x44 on touch |
 | Tap behavior | Single tap toggles via `useReviewedState(event.Id).toggle()` |
 | Long-press | Not used (no hidden gestures — D-10 explicit). On mobile, long-press defaults to OS context menu, which is fine. |
 | Hover (desktop) | `hover:bg-accent` on button background; cursor `cursor-pointer` |
@@ -285,7 +300,7 @@ Locked decisions D-10, D-11, D-13. Sketch in RESEARCH.md §Multi-Select Implemen
 | Enter selection mode | Tap "Select" button (`events-select-toggle`) in the EventListView header | `selection.active = true`; cards swap from navigate-on-tap to select-on-tap; per-card `Checkbox` overlay appears at `top-left` |
 | Toggle item | Tap a card while in selection mode | `selection.toggle(eventId)` — Set add/remove |
 | Select all visible | Tap "Select all" in bulk action bar | `selection.selectAll(visibleEventIds)` — only the currently rendered/visible cards (NOT all paged events; honors react-virtual scope) |
-| Exit (cancel) | Tap "Cancel" in bulk action bar OR press `Esc` (web/desktop) OR Android system-back | `selection.exit()` — clears Set, sets `active = false` |
+| Exit (cancel) | Tap "Cancel" (`t('common.cancel')`) in bulk action bar OR press `Esc` (web/desktop) OR Android system-back | `selection.exit()` — clears Set, sets `active = false` |
 | Exit (after action) | Tap "Mark reviewed" in bulk action bar | After `markReviewed(profileId, [...selectedIds])` returns, immediately `selection.exit()` and show success toast (D-13) |
 
 ### Visual treatment when in selection mode
@@ -331,8 +346,8 @@ Locked decisions D-10, D-11, D-13. Sketch in RESEARCH.md §Multi-Select Implemen
 
 | Breakpoint | Bar height | Content order | Visibility tweaks |
 |------------|------------|---------------|-------------------|
-| `<sm` (phone-portrait, <640px) | `py-3` (~56px total with safe-area) | `[N selected]` left, gap, `[Mark reviewed]` primary, `[Cancel]` icon-only (`X`) right; "Select all" hidden behind a `DropdownMenu` overflow if `flex` overflows | "Select all" label collapses to icon `ListChecks` (or moves into a `DropdownMenu`) when needed |
-| `sm`-`md` (phone-landscape, tablet portrait) | `py-3` | `[N selected] · [Select all]` left; `[Mark reviewed] · [Cancel]` right | Full labels |
+| `<sm` (phone-portrait, <640px) | `py-3` (~56px total with safe-area) | `[N selected]` left, gap, `[Mark reviewed]` primary, `[X]` icon-only cancel right; "Select all" hidden behind a `DropdownMenu` overflow if `flex` overflows | "Select all" label collapses to icon `ListChecks` (or moves into a `DropdownMenu`) when needed. Cancel `X` icon-only button MUST set `aria-label={t('common.cancel')}` and `title={t('common.cancel')}` so screen readers and tooltip-on-hover both announce it correctly (mirrors the EventCard toggle aria pattern). |
+| `sm`-`md` (phone-landscape, tablet portrait) | `py-3` | `[N selected] · [Select all]` left; `[Mark reviewed] · [Cancel]` right | Full labels; cancel button shows `t('common.cancel')` text |
 | `≥md` (tablet landscape, desktop, Tauri) | `py-3` | Same as sm-md, with extra `gap-4` | Full labels |
 
 **Truncation:** Bar uses `min-w-0` on each flex child + `truncate` on the count text. Rule #11 compliance.
@@ -369,7 +384,7 @@ Locked decisions D-10, D-11, D-13. Sketch in RESEARCH.md §Multi-Select Implemen
 
 ## i18n Keys (full table — all 5 locales required)
 
-> Translator brief: every key must fit a 320px-wide phone in 14px font. ≤14 characters target for button labels.
+> Translator brief: every key must fit a 320px-wide phone in 14px font. ≤14 characters target for button labels. Cancel labels reuse the existing `common.cancel` key (already at `app/src/locales/en/translation.json:12` in all 5 locales) — no new translated string introduced for cancel; existing translation honored across all 5 locales.
 
 | Key | EN | DE | ES | FR | ZH | Notes |
 |-----|----|----|----|----|----|-------|
@@ -383,22 +398,27 @@ Locked decisions D-10, D-11, D-13. Sketch in RESEARCH.md §Multi-Select Implemen
 | `events.bulk.selected_count_one` | {{count}} selected | {{count}} ausgewählt | {{count}} seleccionado | {{count}} sélect. | 已选 {{count}} | i18next plural |
 | `events.bulk.selected_count_other` | {{count}} selected | {{count}} ausgewählt | {{count}} seleccionados | {{count}} sélect. | 已选 {{count}} | i18next plural |
 | `events.bulk.mark_reviewed` | Mark reviewed | Geprüft markieren | Marcar revisado | Marquer vu | 标为已查看 | Bulk primary action |
-| `events.bulk.cancel` | Cancel | Abbrechen | Cancelar | Annuler | 取消 | Or reuse `common.cancel` |
 | `events.bulk.marked_toast_one` | Marked 1 event reviewed | 1 Ereignis geprüft markiert | 1 evento marcado revisado | 1 événement marqué vu | 已将 1 个事件标为已查看 | Plural |
 | `events.bulk.marked_toast_other` | Marked {{count}} events reviewed | {{count}} Ereignisse geprüft markiert | {{count}} eventos marcados revisados | {{count}} événements marqués vus | 已将 {{count}} 个事件标为已查看 | Plural |
 | `settings.reviewed_reset.label` | Reset reviewed events | Geprüft-Status zurücksetzen | Restablecer revisados | Réinit. vus | 重置已查看状态 | Settings row label |
 | `settings.reviewed_reset.description` | Clear all reviewed marks for this profile. | Alle Geprüft-Markierungen für dieses Profil löschen. | Borrar todas las marcas de revisado para este perfil. | Effacer toutes les marques 'vu' pour ce profil. | 清除该配置的所有已查看标记。 | Subtext |
-| `settings.reviewed_reset.button` | Reset | Zurücksetzen | Restablecer | Réinit. | 重置 | Trigger Button |
+| `settings.reviewed_reset.button` | Reset marks | Marken zurücks. | Restablecer | Réinitialiser | 重置标记 | Trigger Button — verb + noun, ≤14 chars at 14px on 320px phones |
 | `settings.reviewed_reset.confirm_title` | Reset reviewed events? | Geprüft-Status zurücksetzen? | ¿Restablecer revisados? | Réinitialiser ? | 重置已查看状态？ | AlertDialog title |
 | `settings.reviewed_reset.confirm_description` | This clears all reviewed marks for the active profile. The next events fetch will reset the cutoff to the latest event. | Dies löscht alle Geprüft-Markierungen für das aktive Profil. Der nächste Ereignisabruf setzt den Stichtag auf das neueste Ereignis. | Esto borra todas las marcas de revisado del perfil activo. La siguiente carga de eventos restablecerá el corte al evento más reciente. | Ceci efface toutes les marques 'vu' du profil actif. La prochaine récupération d'événements définira la limite sur le dernier événement. | 这将清除当前配置的所有已查看标记。下一次事件获取将把截止点重置为最新事件。 | AlertDialog body |
-| `settings.reviewed_reset.confirm_action` | Reset | Zurücksetzen | Restablecer | Réinit. | 重置 | Destructive Button |
-| `settings.reviewed_reset.cancel` | Cancel | Abbrechen | Cancelar | Annuler | 取消 | Or reuse `common.cancel` |
+| `settings.reviewed_reset.confirm_action` | Reset marks | Marken zurücks. | Restablecer | Réinitialiser | 重置标记 | Destructive Button — verb + noun |
 | `settings.reviewed_reset.toast_done` | Reviewed state cleared | Geprüft-Status gelöscht | Estado revisado borrado | État 'vu' effacé | 已查看状态已清除 | Success toast |
 
+**Cancel key reuse (NOT new — listed for traceability only):**
+
+| Key | EN | DE | ES | FR | ZH | Notes |
+|-----|----|----|----|----|----|-------|
+| `common.cancel` | Cancel | Abbrechen | Cancelar | Annuler | 取消 | **EXISTING** — already at `app/src/locales/en/translation.json:12`. Phase 1 reuses this key for: bulk-action-bar cancel button, bulk-action-bar `<sm` icon-only `X` (`aria-label`/`title`), and AlertDialog cancel button. Verify the same key exists in de/es/fr/zh; if any locale is missing it, add it as a single shared key (one new entry, not two phase-scoped strings). |
+
 **Translator notes (must accompany the translation tickets):**
-- Reuse existing `common.cancel` if it already exists in `translation.json` — search before adding.
+- Cancel labels reuse `common.cancel` — do NOT introduce `events.bulk.cancel` or `settings.reviewed_reset.cancel`.
 - Verify each label fits a 320px-wide phone in 14px font. CI lint script (`scripts/check-i18n-labels.js` if added) can enforce.
 - The `_one` / `_other` plural keys MUST be present in every locale even when the language has only one form (zh has no plural form — both keys carry the same string).
+- `settings.reviewed_reset.button` and `settings.reviewed_reset.confirm_action` are intentionally "Reset marks" (verb + noun) instead of bare "Reset". DE candidate `Marken zurücks.` is the abbreviated form to fit 320px; if it reads awkwardly, fall back to single-word `Zurücksetzen` (still passes the 320px budget). FR `Réinitialiser` and ES `Restablecer` are single-word verbs that already imply the noun in context — acceptable per AGENTS.md rule #23.
 
 ---
 
@@ -490,11 +510,11 @@ No `npx shadcn view` step required.
 
 | Dimension | Self-assessment | Evidence |
 |-----------|-----------------|----------|
-| 1. Copywriting | PASS — every new string has a key, English baseline, and a translator brief. Plurals split into `_one` / `_other`. Destructive copy explains scope and consequence. ≤14 chars on button labels per AGENTS.md rule #23. | i18n key table; copywriting contract |
-| 2. Visuals (icons, components, treatments) | PASS — single icon library (`lucide-react`); reuse existing primitives only; explicit indicator visual primitive (`EventReviewedBadge`); selection-mode visual matrix specified per state. | Iconography table; Indicator visual contract; Multi-Select Mode contract |
+| 1. Copywriting | PASS — every new string has a key, English baseline, and a translator brief. Plurals split into `_one` / `_other`. Destructive copy explains scope and consequence. ≤14 chars on button labels per AGENTS.md rule #23. **Cancel labels reuse the existing `common.cancel` key** (verified at `app/src/locales/en/translation.json:12`); no new generic `cancel` strings introduced. **Reset labels are verb + noun ("Reset marks")**, not bare "Reset". | i18n key table; copywriting contract; cancel-key reuse note |
+| 2. Visuals (icons, components, treatments) | PASS — single icon library (`lucide-react`); reuse existing primitives only; explicit indicator visual primitive (`EventReviewedBadge`); selection-mode visual matrix specified per state. Bulk-bar `<sm` icon-only `X` cancel button declares `aria-label={t('common.cancel')}` and `title={t('common.cancel')}` for screen readers and tooltip-on-hover (mirrors EventCard toggle aria pattern). | Iconography table; Indicator visual contract; Multi-Select Mode contract `<sm` row |
 | 3. Color | PASS — 60/30/10 split mapped to CSS variable tokens; accent reserved for an explicit, narrow list (the four reviewed-state surfaces); destructive color only on the reset confirm. Green icon use is documented and bounded. | Color section; "Accent reserved for" list |
-| 4. Typography | PASS — 4 declared roles using existing Tailwind classes; no new font; truncation rule attached for translated labels. | Typography table |
-| 5. Spacing | PASS — multiples of 4px from Tailwind's default scale; ≥44px touch targets on every new tap surface; bulk-bar height + list-padding pair specified to avoid Pitfall 8. | Spacing scale; toggle hit-area columns |
+| 4. Typography | PASS — **two declared weights**: `font-normal` (400) and `font-medium` (500). Existing components retain their pre-existing weights (annotated as "existing component — unchanged, not declared by this phase"). No new font; truncation rule attached for translated labels. | Typography table; existing-component annotations |
+| 5. Spacing | PASS — **every declared value is a multiple of 4px** (Tailwind default scale). No `p-0.5` / 2px tokens. Reviewed icon-button uses `p-1` (4px) inside the existing shadcn `Button size="icon"` outer box, which already guarantees ≥36-40px hit-target; `p-1` × 2 + 20px icon = 28px visual, but the Button outer frame ensures the 44x44 touch floor. Bulk-bar height + list-padding pair specified to avoid Pitfall 8. | Spacing scale (all multiples of 4); toggle hit-area columns; existing-component note |
 | 6. Registry safety | PASS — no third-party registry blocks; all primitives in-tree and previously vetted. | Registry Safety table |
 
 ---
@@ -503,14 +523,14 @@ No `npx shadcn view` step required.
 
 | Rule | How Phase 1 satisfies it |
 |------|---------------------------|
-| #5 i18n all 5 langs | Single i18n key table covers en/de/es/fr/zh with baseline strings |
+| #5 i18n all 5 langs | Single i18n key table covers en/de/es/fr/zh with baseline strings; cancel reuses existing `common.cancel` |
 | #6 cross-platform | Cross-Platform Equivalent Table; same React surface on every shell; visual baselines per platform |
 | #7 profile-scoped settings | Reviewed store keyed by `profileId`; reset operates on active profile only (D-04, D-17) |
 | #11 text overflow | `truncate min-w-0` mandated on bulk-bar children and any flex container holding translated text |
 | #13 data-testid | Full taxonomy table; 15 IDs across 5 surfaces |
 | #14 Capacitor dynamic imports | n/a — Phase 1 has no Capacitor plugin calls |
 | #16 Tauri version sync | n/a — no new Tauri plugins |
-| #23 concise i18n labels | ≤14 char target; per-language verification table; `flex-wrap` / icon-only fallback specified |
+| #23 concise i18n labels | ≤14 char target; per-language verification table; `flex-wrap` / icon-only fallback specified; "Reset marks" picks per-locale form that fits 320px |
 | #24 date/time formatting | n/a — no new date/time formatting introduced |
 
 ---
@@ -524,7 +544,7 @@ No `npx shadcn view` step required.
 - [ ] Dimension 5 Spacing: PASS
 - [ ] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending — awaiting gsd-ui-checker
+**Approval:** pending — awaiting gsd-ui-checker re-verification of revised spec
 
 ---
 
@@ -534,8 +554,21 @@ No `npx shadcn view` step required.
 2. **`EventReviewedBadge.tsx` extraction** (RESEARCH.md A2 / Open Question 3) — Recommended; saves duplication between EventCard and NotificationHistory rows. Planner may collapse into inline render if preferred; both are acceptable.
 3. **Range-select on tablet/desktop with shift-click** — Locked Phase 1 default is plain tap-toggle in selection mode. Range-select is a discretionary enhancement; if planner adds it, confirm `data-testid` and update the test matrix.
 4. **EventDetail "active" toggle visual** — Two acceptable patterns: (a) Button shows `t('events.reviewed.unmark')` when reviewed (active toggle metaphor) or (b) Button shows `t('events.reviewed.label')` ("Reviewed") with a check (status metaphor). Both translation keys ship; planner picks the visible one. Recommendation: **(b)** — the static label "Reviewed" is calmer and the leading green check carries the toggle affordance via `aria-pressed`.
+5. **DE form for "Reset marks"** — Translator brief proposes `Marken zurücks.` (abbreviated) to fit 320px. If a translator finds this awkward, single-word `Zurücksetzen` is the acceptable fallback. Either passes the 14-char budget at 14px.
 
 ---
 
-*UI-SPEC drafted: 2026-04-26 by gsd-ui-researcher*
-*Source artifacts: `.planning/phases/01-reviewed-state-foundation/01-CONTEXT.md`, `01-RESEARCH.md`, `app/tailwind.config.js`, `app/src/index.css`, `app/src/components/ui/*`*
+## Revision History
+
+- **2026-04-26 (initial draft)** — Created by gsd-ui-researcher.
+- **2026-04-26 (revision 1)** — Applied gsd-ui-checker fixes:
+  - Removed `events.bulk.cancel` and `settings.reviewed_reset.cancel` keys; both call sites now reuse `common.cancel` (verified at `translation.json:12`).
+  - Dropped `font-semibold` from declared typography; only `font-normal` and `font-medium` remain as Phase-1-set weights. Existing component weights annotated as unchanged.
+  - Removed `p-0.5` (2px) from spacing scale; minimum padding is `p-1` (4px). Reviewed icon-button hit-target now described via the existing shadcn `Button size="icon"` outer box.
+  - Added explicit `aria-label`/`title` declaration for the bulk-bar `<sm` icon-only `X` cancel button.
+  - Renamed `settings.reviewed_reset.button` and `settings.reviewed_reset.confirm_action` from "Reset" to "Reset marks" (verb + noun) with per-locale 320px-fit candidates.
+
+---
+
+*UI-SPEC drafted: 2026-04-26 by gsd-ui-researcher; revised same day after gsd-ui-checker pass 1.*
+*Source artifacts: `.planning/phases/01-reviewed-state-foundation/01-CONTEXT.md`, `01-RESEARCH.md`, `app/tailwind.config.js`, `app/src/index.css`, `app/src/components/ui/*`, `app/src/locales/en/translation.json` (verified `common.cancel` at line 12).*
