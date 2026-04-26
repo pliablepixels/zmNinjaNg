@@ -23,7 +23,7 @@ import { useEventMontageGrid } from '../hooks/useEventMontageGrid';
 import { useEventTags, useEventTagMapping } from '../hooks/useEventTags';
 import { PullToRefreshIndicator } from '../components/ui/pull-to-refresh-indicator';
 import { Button } from '../components/ui/button';
-import { RefreshCw, Filter, AlertCircle, ArrowLeft, LayoutGrid, List, Clock, X } from 'lucide-react';
+import { RefreshCw, Filter, AlertCircle, ArrowLeft, LayoutGrid, List, Clock, X, CheckCheck } from 'lucide-react';
 import { filterMonitorsByGroup } from '../lib/filters';
 import { useGroupFilter } from '../hooks/useGroupFilter';
 import { GroupFilterSelect } from '../components/filters/GroupFilterSelect';
@@ -33,12 +33,19 @@ import { EventMontageView } from '../components/events/EventMontageView';
 import { EventListView } from '../components/events/EventListView';
 import { EventMontageGridControls } from '../components/events/EventMontageGridControls';
 import { EventsFilterPopover } from '../components/events/EventsFilterPopover';
+import { QuickSearchFilterBar } from '../components/events/QuickSearchFilterBar';
 import { QuickDateRangeButtons } from '../components/ui/quick-date-range-buttons';
 import { useTranslation } from 'react-i18next';
 import { formatForServer, formatLocalDateTime } from '../lib/time';
 import { EmptyState } from '../components/ui/empty-state';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { useEventFavoritesStore } from '../stores/eventFavorites';
+import { useEventReviewStateStore } from '../stores/eventReviewState';
+import { toast } from 'sonner';
+import {
+  useSuppressionEntries,
+  evaluateSuppression,
+} from '../plugins/suppression-store';
 import { NotificationBadge } from '../components/NotificationBadge';
 
 export default function Events() {
@@ -61,6 +68,30 @@ export default function Events() {
       currentProfile ? state.getFavorites(currentProfile.id) : []
     )
   );
+
+  // Reviewed-state subscription. Toggle is session-only per spec; reviewed
+  // events are hidden by default and rendered dimmed when "Show reviewed" is on.
+  const reviewedIds = useEventReviewStateStore(
+    useShallow((state) =>
+      currentProfile ? state.getReviewed(currentProfile.id) : []
+    )
+  );
+  const [showReviewed, setShowReviewed] = useState(false);
+  const [showFiltered, setShowFiltered] = useState(false);
+  // Inline quick-search filters — session-scoped, reset on profile switch via the
+  // dependency on currentProfile?.id below.
+  const [causeContains, setCauseContains] = useState('');
+  const [scoreMin, setScoreMin] = useState(0);
+  useEffect(() => {
+    setCauseContains('');
+    setScoreMin(0);
+    setShowReviewed(false);
+    setShowFiltered(false);
+  }, [currentProfile?.id]);
+
+  // Suppression-store entries drive both notification suppression (when
+  // implemented natively) and the Events list noise filter (here).
+  const suppressionEntries = useSuppressionEntries(currentProfile?.id);
 
   const parentRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
@@ -215,6 +246,46 @@ export default function Events() {
       filtered = filtered.filter(({ Event }: EventData) => favoriteIds.includes(Event.Id));
     }
 
+    // Hide reviewed events unless the session toggle says otherwise.
+    if (!showReviewed && reviewedIds.length > 0) {
+      const reviewedSet = new Set(reviewedIds);
+      filtered = filtered.filter(({ Event }: EventData) => !reviewedSet.has(Event.Id));
+    }
+
+    // Quick-search bar: cause/notes/monitor "contains" + score-min. Both
+    // session-scoped, applied client-side.
+    const trimmedCause = causeContains.trim().toLowerCase();
+    if (trimmedCause) {
+      filtered = filtered.filter(({ Event }: EventData) => {
+        const haystack = `${Event.Cause ?? ''} ${Event.Notes ?? ''} ${Event.Name ?? ''}`.toLowerCase();
+        return haystack.includes(trimmedCause);
+      });
+    }
+    if (scoreMin > 0) {
+      filtered = filtered.filter(({ Event }: EventData) => {
+        const score = Number(Event.AvgScore) || 0;
+        return score >= scoreMin;
+      });
+    }
+
+    // Apply noise-filter rules (mode: hide drops, mode: dim is rendered by
+    // the EventCard via a per-event "noise-dimmed" flag below). The "Show
+    // filtered" session toggle un-hides hide-mode matches for the session.
+    if (!showFiltered && currentProfile && suppressionEntries.length > 0) {
+      filtered = filtered.filter(({ Event }: EventData) => {
+        const reason = evaluateSuppression(
+          {
+            profile_id: currentProfile.id,
+            monitor_id: Event.MonitorId,
+            alarm_score: Number(Event.AvgScore) || 0,
+            cause_text: Event.Cause,
+          },
+          suppressionEntries
+        );
+        return reason?.kind !== 'noise_filter';
+      });
+    }
+
     // Apply tag filter if tags are selected (client-side)
     if (selectedTagIds.length > 0 && eventTagMap.size > 0) {
       const isAllTagsFilter = selectedTagIds.includes(ALL_TAGS_FILTER_ID);
@@ -230,7 +301,20 @@ export default function Events() {
     }
 
     return filtered;
-  }, [eventsData?.events, favoritesOnly, favoriteIds, selectedTagIds, eventTagMap]);
+  }, [
+    eventsData?.events,
+    favoritesOnly,
+    favoriteIds,
+    showReviewed,
+    reviewedIds,
+    showFiltered,
+    suppressionEntries,
+    currentProfile,
+    selectedTagIds,
+    eventTagMap,
+    causeContains,
+    scoreMin,
+  ]);
 
   // Use grid management hook (only active when in montage mode)
   const gridControls = useEventMontageGrid({
@@ -422,9 +506,34 @@ export default function Events() {
                   isLoadingTags={isLoadingTags}
                   onlyDetectedObjects={onlyDetectedObjects}
                   onOnlyDetectedObjectsChange={setOnlyDetectedObjects}
+                  showReviewed={showReviewed}
+                  onShowReviewedChange={setShowReviewed}
+                  showFiltered={showFiltered}
+                  onShowFilteredChange={setShowFiltered}
                 />
               </Popover>
 
+              <Button
+                onClick={() => {
+                  if (!currentProfile || allEvents.length === 0) return;
+                  const BULK_CAP = 500;
+                  const ids = allEvents.slice(0, BULK_CAP).map(({ Event }) => Event.Id);
+                  useEventReviewStateStore.getState().markManyReviewed(currentProfile.id, ids);
+                  if (allEvents.length > BULK_CAP) {
+                    toast.info(t('events.review.bulk_capped', { count: BULK_CAP }));
+                  } else {
+                    toast.success(t('events.review.bulk_marked', { count: ids.length }));
+                  }
+                }}
+                variant="outline"
+                size="icon"
+                aria-label={t('events.review.bulk_mark_all')}
+                title={t('events.review.bulk_mark_all')}
+                disabled={allEvents.length === 0}
+                data-testid="events-bulk-mark-reviewed"
+              >
+                <CheckCheck className="h-4 w-4" />
+              </Button>
               <Button
                 onClick={() => refetch()}
                 variant="outline"
@@ -467,6 +576,28 @@ export default function Events() {
               </Button>
             )}
           </div>
+
+          <QuickSearchFilterBar
+            causeContains={causeContains}
+            onCauseContainsChange={setCauseContains}
+            scoreMin={scoreMin}
+            onScoreMinChange={setScoreMin}
+            onApplyTodaysHighScore={() => {
+              const end = new Date();
+              const start = new Date(end);
+              start.setHours(0, 0, 0, 0);
+              setStartDateInput(formatLocalDateTime(start));
+              setEndDateInput(formatLocalDateTime(end));
+              setActiveQuickRange(0);
+              setScoreMin(50);
+              setCauseContains('');
+              applyFilters();
+            }}
+            onClearInline={() => {
+              setCauseContains('');
+              setScoreMin(0);
+            }}
+          />
         </div>
 
         {/* Event Heatmap */}

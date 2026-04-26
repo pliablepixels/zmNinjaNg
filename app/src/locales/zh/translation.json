@@ -1,6 +1,16 @@
 {
   "common": {
     "go_back": "返回",
+    "back": "返回",
+    "weekday": {
+      "sun": "周日",
+      "mon": "周一",
+      "tue": "周二",
+      "wed": "周三",
+      "thu": "周四",
+      "fri": "周五",
+      "sat": "周六"
+    },
     "previous": "上一个",
     "next": "下一个",
     "refresh": "刷新",
@@ -203,6 +213,25 @@
     "favorites_only": "仅显示收藏",
     "added_to_favorites": "事件已添加到收藏",
     "removed_from_favorites": "事件已从收藏中移除",
+    "review": {
+      "mark": "标记已查看",
+      "unmark": "取消已查看",
+      "reviewed": "已查看",
+      "bulk_mark_all": "全部标记已查看",
+      "bulk_marked": "已标记 {{count}} 个事件",
+      "bulk_capped": "已标记前 {{count}} 个事件",
+      "show_reviewed": "显示已查看",
+      "show_filtered": "显示已过滤",
+      "noise_filtered": "已被噪声规则过滤"
+    },
+    "quick_search": {
+      "cause_placeholder": "搜索原因、备注或监视器",
+      "todays_hs": "今日高分",
+      "todays_hs_short": "今日高分",
+      "score_min": "分数 ≥ {{value}}",
+      "score_min_label": "最低告警分数",
+      "clear": "清除内联过滤"
+    },
     "filter": {
       "tags": "标签",
       "selectTags": "选择标签...",
@@ -712,6 +741,7 @@
     "show_advanced": "显示高级",
     "unread_count": "{{count}} 条未读通知",
     "view_history": "历史",
+    "triage_center": "分诊中心",
     "function": "功能",
     "disconnected": "已断开",
     "notifications_enabled": "通知已启用",
@@ -1107,5 +1137,55 @@
     "pin_cleared": "展台PIN已移除",
     "pin_setting_label": "展台PIN",
     "pin_setting_desc": "用于锁定和解锁展台模式的PIN"
+  },
+  "triage": {
+    "title": "分诊中心",
+    "subtitle": "管理通知的静音与过滤。",
+    "tab": {
+      "mutes": "静音",
+      "quiet_hours": "免打扰",
+      "noise": "过滤",
+      "priority": "优先级"
+    },
+    "mutes": {
+      "empty": "暂无静音。请通过通知操作进行静音后查看。",
+      "monitor": "监视器 {{id}}",
+      "until": "直到 {{time}}",
+      "extend_1h": "+1 小时"
+    },
+    "quiet_hours": {
+      "empty": "尚未设置免打扰时段。",
+      "add": "添加免打扰",
+      "label_field": "名称",
+      "label_placeholder": "例如：睡眠",
+      "start": "开始",
+      "end": "结束",
+      "weekdays": "工作日",
+      "every_day": "每天",
+      "unnamed": "免打扰",
+      "error_no_weekdays": "请至少选择一天。",
+      "error_time_format": "时间格式必须为 HH:MM。"
+    },
+    "noise": {
+      "empty": "尚无过滤规则。",
+      "add": "添加规则",
+      "min_score": "最低告警分数",
+      "mode": "模式",
+      "mode_dim": "在列表中变暗",
+      "mode_hide": "从列表和通知中隐藏",
+      "exclude_label": "当原因包含以下内容时排除（逗号分隔）",
+      "exclude_placeholder": "例如：Continuous, Test",
+      "row_summary": "分数 < {{score}} · {{mode}}",
+      "exclude_summary": "排除: {{patterns}}",
+      "error_score_range": "分数必须为 0-100。"
+    },
+    "priority": {
+      "placeholder": "按监视器的优先级将随原生版本一起推出。"
+    }
+  },
+  "quicklook": {
+    "region_label": "最近事件",
+    "empty": "暂无最近事件。",
+    "dismiss": "隐藏"
   }
 }

@@ -66,6 +66,50 @@ Each history entry shows:
 
 Tap a notification entry to jump to the corresponding event.
 
+## Triage Center
+
+The **Triage Center** (Notification Settings → "Triage Center") is the single place to manage how notifications are silenced and filtered for the active profile. It has four tabs:
+
+### Mutes
+
+Lists ad-hoc mutes — currently silenced monitors and when they expire. Use **+1h** to extend or the trash icon to clear. Mutes are typically created by tapping the "Mute monitor 1h" action on a notification (this action ships with the native release).
+
+### Quiet Hours
+
+Recurring time-of-day windows during which notifications are suppressed for the active profile.
+
+- Pick a label (e.g. "Sleep"), start and end time, and which weekdays the window applies to.
+- Windows that cross midnight (e.g. 22:00–07:00) are handled correctly — the active range belongs to the day the window starts.
+- Empty weekday selection is rejected at save time.
+
+### Noise Filter
+
+Rules that suppress events with a low alarm score or matching cause text. Each rule has:
+
+- A **minimum alarm score** — events below this are matched.
+- An optional **comma-separated list of cause patterns** — case-insensitive substring match against the event's cause text.
+- A **mode**: *Dim in list* (event still appears, dimmed) or *Hide from list and notifications*.
+
+The same rules apply to both the Events list (see {doc}`events`) and the notification pipeline once the native release lands — you only configure them once.
+
+### Priority
+
+Per-monitor priority (high / normal / low / silent) ships with the native release; the tab shows a placeholder for now.
+
+### How suppression works together
+
+When a push arrives, suppression is evaluated in this order:
+
+1. **Ad-hoc mute** wins first — silenced explicitly.
+2. **Quiet hours** wins next — silenced on schedule, even when priority is high.
+3. **Noise filter (hide mode)** wins last — silenced for being below threshold or matching cause-exclude.
+
+Anything that survives all three is presented at the priority configured for that monitor.
+
+## In-tab Quick-Look (web)
+
+On web, a slim strip at the bottom of the viewport shows the five most recent events with timestamps. Click any chip to jump to its detail page. The strip is hidden on phone-portrait viewports below 480px and can be dismissed for the session via the × button (it returns next time you open the tab). The functional equivalent on iOS and Android is a home-screen widget; on Tauri desktop it will be a system-tray popover (both ship with the native release).
+
 ## Troubleshooting
 
 **No in-app notifications (ES mode)**

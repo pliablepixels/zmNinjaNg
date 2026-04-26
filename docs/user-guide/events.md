@@ -21,9 +21,31 @@ On desktop, hovering over a thumbnail for a moment shows a 400px-wide preview an
 
 Filter events using the controls at the top:
 
-- **Date range** - Select a start and end date
+- **Date range** - Select a start and end date, or use the quick-range buttons (Today, 24h, 7d, etc.)
 - **Monitor** - Show events from a specific camera only
 - **Groups** - Filter by monitor group
+- **Cause / notes search** - Type any term to find matching events (the inline bar searches across cause text, notes, and monitor name)
+- **Minimum alarm score** - Drag the score slider to filter out low-score noise
+- **Today's high-score** - One-tap preset that sets the date range to today and the minimum score to 50
+
+### Reviewed events
+
+Each event card has a green checkmark button. Tap it to mark the event reviewed; tap again to unmark.
+
+- **Reviewed events are hidden by default**, so the list stays focused on what still needs your attention.
+- A **Show reviewed** toggle in the filter popover brings them back into view, rendered at 50% opacity with the checkmark icon so they're easy to distinguish.
+- The **Mark all reviewed** button (next to Refresh) acts on every event currently visible in the filtered list, capped at 500 per click. A toast confirms how many were marked.
+
+Reviewed state is profile-scoped and persists across app restarts.
+
+### Noise filter rules
+
+Noise-filter rules let you suppress low-value events at the source. Configure them in **Triage Center** (see {doc}`notifications`). Rules can either:
+
+- **Hide** matching events from the list and notifications, or
+- **Dim** them in the list while still letting notifications through.
+
+Hide-mode events can be temporarily revealed by enabling **Show filtered** in the filter popover; they appear with a small filter icon so you know why they were normally suppressed.
 
 ## Event Playback
 

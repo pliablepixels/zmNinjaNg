@@ -1,6 +1,16 @@
 {
   "common": {
     "go_back": "Volver",
+    "back": "Atrás",
+    "weekday": {
+      "sun": "Dom",
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mié",
+      "thu": "Jue",
+      "fri": "Vie",
+      "sat": "Sáb"
+    },
     "previous": "Anterior",
     "next": "Siguiente",
     "refresh": "Actualizar",
@@ -203,6 +213,25 @@
     "favorites_only": "Solo Favoritos",
     "added_to_favorites": "Evento añadido a favoritos",
     "removed_from_favorites": "Evento eliminado de favoritos",
+    "review": {
+      "mark": "Marcar revisado",
+      "unmark": "Desmarcar revisado",
+      "reviewed": "Revisado",
+      "bulk_mark_all": "Marcar todos revisados",
+      "bulk_marked": "{{count}} eventos marcados revisados",
+      "bulk_capped": "Primeros {{count}} eventos marcados revisados",
+      "show_reviewed": "Mostrar revisados",
+      "show_filtered": "Mostrar filtrados",
+      "noise_filtered": "Filtrado por reglas de ruido"
+    },
+    "quick_search": {
+      "cause_placeholder": "Buscar causa, notas o monitor",
+      "todays_hs": "Hoy alta puntuación",
+      "todays_hs_short": "Hoy HP",
+      "score_min": "Score ≥ {{value}}",
+      "score_min_label": "Puntuación mínima",
+      "clear": "Borrar filtros en línea"
+    },
     "filter": {
       "tags": "Etiquetas",
       "selectTags": "Seleccionar etiquetas...",
@@ -712,6 +741,7 @@
     "show_advanced": "Mostrar Avanzado",
     "unread_count": "{{count}} notificaciones sin leer",
     "view_history": "Historial",
+    "triage_center": "Centro de triaje",
     "function": "Función",
     "disconnected": "Desconectado",
     "notifications_enabled": "Notificaciones habilitadas",
@@ -1107,5 +1137,55 @@
     "pin_cleared": "PIN de kiosco eliminado",
     "pin_setting_label": "PIN de kiosco",
     "pin_setting_desc": "PIN para bloquear y desbloquear el modo kiosco"
+  },
+  "triage": {
+    "title": "Centro de triaje",
+    "subtitle": "Gestiona el silenciado y filtrado de notificaciones.",
+    "tab": {
+      "mutes": "Silenciados",
+      "quiet_hours": "Horas tranquilas",
+      "noise": "Ruido",
+      "priority": "Prioridad"
+    },
+    "mutes": {
+      "empty": "Sin silencios activos. Silencia un monitor desde una notificación para verlo aquí.",
+      "monitor": "Monitor {{id}}",
+      "until": "Hasta {{time}}",
+      "extend_1h": "+1 h"
+    },
+    "quiet_hours": {
+      "empty": "Aún no hay franjas de horas tranquilas.",
+      "add": "Añadir horas tranquilas",
+      "label_field": "Etiqueta",
+      "label_placeholder": "Ej. Sueño",
+      "start": "Inicio",
+      "end": "Fin",
+      "weekdays": "Días",
+      "every_day": "Cada día",
+      "unnamed": "Horas tranquilas",
+      "error_no_weekdays": "Elige al menos un día.",
+      "error_time_format": "El formato debe ser HH:MM."
+    },
+    "noise": {
+      "empty": "Aún no hay reglas de filtro.",
+      "add": "Añadir regla",
+      "min_score": "Puntuación mínima",
+      "mode": "Modo",
+      "mode_dim": "Atenuar en la lista",
+      "mode_hide": "Ocultar de lista y notificaciones",
+      "exclude_label": "Excluir si la causa contiene (separadas por coma)",
+      "exclude_placeholder": "Ej. Continuous, Test",
+      "row_summary": "Score < {{score}} · {{mode}}",
+      "exclude_summary": "Excluye: {{patterns}}",
+      "error_score_range": "La puntuación debe ser 0-100."
+    },
+    "priority": {
+      "placeholder": "La prioridad por monitor llega con la versión nativa."
+    }
+  },
+  "quicklook": {
+    "region_label": "Eventos recientes",
+    "empty": "Sin eventos recientes.",
+    "dismiss": "Ocultar"
   }
 }

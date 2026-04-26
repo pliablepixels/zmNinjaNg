@@ -29,6 +29,16 @@
     "filter": "Filter",
     "clear": "Clear",
     "go_back": "Go Back",
+    "back": "Back",
+    "weekday": {
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
+    },
     "previous": "Previous",
     "next": "Next",
     "apply": "Apply",
@@ -203,6 +213,25 @@
     "favorites_only": "Favorites Only",
     "added_to_favorites": "Event added to favorites",
     "removed_from_favorites": "Event removed from favorites",
+    "review": {
+      "mark": "Mark reviewed",
+      "unmark": "Unmark reviewed",
+      "reviewed": "Reviewed",
+      "bulk_mark_all": "Mark all reviewed",
+      "bulk_marked": "Marked {{count}} events reviewed",
+      "bulk_capped": "Marked first {{count}} events reviewed",
+      "show_reviewed": "Show reviewed",
+      "show_filtered": "Show filtered",
+      "noise_filtered": "Filtered by noise rules"
+    },
+    "quick_search": {
+      "cause_placeholder": "Search cause, notes, or monitor",
+      "todays_hs": "Today's high-score",
+      "todays_hs_short": "Today HS",
+      "score_min": "Score ≥ {{value}}",
+      "score_min_label": "Minimum alarm score",
+      "clear": "Clear inline filters"
+    },
     "filter": {
       "tags": "Tags",
       "selectTags": "Select tags...",
@@ -713,6 +742,7 @@
     "show_advanced": "Show Advanced",
     "unread_count": "{{count}} unread notifications",
     "view_history": "History",
+    "triage_center": "Triage Center",
     "function": "Function",
     "disconnected": "Disconnected",
     "select_profile_first": "Please select a profile first",
@@ -1107,5 +1137,55 @@
     "pin_cleared": "Kiosk PIN removed",
     "pin_setting_label": "Kiosk PIN",
     "pin_setting_desc": "PIN used to lock and unlock kiosk mode"
+  },
+  "triage": {
+    "title": "Triage Center",
+    "subtitle": "Manage how notifications are silenced and filtered.",
+    "tab": {
+      "mutes": "Mutes",
+      "quiet_hours": "Quiet Hours",
+      "noise": "Noise",
+      "priority": "Priority"
+    },
+    "mutes": {
+      "empty": "No active mutes. Mute a monitor from a notification to see it here.",
+      "monitor": "Monitor {{id}}",
+      "until": "Until {{time}}",
+      "extend_1h": "+1h"
+    },
+    "quiet_hours": {
+      "empty": "No quiet-hours windows yet.",
+      "add": "Add quiet hours",
+      "label_field": "Label",
+      "label_placeholder": "e.g. Sleep",
+      "start": "Start",
+      "end": "End",
+      "weekdays": "Weekdays",
+      "every_day": "Every day",
+      "unnamed": "Quiet hours",
+      "error_no_weekdays": "Pick at least one weekday.",
+      "error_time_format": "Time must be HH:MM."
+    },
+    "noise": {
+      "empty": "No noise-filter rules yet.",
+      "add": "Add filter rule",
+      "min_score": "Minimum alarm score",
+      "mode": "Mode",
+      "mode_dim": "Dim in list",
+      "mode_hide": "Hide from list and notifications",
+      "exclude_label": "Exclude when cause contains (comma-separated)",
+      "exclude_placeholder": "e.g. Continuous, Test",
+      "row_summary": "Score < {{score}} · {{mode}}",
+      "exclude_summary": "Excludes: {{patterns}}",
+      "error_score_range": "Score must be 0-100."
+    },
+    "priority": {
+      "placeholder": "Per-monitor priority arrives with the native release."
+    }
+  },
+  "quicklook": {
+    "region_label": "Recent events",
+    "empty": "No recent events.",
+    "dismiss": "Dismiss"
   }
 }

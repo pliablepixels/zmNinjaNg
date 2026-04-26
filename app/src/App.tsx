@@ -17,6 +17,7 @@ import { ThemeProvider } from './components/theme-provider';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { RouteErrorBoundary } from './components/RouteErrorBoundary';
 import { useTokenRefresh } from './hooks/useTokenRefresh';
+import { useDeepLinkHandler } from './hooks/useDeepLinkHandler';
 import AppLayout from './components/layout/AppLayout';
 import { NotificationHandler } from './components/NotificationHandler';
 import { Button } from './components/ui/button';
@@ -38,6 +39,7 @@ const Settings = lazy(() => import('./pages/Settings'));
 const Server = lazy(() => import('./pages/Server'));
 const NotificationSettings = lazy(() => import('./pages/NotificationSettings'));
 const NotificationHistory = lazy(() => import('./pages/NotificationHistory'));
+const TriageCenter = lazy(() => import('./pages/TriageCenter'));
 const Logs = lazy(() => import('./pages/Logs'));
 
 // Loading fallback component
@@ -73,6 +75,9 @@ function AppRoutes() {
 
   // Enable automatic token refresh
   useTokenRefresh();
+
+  // Handle zmninja:// deep links (notification action 'Live', widgets, tray)
+  useDeepLinkHandler();
 
   // Always apply compact mode
   useEffect(() => {
@@ -245,6 +250,14 @@ function AppRoutes() {
             element={
               <RouteErrorBoundary routePath="/notifications/history">
                 <NotificationHistory />
+              </RouteErrorBoundary>
+            }
+          />
+          <Route
+            path="/notifications/triage"
+            element={
+              <RouteErrorBoundary routePath="/notifications/triage">
+                <TriageCenter />
               </RouteErrorBoundary>
             }
           />

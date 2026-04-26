@@ -1,6 +1,16 @@
 {
   "common": {
     "go_back": "Zurück",
+    "back": "Zurück",
+    "weekday": {
+      "sun": "So",
+      "mon": "Mo",
+      "tue": "Di",
+      "wed": "Mi",
+      "thu": "Do",
+      "fri": "Fr",
+      "sat": "Sa"
+    },
     "previous": "Zurück",
     "next": "Weiter",
     "refresh": "Aktualisieren",
@@ -203,6 +213,25 @@
     "favorites_only": "Nur Favoriten",
     "added_to_favorites": "Ereignis zu Favoriten hinzugefügt",
     "removed_from_favorites": "Ereignis aus Favoriten entfernt",
+    "review": {
+      "mark": "Als geprüft markieren",
+      "unmark": "Als ungeprüft markieren",
+      "reviewed": "Geprüft",
+      "bulk_mark_all": "Alle als geprüft markieren",
+      "bulk_marked": "{{count}} Ereignisse als geprüft markiert",
+      "bulk_capped": "Erste {{count}} Ereignisse als geprüft markiert",
+      "show_reviewed": "Geprüfte anzeigen",
+      "show_filtered": "Gefilterte anzeigen",
+      "noise_filtered": "Durch Filterregeln ausgeblendet"
+    },
+    "quick_search": {
+      "cause_placeholder": "Ursache, Notizen oder Monitor suchen",
+      "todays_hs": "Heute Top",
+      "todays_hs_short": "Heute Top",
+      "score_min": "Score ≥ {{value}}",
+      "score_min_label": "Mindest-Alarm-Score",
+      "clear": "Inline-Filter löschen"
+    },
     "filter": {
       "tags": "Tags",
       "selectTags": "Tags auswählen...",
@@ -712,6 +741,7 @@
     "show_advanced": "Erweitert anzeigen",
     "unread_count": "{{count}} ungelesene Benachrichtigungen",
     "view_history": "Verlauf",
+    "triage_center": "Triage-Center",
     "function": "Funktion",
     "disconnected": "Getrennt",
     "notifications_enabled": "Benachrichtigungen aktiviert",
@@ -1107,5 +1137,55 @@
     "pin_cleared": "Kiosk-PIN entfernt",
     "pin_setting_label": "Kiosk-PIN",
     "pin_setting_desc": "PIN zum Sperren und Entsperren des Kiosk-Modus"
+  },
+  "triage": {
+    "title": "Triage-Center",
+    "subtitle": "Stummschaltungen und Filter für Benachrichtigungen verwalten.",
+    "tab": {
+      "mutes": "Stumm",
+      "quiet_hours": "Ruhezeiten",
+      "noise": "Filter",
+      "priority": "Priorität"
+    },
+    "mutes": {
+      "empty": "Keine aktiven Stummschaltungen. Stumm-Aktion in einer Benachrichtigung verwenden.",
+      "monitor": "Monitor {{id}}",
+      "until": "Bis {{time}}",
+      "extend_1h": "+1 Std."
+    },
+    "quiet_hours": {
+      "empty": "Noch keine Ruhezeit-Fenster.",
+      "add": "Ruhezeit hinzufügen",
+      "label_field": "Bezeichnung",
+      "label_placeholder": "z. B. Schlaf",
+      "start": "Start",
+      "end": "Ende",
+      "weekdays": "Wochentage",
+      "every_day": "Jeden Tag",
+      "unnamed": "Ruhezeit",
+      "error_no_weekdays": "Mindestens einen Wochentag wählen.",
+      "error_time_format": "Zeitformat muss HH:MM sein."
+    },
+    "noise": {
+      "empty": "Noch keine Filterregeln.",
+      "add": "Regel hinzufügen",
+      "min_score": "Mindest-Alarm-Score",
+      "mode": "Modus",
+      "mode_dim": "In Liste abblenden",
+      "mode_hide": "Aus Liste und Pushes ausblenden",
+      "exclude_label": "Ausschließen wenn Ursache enthält (kommagetrennt)",
+      "exclude_placeholder": "z. B. Continuous, Test",
+      "row_summary": "Score < {{score}} · {{mode}}",
+      "exclude_summary": "Ausschluss: {{patterns}}",
+      "error_score_range": "Score muss 0-100 sein."
+    },
+    "priority": {
+      "placeholder": "Pro-Monitor-Priorität kommt mit der nativen Version."
+    }
+  },
+  "quicklook": {
+    "region_label": "Aktuelle Ereignisse",
+    "empty": "Keine aktuellen Ereignisse.",
+    "dismiss": "Ausblenden"
   }
 }

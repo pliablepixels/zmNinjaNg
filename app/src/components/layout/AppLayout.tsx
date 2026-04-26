@@ -32,6 +32,7 @@ import { useKioskStore } from '../../stores/kioskStore';
 import { KioskOverlay } from '../kiosk/KioskOverlay';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { SidebarContent } from './SidebarContent';
+import { QuickLookDock } from './QuickLookDock';
 
 
 /**
@@ -253,6 +254,8 @@ export default function AppLayout() {
       />
 
       <KioskOverlay onUnlock={handleKioskUnlock} />
+
+      <QuickLookDock />
     </div>
   );
 }

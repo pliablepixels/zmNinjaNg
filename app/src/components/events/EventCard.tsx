@@ -13,13 +13,15 @@ import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { EventThumbnail } from './EventThumbnail';
 import { EventThumbnailHoverPreview } from './EventThumbnailHoverPreview';
-import { Video, Calendar, Clock, Star } from 'lucide-react';
+import { Video, Calendar, Clock, Star, CheckCircle2, Filter } from 'lucide-react';
 import { getEventCauseIcon } from '../../lib/event-icons';
 import { getObjectClassIconFromList } from '../../lib/object-class-icons';
 import type { EventCardProps } from '../../api/types';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import { useEventFavoritesStore } from '../../stores/eventFavorites';
+import { useEventReviewStateStore } from '../../stores/eventReviewState';
+import { useSuppressionEntries, matchesAnyNoiseFilter } from '../../plugins/suppression-store';
 import { useCurrentProfile } from '../../hooks/useCurrentProfile';
 import { TagChipList } from './TagChip';
 
@@ -39,12 +41,34 @@ function EventCardComponent({ event, monitorName, thumbnailUrls, largeThumbnailU
   const { currentProfile, settings } = useCurrentProfile();
   const showHover = settings.hoverPreview.eventsList;
   const toggleFavorite = useEventFavoritesStore((state) => state.toggleFavorite);
+  const toggleReviewed = useEventReviewStateStore((state) => state.toggleReviewed);
 
   // Subscribe to the specific favorite state for this event
   // This ensures re-renders when favorite status changes
   const isFav = useEventFavoritesStore((state) =>
     currentProfile ? state.isFavorited(currentProfile.id, event.Id) : false
   );
+
+  const isReviewed = useEventReviewStateStore((state) =>
+    currentProfile ? state.isReviewed(currentProfile.id, event.Id) : false
+  );
+
+  // Noise-filter dim treatment — any matching rule (hide OR dim) marks the
+  // card. Hide-mode rules also remove the event from the list upstream
+  // (Events.tsx); when "Show filtered" is on, hide-mode events still arrive
+  // here and should still render dimmed.
+  const suppressionEntries = useSuppressionEntries(currentProfile?.id);
+  const noiseDimmed = currentProfile
+    ? matchesAnyNoiseFilter(
+        {
+          profile_id: currentProfile.id,
+          monitor_id: event.MonitorId,
+          alarm_score: Number(event.AvgScore) || 0,
+          cause_text: event.Cause,
+        },
+        suppressionEntries
+      ) !== null
+    : false;
 
   const startTime = new Date(event.StartDateTime.replace(' ', 'T'));
 
@@ -59,9 +83,22 @@ function EventCardComponent({ event, monitorName, thumbnailUrls, largeThumbnailU
     }
   };
 
+  const handleReviewedClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (currentProfile) {
+      toggleReviewed(currentProfile.id, event.Id);
+    }
+  };
+
   return (
     <Card
-      className="group overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-200 hover:ring-2 hover:ring-primary/50 focus:outline-none focus:ring-2 focus:ring-primary"
+      className={cn(
+        "group overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-200 hover:ring-2 hover:ring-primary/50 focus:outline-none focus:ring-2 focus:ring-primary",
+        // 50% opacity when reviewed OR noise-dimmed; capped (no 25%) when both apply
+        (isReviewed || noiseDimmed) && "opacity-50"
+      )}
+      data-reviewed={isReviewed ? 'true' : 'false'}
+      data-noise-dimmed={noiseDimmed ? 'true' : 'false'}
       onClick={() => navigate(`/events/${event.Id}`, { state: { from: '/events', eventFilters } })}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -128,6 +165,31 @@ function EventCardComponent({ event, monitorName, thumbnailUrls, largeThumbnailU
                 {event.Name}
               </h3>
               <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                {noiseDimmed && (
+                  <Filter
+                    className="h-4 w-4 text-muted-foreground"
+                    aria-label={t('events.review.noise_filtered')}
+                    data-testid="event-noise-filtered-icon"
+                  />
+                )}
+                <button
+                  onClick={handleReviewedClick}
+                  className={cn(
+                    "p-1 rounded-full hover:bg-accent transition-colors",
+                    "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  )}
+                  aria-label={isReviewed ? t('events.review.unmark') : t('events.review.mark')}
+                  data-testid="event-reviewed-button"
+                >
+                  <CheckCircle2
+                    className={cn(
+                      "h-4 w-4 sm:h-5 sm:w-5 transition-colors",
+                      isReviewed
+                        ? "fill-emerald-500 stroke-white"
+                        : "stroke-muted-foreground hover:stroke-emerald-500"
+                    )}
+                  />
+                </button>
                 <button
                   onClick={handleFavoriteClick}
                   className={cn(
