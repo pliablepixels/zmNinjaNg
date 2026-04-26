@@ -210,7 +210,9 @@
       "bulk_mark_all": "全部标记已查看",
       "bulk_marked": "已标记 {{count}} 个事件",
       "bulk_capped": "已标记前 {{count}} 个事件",
-      "show_reviewed": "显示已查看"
+      "show_reviewed": "显示已查看",
+      "show_filtered": "显示已过滤",
+      "noise_filtered": "已被噪声规则过滤"
     },
     "filter": {
       "tags": "标签",

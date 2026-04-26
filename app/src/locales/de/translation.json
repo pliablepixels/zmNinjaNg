@@ -210,7 +210,9 @@
       "bulk_mark_all": "Alle als geprüft markieren",
       "bulk_marked": "{{count}} Ereignisse als geprüft markiert",
       "bulk_capped": "Erste {{count}} Ereignisse als geprüft markiert",
-      "show_reviewed": "Geprüfte anzeigen"
+      "show_reviewed": "Geprüfte anzeigen",
+      "show_filtered": "Gefilterte anzeigen",
+      "noise_filtered": "Durch Filterregeln ausgeblendet"
     },
     "filter": {
       "tags": "Tags",

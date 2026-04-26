@@ -41,6 +41,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useEventFavoritesStore } from '../stores/eventFavorites';
 import { useEventReviewStateStore } from '../stores/eventReviewState';
 import { toast } from 'sonner';
+import {
+  useSuppressionEntries,
+  evaluateSuppression,
+} from '../plugins/suppression-store';
 import { NotificationBadge } from '../components/NotificationBadge';
 
 export default function Events() {
@@ -72,6 +76,11 @@ export default function Events() {
     )
   );
   const [showReviewed, setShowReviewed] = useState(false);
+  const [showFiltered, setShowFiltered] = useState(false);
+
+  // Suppression-store entries drive both notification suppression (when
+  // implemented natively) and the Events list noise filter (here).
+  const suppressionEntries = useSuppressionEntries(currentProfile?.id);
 
   const parentRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
@@ -232,6 +241,24 @@ export default function Events() {
       filtered = filtered.filter(({ Event }: EventData) => !reviewedSet.has(Event.Id));
     }
 
+    // Apply noise-filter rules (mode: hide drops, mode: dim is rendered by
+    // the EventCard via a per-event "noise-dimmed" flag below). The "Show
+    // filtered" session toggle un-hides hide-mode matches for the session.
+    if (!showFiltered && currentProfile && suppressionEntries.length > 0) {
+      filtered = filtered.filter(({ Event }: EventData) => {
+        const reason = evaluateSuppression(
+          {
+            profile_id: currentProfile.id,
+            monitor_id: Event.MonitorId,
+            alarm_score: Number(Event.AvgScore) || 0,
+            cause_text: Event.Cause,
+          },
+          suppressionEntries
+        );
+        return reason?.kind !== 'noise_filter';
+      });
+    }
+
     // Apply tag filter if tags are selected (client-side)
     if (selectedTagIds.length > 0 && eventTagMap.size > 0) {
       const isAllTagsFilter = selectedTagIds.includes(ALL_TAGS_FILTER_ID);
@@ -247,7 +274,18 @@ export default function Events() {
     }
 
     return filtered;
-  }, [eventsData?.events, favoritesOnly, favoriteIds, showReviewed, reviewedIds, selectedTagIds, eventTagMap]);
+  }, [
+    eventsData?.events,
+    favoritesOnly,
+    favoriteIds,
+    showReviewed,
+    reviewedIds,
+    showFiltered,
+    suppressionEntries,
+    currentProfile,
+    selectedTagIds,
+    eventTagMap,
+  ]);
 
   // Use grid management hook (only active when in montage mode)
   const gridControls = useEventMontageGrid({
@@ -441,6 +479,8 @@ export default function Events() {
                   onOnlyDetectedObjectsChange={setOnlyDetectedObjects}
                   showReviewed={showReviewed}
                   onShowReviewedChange={setShowReviewed}
+                  showFiltered={showFiltered}
+                  onShowFilteredChange={setShowFiltered}
                 />
               </Popover>
 

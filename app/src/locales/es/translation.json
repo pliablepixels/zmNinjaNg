@@ -210,7 +210,9 @@
       "bulk_mark_all": "Marcar todos revisados",
       "bulk_marked": "{{count}} eventos marcados revisados",
       "bulk_capped": "Primeros {{count}} eventos marcados revisados",
-      "show_reviewed": "Mostrar revisados"
+      "show_reviewed": "Mostrar revisados",
+      "show_filtered": "Mostrar filtrados",
+      "noise_filtered": "Filtrado por reglas de ruido"
     },
     "filter": {
       "tags": "Etiquetas",

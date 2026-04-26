@@ -114,12 +114,12 @@
 
 ## 14. Events page — Noise filter integration
 
-- [ ] 14.1 Apply suppression-store `noise_filter` rules to the events list render — hide events where any rule in `mode: hide` matches; dim events where any rule in `mode: dim` matches
-- [ ] 14.2 Distinct visual treatment: noise-dimmed events show a "filtered" icon, distinct from the reviewed-checkmark
-- [ ] 14.3 Resolve stacked dim: cap opacity at 50% when both reviewed and noise-dim apply
-- [ ] 14.4 "Show filtered" session-scoped toggle in the quick-search bar — temporarily un-hides hide-mode events, rendered as noise-dimmed
+- [x] 14.1 Apply suppression-store `noise_filter` rules to the events list render — hide events where any rule in `mode: hide` matches; dim events where any rule in `mode: dim` matches
+- [x] 14.2 Distinct visual treatment: noise-dimmed events show a "filtered" icon, distinct from the reviewed-checkmark
+- [x] 14.3 Resolve stacked dim: cap opacity at 50% when both reviewed and noise-dim apply
+- [x] 14.4 "Show filtered" session-scoped toggle in the quick-search bar — temporarily un-hides hide-mode events, rendered as noise-dimmed
 - [ ] 14.5 First-run default-rule offer: when >50 low-score events detected in the user's history for the active profile, show one-time dismissable offer (Accept / Decline / Ask later)
-- [ ] 14.6 Single-source-of-truth: rule add/edit/delete in Triage Center reflects in events list on next focus
+- [x] 14.6 Single-source-of-truth: rule add/edit/delete in Triage Center reflects in events list on next focus
 
 ## 15. Triage Center screen
 

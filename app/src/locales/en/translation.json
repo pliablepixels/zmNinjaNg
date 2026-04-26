@@ -210,7 +210,9 @@
       "bulk_mark_all": "Mark all reviewed",
       "bulk_marked": "Marked {{count}} events reviewed",
       "bulk_capped": "Marked first {{count}} events reviewed",
-      "show_reviewed": "Show reviewed"
+      "show_reviewed": "Show reviewed",
+      "show_filtered": "Show filtered",
+      "noise_filtered": "Filtered by noise rules"
     },
     "filter": {
       "tags": "Tags",

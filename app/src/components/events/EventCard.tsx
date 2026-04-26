@@ -13,7 +13,7 @@ import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { EventThumbnail } from './EventThumbnail';
 import { EventThumbnailHoverPreview } from './EventThumbnailHoverPreview';
-import { Video, Calendar, Clock, Star, CheckCircle2 } from 'lucide-react';
+import { Video, Calendar, Clock, Star, CheckCircle2, Filter } from 'lucide-react';
 import { getEventCauseIcon } from '../../lib/event-icons';
 import { getObjectClassIconFromList } from '../../lib/object-class-icons';
 import type { EventCardProps } from '../../api/types';
@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import { useEventFavoritesStore } from '../../stores/eventFavorites';
 import { useEventReviewStateStore } from '../../stores/eventReviewState';
+import { useSuppressionEntries, matchesAnyNoiseFilter } from '../../plugins/suppression-store';
 import { useCurrentProfile } from '../../hooks/useCurrentProfile';
 import { TagChipList } from './TagChip';
 
@@ -52,6 +53,23 @@ function EventCardComponent({ event, monitorName, thumbnailUrls, largeThumbnailU
     currentProfile ? state.isReviewed(currentProfile.id, event.Id) : false
   );
 
+  // Noise-filter dim treatment — any matching rule (hide OR dim) marks the
+  // card. Hide-mode rules also remove the event from the list upstream
+  // (Events.tsx); when "Show filtered" is on, hide-mode events still arrive
+  // here and should still render dimmed.
+  const suppressionEntries = useSuppressionEntries(currentProfile?.id);
+  const noiseDimmed = currentProfile
+    ? matchesAnyNoiseFilter(
+        {
+          profile_id: currentProfile.id,
+          monitor_id: event.MonitorId,
+          alarm_score: Number(event.AvgScore) || 0,
+          cause_text: event.Cause,
+        },
+        suppressionEntries
+      ) !== null
+    : false;
+
   const startTime = new Date(event.StartDateTime.replace(' ', 'T'));
 
   // Calculate aspect ratio from thumbnail dimensions
@@ -76,9 +94,11 @@ function EventCardComponent({ event, monitorName, thumbnailUrls, largeThumbnailU
     <Card
       className={cn(
         "group overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-200 hover:ring-2 hover:ring-primary/50 focus:outline-none focus:ring-2 focus:ring-primary",
-        isReviewed && "opacity-50"
+        // 50% opacity when reviewed OR noise-dimmed; capped (no 25%) when both apply
+        (isReviewed || noiseDimmed) && "opacity-50"
       )}
       data-reviewed={isReviewed ? 'true' : 'false'}
+      data-noise-dimmed={noiseDimmed ? 'true' : 'false'}
       onClick={() => navigate(`/events/${event.Id}`, { state: { from: '/events', eventFilters } })}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -145,6 +165,13 @@ function EventCardComponent({ event, monitorName, thumbnailUrls, largeThumbnailU
                 {event.Name}
               </h3>
               <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                {noiseDimmed && (
+                  <Filter
+                    className="h-4 w-4 text-muted-foreground"
+                    aria-label={t('events.review.noise_filtered')}
+                    data-testid="event-noise-filtered-icon"
+                  />
+                )}
                 <button
                   onClick={handleReviewedClick}
                   className={cn(
