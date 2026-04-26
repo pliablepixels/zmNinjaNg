@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Switch } from '../components/ui/switch';
 import { Label } from '../components/ui/label';
 import { ArrowLeft, Settings, Maximize2, Minimize2, Clock, AlertTriangle, Download, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Layers, Video, Eye, Disc } from 'lucide-react';
-import { useState, useRef, useMemo, useCallback } from 'react';
+import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { cn } from '../lib/utils';
 import { toast } from 'sonner';
 import { downloadSnapshotFromElement } from '../lib/download';
@@ -33,6 +33,7 @@ import { isZmVersionAtLeast } from '../lib/zm-version';
 import { getMonitorRunState, monitorDotColor } from '../lib/monitor-status';
 import { useZoomPan } from '../hooks/useZoomPan';
 import { useServerUrls } from '../hooks/useServerUrls';
+import { engageOnReady } from '../plugins/pip';
 
 // Extracted hooks and components
 import { usePTZControl, useAlarmControl, useModeControl, useMonitorNavigation } from './hooks';
@@ -60,6 +61,37 @@ export default function MonitorDetail() {
   const referrer = location.state?.from as string | undefined;
   const canGoBack = referrer || window.history.length > 1;
   const goBack = () => referrer ? navigate(referrer) : canGoBack ? navigate(-1) : navigate('/monitors');
+
+  // pip=auto deep-link entry point — engage PiP once the video element is ready.
+  // No-op when the active media is an MJPEG <img>, when PiP is unsupported, or
+  // when the param is absent. See specs/monitor-live-deeplink/spec.md.
+  const pipAutoRequested = useMemo(
+    () => new URLSearchParams(location.search).get('pip') === 'auto',
+    [location.search]
+  );
+  const pipEngagedRef = useRef(false);
+  useEffect(() => {
+    if (!pipAutoRequested) return;
+    pipEngagedRef.current = false;
+  }, [pipAutoRequested, id]);
+  useEffect(() => {
+    if (!pipAutoRequested || pipEngagedRef.current) return;
+    const el = mediaRef.current;
+    if (!(el instanceof HTMLVideoElement)) return;
+
+    const tryEngage = () => {
+      if (pipEngagedRef.current) return;
+      pipEngagedRef.current = true;
+      void engageOnReady(el, { eventId: id });
+    };
+
+    if (el.readyState >= 2) {
+      tryEngage();
+      return;
+    }
+    el.addEventListener('loadedmetadata', tryEngage, { once: true });
+    return () => el.removeEventListener('loadedmetadata', tryEngage);
+  }, [pipAutoRequested, id, protocol]);
 
   // Profile and settings
   const { currentProfile, settings } = useCurrentProfile();
