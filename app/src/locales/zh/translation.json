@@ -224,6 +224,14 @@
       "show_filtered": "显示已过滤",
       "noise_filtered": "已被噪声规则过滤"
     },
+    "quick_search": {
+      "cause_placeholder": "搜索原因、备注或监视器",
+      "todays_hs": "今日高分",
+      "todays_hs_short": "今日高分",
+      "score_min": "分数 ≥ {{value}}",
+      "score_min_label": "最低告警分数",
+      "clear": "清除内联过滤"
+    },
     "filter": {
       "tags": "标签",
       "selectTags": "选择标签...",

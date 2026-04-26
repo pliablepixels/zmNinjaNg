@@ -33,6 +33,7 @@ import { EventMontageView } from '../components/events/EventMontageView';
 import { EventListView } from '../components/events/EventListView';
 import { EventMontageGridControls } from '../components/events/EventMontageGridControls';
 import { EventsFilterPopover } from '../components/events/EventsFilterPopover';
+import { QuickSearchFilterBar } from '../components/events/QuickSearchFilterBar';
 import { QuickDateRangeButtons } from '../components/ui/quick-date-range-buttons';
 import { useTranslation } from 'react-i18next';
 import { formatForServer, formatLocalDateTime } from '../lib/time';
@@ -77,6 +78,16 @@ export default function Events() {
   );
   const [showReviewed, setShowReviewed] = useState(false);
   const [showFiltered, setShowFiltered] = useState(false);
+  // Inline quick-search filters — session-scoped, reset on profile switch via the
+  // dependency on currentProfile?.id below.
+  const [causeContains, setCauseContains] = useState('');
+  const [scoreMin, setScoreMin] = useState(0);
+  useEffect(() => {
+    setCauseContains('');
+    setScoreMin(0);
+    setShowReviewed(false);
+    setShowFiltered(false);
+  }, [currentProfile?.id]);
 
   // Suppression-store entries drive both notification suppression (when
   // implemented natively) and the Events list noise filter (here).
@@ -241,6 +252,22 @@ export default function Events() {
       filtered = filtered.filter(({ Event }: EventData) => !reviewedSet.has(Event.Id));
     }
 
+    // Quick-search bar: cause/notes/monitor "contains" + score-min. Both
+    // session-scoped, applied client-side.
+    const trimmedCause = causeContains.trim().toLowerCase();
+    if (trimmedCause) {
+      filtered = filtered.filter(({ Event }: EventData) => {
+        const haystack = `${Event.Cause ?? ''} ${Event.Notes ?? ''} ${Event.Name ?? ''}`.toLowerCase();
+        return haystack.includes(trimmedCause);
+      });
+    }
+    if (scoreMin > 0) {
+      filtered = filtered.filter(({ Event }: EventData) => {
+        const score = Number(Event.AvgScore) || 0;
+        return score >= scoreMin;
+      });
+    }
+
     // Apply noise-filter rules (mode: hide drops, mode: dim is rendered by
     // the EventCard via a per-event "noise-dimmed" flag below). The "Show
     // filtered" session toggle un-hides hide-mode matches for the session.
@@ -285,6 +312,8 @@ export default function Events() {
     currentProfile,
     selectedTagIds,
     eventTagMap,
+    causeContains,
+    scoreMin,
   ]);
 
   // Use grid management hook (only active when in montage mode)
@@ -547,6 +576,28 @@ export default function Events() {
               </Button>
             )}
           </div>
+
+          <QuickSearchFilterBar
+            causeContains={causeContains}
+            onCauseContainsChange={setCauseContains}
+            scoreMin={scoreMin}
+            onScoreMinChange={setScoreMin}
+            onApplyTodaysHighScore={() => {
+              const end = new Date();
+              const start = new Date(end);
+              start.setHours(0, 0, 0, 0);
+              setStartDateInput(formatLocalDateTime(start));
+              setEndDateInput(formatLocalDateTime(end));
+              setActiveQuickRange(0);
+              setScoreMin(50);
+              setCauseContains('');
+              applyFilters();
+            }}
+            onClearInline={() => {
+              setCauseContains('');
+              setScoreMin(0);
+            }}
+          />
         </div>
 
         {/* Event Heatmap */}

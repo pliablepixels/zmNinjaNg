@@ -224,6 +224,14 @@
       "show_filtered": "Mostrar filtrados",
       "noise_filtered": "Filtrado por reglas de ruido"
     },
+    "quick_search": {
+      "cause_placeholder": "Buscar causa, notas o monitor",
+      "todays_hs": "Hoy alta puntuación",
+      "todays_hs_short": "Hoy HP",
+      "score_min": "Score ≥ {{value}}",
+      "score_min_label": "Puntuación mínima",
+      "clear": "Borrar filtros en línea"
+    },
     "filter": {
       "tags": "Etiquetas",
       "selectTags": "Seleccionar etiquetas...",

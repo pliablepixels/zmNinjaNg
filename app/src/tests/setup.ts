@@ -80,6 +80,14 @@ class MockWebSocket {
 
 global.WebSocket = MockWebSocket as unknown as typeof WebSocket;
 
+// Mock ResizeObserver (used by Radix Slider, Popover sizing, etc.)
+class MockResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+global.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserver;
+
 // Mock Audio for notification sounds
 global.AudioContext = vi.fn(() => ({
   createOscillator: vi.fn(() => ({

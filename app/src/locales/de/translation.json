@@ -224,6 +224,14 @@
       "show_filtered": "Gefilterte anzeigen",
       "noise_filtered": "Durch Filterregeln ausgeblendet"
     },
+    "quick_search": {
+      "cause_placeholder": "Ursache, Notizen oder Monitor suchen",
+      "todays_hs": "Heute Top",
+      "todays_hs_short": "Heute Top",
+      "score_min": "Score ≥ {{value}}",
+      "score_min_label": "Mindest-Alarm-Score",
+      "clear": "Inline-Filter löschen"
+    },
     "filter": {
       "tags": "Tags",
       "selectTags": "Tags auswählen...",

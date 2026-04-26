@@ -224,6 +224,14 @@
       "show_filtered": "Show filtered",
       "noise_filtered": "Filtered by noise rules"
     },
+    "quick_search": {
+      "cause_placeholder": "Search cause, notes, or monitor",
+      "todays_hs": "Today's high-score",
+      "todays_hs_short": "Today HS",
+      "score_min": "Score ≥ {{value}}",
+      "score_min_label": "Minimum alarm score",
+      "clear": "Clear inline filters"
+    },
     "filter": {
       "tags": "Tags",
       "selectTags": "Select tags...",

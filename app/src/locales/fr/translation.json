@@ -224,6 +224,14 @@
       "show_filtered": "Afficher les filtrés",
       "noise_filtered": "Filtré par les règles de bruit"
     },
+    "quick_search": {
+      "cause_placeholder": "Rechercher cause, notes ou moniteur",
+      "todays_hs": "Score élevé du jour",
+      "todays_hs_short": "Top du jour",
+      "score_min": "Score ≥ {{value}}",
+      "score_min_label": "Score d'alarme minimum",
+      "clear": "Effacer les filtres en ligne"
+    },
     "filter": {
       "tags": "Tags",
       "selectTags": "Sélectionner des tags...",

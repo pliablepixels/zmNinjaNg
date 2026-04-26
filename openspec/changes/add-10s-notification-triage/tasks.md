@@ -103,14 +103,14 @@
 
 ## 13. Events page — Quick-Search filter bar
 
-- [ ] 13.1 Create `app/src/components/events/QuickSearchFilterBar.tsx` mounted above the events list on `Events.tsx`
-- [ ] 13.2 Implement filters: date range presets + custom picker; monitor multiselect; class chips ({person, vehicle, animal, package, unknown}); cause-contains input; alarm-score-min slider; "Show reviewed"; "Show filtered"
-- [ ] 13.3 Phone-portrait collapse to "Filters · N" with expandable inline panel
-- [ ] 13.4 "Today's high-score events" preset and "Clear all" buttons
-- [ ] 13.5 Persist bar state profile-scoped within session; reset on profile switch and on app restart
-- [ ] 13.6 Coexist with existing `EventsFilterPopover` (popover filters AND with bar filters; independent active-filter counts)
-- [ ] 13.7 Add `data-testid` to every interactive element (rule #13)
-- [ ] 13.8 Use `useDateTimeFormat()` for date display (rule #24)
+- [x] 13.1 Create `app/src/components/events/QuickSearchFilterBar.tsx` mounted above the events list on `Events.tsx`
+- [~] 13.2 Implement filters: date range presets + custom picker; monitor multiselect; class chips ({person, vehicle, animal, package, unknown}); cause-contains input; alarm-score-min slider; "Show reviewed"; "Show filtered" — bar MVP includes cause-contains + score-min + Today's HS preset; date range still uses inline `QuickDateRangeButtons`; monitor / class chips deferred (need detection metadata wiring)
+- [~] 13.3 Phone-portrait collapse to "Filters · N" with expandable inline panel — bar uses responsive `flex-col sm:flex-row` layout; explicit "Filters · N" collapsed state deferred until monitor/class chips land
+- [x] 13.4 "Today's high-score events" preset and "Clear all" buttons
+- [x] 13.5 Persist bar state profile-scoped within session; reset on profile switch and on app restart
+- [x] 13.6 Coexist with existing `EventsFilterPopover` (popover filters AND with bar filters; independent active-filter counts)
+- [x] 13.7 Add `data-testid` to every interactive element (rule #13)
+- [x] 13.8 Use `useDateTimeFormat()` for date display (rule #24)
 
 ## 14. Events page — Noise filter integration
 
