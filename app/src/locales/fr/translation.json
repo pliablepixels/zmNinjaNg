@@ -1174,5 +1174,10 @@
     "priority": {
       "placeholder": "La priorité par moniteur arrive avec la version native."
     }
+  },
+  "quicklook": {
+    "region_label": "Événements récents",
+    "empty": "Aucun événement récent.",
+    "dismiss": "Masquer"
   }
 }

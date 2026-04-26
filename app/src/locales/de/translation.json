@@ -1174,5 +1174,10 @@
     "priority": {
       "placeholder": "Pro-Monitor-Priorität kommt mit der nativen Version."
     }
+  },
+  "quicklook": {
+    "region_label": "Aktuelle Ereignisse",
+    "empty": "Keine aktuellen Ereignisse.",
+    "dismiss": "Ausblenden"
   }
 }

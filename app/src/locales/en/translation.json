@@ -1174,5 +1174,10 @@
     "priority": {
       "placeholder": "Per-monitor priority arrives with the native release."
     }
+  },
+  "quicklook": {
+    "region_label": "Recent events",
+    "empty": "No recent events.",
+    "dismiss": "Dismiss"
   }
 }

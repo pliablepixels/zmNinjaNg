@@ -1174,5 +1174,10 @@
     "priority": {
       "placeholder": "按监视器的优先级将随原生版本一起推出。"
     }
+  },
+  "quicklook": {
+    "region_label": "最近事件",
+    "empty": "暂无最近事件。",
+    "dismiss": "隐藏"
   }
 }

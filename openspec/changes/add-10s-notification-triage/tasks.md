@@ -157,12 +157,12 @@
 - [ ] 16.14 Fallback: global keyboard shortcut opening the same popover as a foreground window when tray plugin unavailable
 
 ### Web in-tab dock
-- [ ] 16.15 Create `app/src/components/layout/QuickLookDock.tsx` mounted in the root layout
-- [ ] 16.16 Read event-snapshot from `localStorage` (profile-scoped key); subscribe to events store updates for live refresh
-- [ ] 16.17 Hide on viewports < 480 px wide
-- [ ] 16.18 Dismiss button persists per-session in `sessionStorage`
-- [ ] 16.19 Tap event row → navigate to `EventDetail`
-- [ ] 16.20 Empty state localized
+- [x] 16.15 Create `app/src/components/layout/QuickLookDock.tsx` mounted in the root layout
+- [~] 16.16 Read event-snapshot from `localStorage` (profile-scoped key); subscribe to events store updates for live refresh — currently subscribes to `useNotificationStore.profileEvents` directly; localStorage snapshot adapter pairs with §16.21
+- [x] 16.17 Hide on viewports < 480 px wide
+- [x] 16.18 Dismiss button persists per-session in `sessionStorage`
+- [x] 16.19 Tap event row → navigate to `EventDetail`
+- [x] 16.20 Empty state localized
 
 ### Shared snapshot writer
 - [ ] 16.21 Implement event-snapshot writer in `app/src/services/notifications.ts` (or shared utility) that writes the latest 5 events for the active profile to the platform-specific source on every successful event delivery
