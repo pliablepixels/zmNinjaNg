@@ -37,13 +37,15 @@ A user can go from a push notification to "is this real, do I care?" in under 10
 - [ ] Event noise filter: filter list and notifications by alarm score and detection class/cause text already returned by ZoneMinder
 - [ ] Event quick-search: fast jump by date range, monitor, object class/cause, alarm score from one filter bar
 - [ ] Per-monitor notification priority + quiet-hours window: route alerts differently per camera, suppress during user-defined windows
-- [ ] Home-screen quick-look surface (functional-equivalent per platform): iOS + Android home-screen widget showing latest event, Tauri menu-bar / system-tray quick-look, web top-bar dock or PWA push where supported
+- [ ] Home-screen quick-look surface (functional-equivalent per platform): iOS + Android home-screen widget showing latest event, Tauri menu-bar / system-tray quick-look, web in-tab dock primary + best-effort PWA push where supported
 
 ### Out of Scope
 
 - Live view / Montage redesign — already working; this milestone stays in the triage + alert lanes
-- ZoneMinder server-side or `zmeventnotification.pl` configuration changes — milestone is client-only
+- ZoneMinder server-side or `zmeventnotification.pl` source code changes — milestone is client-only (a configuration / payload-shape contract update may still be needed for rich push; resolved in REQUIREMENTS.md)
 - New client-side ML / object detection models — consume only metadata ZM and `zmeventnotification` already populate (alarm score, cause text, detection frames)
+- iOS Critical Alerts entitlement — App Store rejects general home-security/surveillance use cases; standard `time-sensitive` + Android `IMPORTANCE_HIGH` cover ~95% of the UX (per research/PITFALLS.md)
+- iOS Live Activities / Dynamic Island — wrong data model for discrete ZM events; revisit if continuous-detection metadata appears server-side
 - Apple Watch / WearOS companion apps — deferred; widget + rich push cover the on-the-go case for now
 - Cloud-style features (off-device storage, account sync) — outside the ZoneMinder self-hosted model
 - Geofencing-based arm/disarm — not in this milestone; revisit after triage lane lands
