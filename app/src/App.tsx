@@ -17,6 +17,7 @@ import { ThemeProvider } from './components/theme-provider';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { RouteErrorBoundary } from './components/RouteErrorBoundary';
 import { useTokenRefresh } from './hooks/useTokenRefresh';
+import { useDeepLinkHandler } from './hooks/useDeepLinkHandler';
 import AppLayout from './components/layout/AppLayout';
 import { NotificationHandler } from './components/NotificationHandler';
 import { Button } from './components/ui/button';
@@ -73,6 +74,9 @@ function AppRoutes() {
 
   // Enable automatic token refresh
   useTokenRefresh();
+
+  // Handle zmninja:// deep links (notification action 'Live', widgets, tray)
+  useDeepLinkHandler();
 
   // Always apply compact mode
   useEffect(() => {

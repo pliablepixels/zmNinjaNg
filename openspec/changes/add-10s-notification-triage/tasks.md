@@ -88,8 +88,8 @@
 
 - [x] 11.1 Update `app/src/plugins/pip/index.ts` (and platform implementations) to expose `engageOnReady(videoEl)` API safe to call when PiP is unsupported
 - [x] 11.2 Update `app/src/pages/MonitorDetail.tsx` to read `pip=auto` query param; call `engageOnReady` once the video is ready
-- [ ] 11.3 Update the app's deep-link handler (Capacitor `App.addListener('appUrlOpen', ...)`) to route `zmninja://monitor/<id>?…` to `MonitorDetail` and `zmninja://event/<id>?…` to `EventDetail`
-- [ ] 11.4 Handle profile mismatch — switch active profile before mounting the target route if `profile_id` differs from the currently active one
+- [x] 11.3 Update the app's deep-link handler (Capacitor `App.addListener('appUrlOpen', ...)`) to route `zmninja://monitor/<id>?…` to `MonitorDetail` and `zmninja://event/<id>?…` to `EventDetail`
+- [x] 11.4 Handle profile mismatch — switch active profile before mounting the target route if `profile_id` differs from the currently active one
 
 ## 12. Reviewed-state store + integrations
 
