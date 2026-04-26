@@ -224,8 +224,12 @@ export function useMontageGrid({
     const normalized = recalcHeights(nextLayout, currentWidthRef.current);
     setLayout((prev) => (areLayoutsEqual(prev, normalized) ? prev : normalized));
     initializedRef.current = true;
+    // settings.montageLayouts is included so the saved layout is applied if
+    // the persisted store hydrates after the container measures its width
+    // (e.g. Windows Tauri). Subsequent fires from drag/resize saves are
+    // idempotent via areLayoutsEqual. Issue #127.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [displayCols, hasWidth]);
+  }, [displayCols, hasWidth, settings.montageLayouts]);
 
   // When the monitor list changes (new/removed monitors), add missing ones
   // but don't reset existing positions.
