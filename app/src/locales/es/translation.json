@@ -203,6 +203,11 @@
     "favorites_only": "Solo Favoritos",
     "added_to_favorites": "Evento añadido a favoritos",
     "removed_from_favorites": "Evento eliminado de favoritos",
+    "review": {
+      "mark": "Marcar revisado",
+      "unmark": "Desmarcar revisado",
+      "reviewed": "Revisado"
+    },
     "filter": {
       "tags": "Etiquetas",
       "selectTags": "Seleccionar etiquetas...",

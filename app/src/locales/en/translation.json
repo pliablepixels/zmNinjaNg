@@ -203,6 +203,11 @@
     "favorites_only": "Favorites Only",
     "added_to_favorites": "Event added to favorites",
     "removed_from_favorites": "Event removed from favorites",
+    "review": {
+      "mark": "Mark reviewed",
+      "unmark": "Unmark reviewed",
+      "reviewed": "Reviewed"
+    },
     "filter": {
       "tags": "Tags",
       "selectTags": "Select tags...",

@@ -203,6 +203,11 @@
     "favorites_only": "Favoris Uniquement",
     "added_to_favorites": "Événement ajouté aux favoris",
     "removed_from_favorites": "Événement retiré des favoris",
+    "review": {
+      "mark": "Marquer vu",
+      "unmark": "Démarquer vu",
+      "reviewed": "Vu"
+    },
     "filter": {
       "tags": "Tags",
       "selectTags": "Sélectionner des tags...",

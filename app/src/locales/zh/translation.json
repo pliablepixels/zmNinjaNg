@@ -203,6 +203,11 @@
     "favorites_only": "仅显示收藏",
     "added_to_favorites": "事件已添加到收藏",
     "removed_from_favorites": "事件已从收藏中移除",
+    "review": {
+      "mark": "标记已查看",
+      "unmark": "取消已查看",
+      "reviewed": "已查看"
+    },
     "filter": {
       "tags": "标签",
       "selectTags": "选择标签...",

@@ -203,6 +203,11 @@
     "favorites_only": "Nur Favoriten",
     "added_to_favorites": "Ereignis zu Favoriten hinzugefügt",
     "removed_from_favorites": "Ereignis aus Favoriten entfernt",
+    "review": {
+      "mark": "Als geprüft markieren",
+      "unmark": "Als ungeprüft markieren",
+      "reviewed": "Geprüft"
+    },
     "filter": {
       "tags": "Tags",
       "selectTags": "Tags auswählen...",

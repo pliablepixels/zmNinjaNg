@@ -13,13 +13,14 @@ import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { EventThumbnail } from './EventThumbnail';
 import { EventThumbnailHoverPreview } from './EventThumbnailHoverPreview';
-import { Video, Calendar, Clock, Star } from 'lucide-react';
+import { Video, Calendar, Clock, Star, CheckCircle2 } from 'lucide-react';
 import { getEventCauseIcon } from '../../lib/event-icons';
 import { getObjectClassIconFromList } from '../../lib/object-class-icons';
 import type { EventCardProps } from '../../api/types';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import { useEventFavoritesStore } from '../../stores/eventFavorites';
+import { useEventReviewStateStore } from '../../stores/eventReviewState';
 import { useCurrentProfile } from '../../hooks/useCurrentProfile';
 import { TagChipList } from './TagChip';
 
@@ -39,11 +40,16 @@ function EventCardComponent({ event, monitorName, thumbnailUrls, largeThumbnailU
   const { currentProfile, settings } = useCurrentProfile();
   const showHover = settings.hoverPreview.eventsList;
   const toggleFavorite = useEventFavoritesStore((state) => state.toggleFavorite);
+  const toggleReviewed = useEventReviewStateStore((state) => state.toggleReviewed);
 
   // Subscribe to the specific favorite state for this event
   // This ensures re-renders when favorite status changes
   const isFav = useEventFavoritesStore((state) =>
     currentProfile ? state.isFavorited(currentProfile.id, event.Id) : false
+  );
+
+  const isReviewed = useEventReviewStateStore((state) =>
+    currentProfile ? state.isReviewed(currentProfile.id, event.Id) : false
   );
 
   const startTime = new Date(event.StartDateTime.replace(' ', 'T'));
@@ -59,9 +65,20 @@ function EventCardComponent({ event, monitorName, thumbnailUrls, largeThumbnailU
     }
   };
 
+  const handleReviewedClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (currentProfile) {
+      toggleReviewed(currentProfile.id, event.Id);
+    }
+  };
+
   return (
     <Card
-      className="group overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-200 hover:ring-2 hover:ring-primary/50 focus:outline-none focus:ring-2 focus:ring-primary"
+      className={cn(
+        "group overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-200 hover:ring-2 hover:ring-primary/50 focus:outline-none focus:ring-2 focus:ring-primary",
+        isReviewed && "opacity-50"
+      )}
+      data-reviewed={isReviewed ? 'true' : 'false'}
       onClick={() => navigate(`/events/${event.Id}`, { state: { from: '/events', eventFilters } })}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -128,6 +145,24 @@ function EventCardComponent({ event, monitorName, thumbnailUrls, largeThumbnailU
                 {event.Name}
               </h3>
               <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                <button
+                  onClick={handleReviewedClick}
+                  className={cn(
+                    "p-1 rounded-full hover:bg-accent transition-colors",
+                    "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  )}
+                  aria-label={isReviewed ? t('events.review.unmark') : t('events.review.mark')}
+                  data-testid="event-reviewed-button"
+                >
+                  <CheckCircle2
+                    className={cn(
+                      "h-4 w-4 sm:h-5 sm:w-5 transition-colors",
+                      isReviewed
+                        ? "fill-emerald-500 stroke-white"
+                        : "stroke-muted-foreground hover:stroke-emerald-500"
+                    )}
+                  />
+                </button>
                 <button
                   onClick={handleFavoriteClick}
                   className={cn(
