@@ -206,7 +206,10 @@
     "review": {
       "mark": "Als geprüft markieren",
       "unmark": "Als ungeprüft markieren",
-      "reviewed": "Geprüft"
+      "reviewed": "Geprüft",
+      "bulk_mark_all": "Alle als geprüft markieren",
+      "bulk_marked": "{{count}} Ereignisse als geprüft markiert",
+      "bulk_capped": "Erste {{count}} Ereignisse als geprüft markiert"
     },
     "filter": {
       "tags": "Tags",

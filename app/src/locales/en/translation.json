@@ -206,7 +206,10 @@
     "review": {
       "mark": "Mark reviewed",
       "unmark": "Unmark reviewed",
-      "reviewed": "Reviewed"
+      "reviewed": "Reviewed",
+      "bulk_mark_all": "Mark all reviewed",
+      "bulk_marked": "Marked {{count}} events reviewed",
+      "bulk_capped": "Marked first {{count}} events reviewed"
     },
     "filter": {
       "tags": "Tags",

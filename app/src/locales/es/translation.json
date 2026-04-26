@@ -206,7 +206,10 @@
     "review": {
       "mark": "Marcar revisado",
       "unmark": "Desmarcar revisado",
-      "reviewed": "Revisado"
+      "reviewed": "Revisado",
+      "bulk_mark_all": "Marcar todos revisados",
+      "bulk_marked": "{{count}} eventos marcados revisados",
+      "bulk_capped": "Primeros {{count}} eventos marcados revisados"
     },
     "filter": {
       "tags": "Etiquetas",

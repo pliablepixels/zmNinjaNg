@@ -23,7 +23,7 @@ import { useEventMontageGrid } from '../hooks/useEventMontageGrid';
 import { useEventTags, useEventTagMapping } from '../hooks/useEventTags';
 import { PullToRefreshIndicator } from '../components/ui/pull-to-refresh-indicator';
 import { Button } from '../components/ui/button';
-import { RefreshCw, Filter, AlertCircle, ArrowLeft, LayoutGrid, List, Clock, X } from 'lucide-react';
+import { RefreshCw, Filter, AlertCircle, ArrowLeft, LayoutGrid, List, Clock, X, CheckCheck } from 'lucide-react';
 import { filterMonitorsByGroup } from '../lib/filters';
 import { useGroupFilter } from '../hooks/useGroupFilter';
 import { GroupFilterSelect } from '../components/filters/GroupFilterSelect';
@@ -39,6 +39,8 @@ import { formatForServer, formatLocalDateTime } from '../lib/time';
 import { EmptyState } from '../components/ui/empty-state';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { useEventFavoritesStore } from '../stores/eventFavorites';
+import { useEventReviewStateStore } from '../stores/eventReviewState';
+import { toast } from 'sonner';
 import { NotificationBadge } from '../components/NotificationBadge';
 
 export default function Events() {
@@ -425,6 +427,27 @@ export default function Events() {
                 />
               </Popover>
 
+              <Button
+                onClick={() => {
+                  if (!currentProfile || allEvents.length === 0) return;
+                  const BULK_CAP = 500;
+                  const ids = allEvents.slice(0, BULK_CAP).map(({ Event }) => Event.Id);
+                  useEventReviewStateStore.getState().markManyReviewed(currentProfile.id, ids);
+                  if (allEvents.length > BULK_CAP) {
+                    toast.info(t('events.review.bulk_capped', { count: BULK_CAP }));
+                  } else {
+                    toast.success(t('events.review.bulk_marked', { count: ids.length }));
+                  }
+                }}
+                variant="outline"
+                size="icon"
+                aria-label={t('events.review.bulk_mark_all')}
+                title={t('events.review.bulk_mark_all')}
+                disabled={allEvents.length === 0}
+                data-testid="events-bulk-mark-reviewed"
+              >
+                <CheckCheck className="h-4 w-4" />
+              </Button>
               <Button
                 onClick={() => refetch()}
                 variant="outline"

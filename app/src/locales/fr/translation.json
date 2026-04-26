@@ -206,7 +206,10 @@
     "review": {
       "mark": "Marquer vu",
       "unmark": "Démarquer vu",
-      "reviewed": "Vu"
+      "reviewed": "Vu",
+      "bulk_mark_all": "Tout marquer vu",
+      "bulk_marked": "{{count}} événements marqués vus",
+      "bulk_capped": "Premiers {{count}} événements marqués vus"
     },
     "filter": {
       "tags": "Tags",

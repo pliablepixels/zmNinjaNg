@@ -206,7 +206,10 @@
     "review": {
       "mark": "标记已查看",
       "unmark": "取消已查看",
-      "reviewed": "已查看"
+      "reviewed": "已查看",
+      "bulk_mark_all": "全部标记已查看",
+      "bulk_marked": "已标记 {{count}} 个事件",
+      "bulk_capped": "已标记前 {{count}} 个事件"
     },
     "filter": {
       "tags": "标签",
