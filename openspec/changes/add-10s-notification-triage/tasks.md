@@ -199,8 +199,8 @@
 
 ## 19. Documentation
 
-- [ ] 19.1 Update `docs/user-guide/notifications.md`: lock-screen behavior, action buttons, per-monitor priority + OS mapping, mute lifecycle, quiet-hours, noise filter, Triage Center, graceful degradation against older ES + Direct mode
-- [ ] 19.2 Update `docs/user-guide/events.md`: reviewed state, quick-search filter bar, noise filter, "Show reviewed" / "Show filtered" toggles
+- [~] 19.1 Update `docs/user-guide/notifications.md`: lock-screen behavior, action buttons, per-monitor priority + OS mapping, mute lifecycle, quiet-hours, noise filter, Triage Center, graceful degradation against older ES + Direct mode — Triage Center sections + web Quick-Look dock landed; lock-screen / action-buttons / priority sections wait until the native release
+- [x] 19.2 Update `docs/user-guide/events.md`: reviewed state, quick-search filter bar, noise filter, "Show reviewed" / "Show filtered" toggles
 - [ ] 19.3 Update `docs/user-guide/dashboard.md` (or new `docs/user-guide/quick-look.md`): widgets / tray / web dock per platform, including how to add the widget on each OS
 - [ ] 19.4 Update `docs/developer-guide/`: `suppression-store` plugin shim, `engageOnReady` PiP API, deep-link contract (`zmninja://`), event-snapshot format and writer, `eventReviewState` Zustand store, Triage Center component map (rule #4)
 - [ ] 19.5 Add a maintainer note covering Apple Developer portal steps for App Group, Keychain Sharing, and the new Widget Extension target
