@@ -20,14 +20,14 @@
 
 ## 4. Cross-platform suppression store (mute + quiet-hours + noise-filter)
 
-- [ ] 4.1 Define on-disk format: JSON array of entries `{kind, profile_id, …}` per `notification-mute-store/spec.md`
+- [x] 4.1 Define on-disk format: JSON array of entries `{kind, profile_id, …}` per `notification-mute-store/spec.md`
 - [ ] 4.2 iOS: `MuteStore.swift` module backed by App Group `UserDefaults` (suite `group.com.zoneminder.zmNinjaNG`); read/write/lookup/expire APIs covering all three entry kinds
 - [ ] 4.3 Android: `MuteStore.kt` module backed by `SharedPreferences` (single shared file); same API surface
 - [ ] 4.4 JS bridge: `app/src/plugins/suppression-store/` Capacitor plugin shim with `list()`, `add()`, `update()`, `remove()`, plus typed entry-kind helpers
-- [ ] 4.5 Web shim: `localStorage`-backed implementation for parity (no native push on web, but the noise-filter rules must still drive the Events list)
-- [ ] 4.6 Quiet-hours evaluator (shared logic): given `now` (local) and a window entry, return active/inactive — handle weekday mask, midnight crossing
-- [ ] 4.7 Noise-filter evaluator (shared logic): given event and rule, return `match: bool, mode`
-- [ ] 4.8 Unit tests for read/write/expiry semantics on both native sides + JS shim
+- [x] 4.5 Web shim: `localStorage`-backed implementation for parity (no native push on web, but the noise-filter rules must still drive the Events list)
+- [x] 4.6 Quiet-hours evaluator (shared logic): given `now` (local) and a window entry, return active/inactive — handle weekday mask, midnight crossing
+- [x] 4.7 Noise-filter evaluator (shared logic): given event and rule, return `match: bool, mode`
+- [~] 4.8 Unit tests for read/write/expiry semantics on both native sides + JS shim — 41 unit tests on JS shim + evaluators landed; native sides deferred
 - [ ] 4.9 Concurrent access test (read during write does not return torn data)
 
 ## 5. Per-monitor priority — settings + cross-process read
